@@ -35,7 +35,7 @@ const DEMO_PRODUCTS = [
 ];
 
 export async function seedDemoProducts(): Promise<{ seeded: boolean }> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { seeded: false };
 
@@ -59,7 +59,6 @@ export async function seedDemoProducts(): Promise<{ seeded: boolean }> {
   }));
 
   await supabase.from("products").insert(rows);
-
   revalidatePath("/dashboard");
   return { seeded: true };
 }
