@@ -56,24 +56,3 @@ export const config = {
     "/((?!_next/static|_next/image|favicon.ico|icons|manifest.json|sw.js|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };
-```
-
----
-
-**The file ends at the closing `};` above. Nothing else.**
-
----
-
-**To fix on GitHub from your phone:**
-
-1. Open your repo → `middleware.ts`
-2. Tap the **pencil icon** (Edit)
-3. Scroll to the bottom of the file
-4. Delete everything after the last `};` — specifically remove these lines if present:
-```
-FILE: .env.local.example
-```
-```
-NEXT_PUBLIC_SUPABASE_URL=...
-NEXT_PUBLIC_SUPABASE_ANON_KEY=...
-NEXT_PUBLIC_APP_URL=...
