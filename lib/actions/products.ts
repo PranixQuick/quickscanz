@@ -6,7 +6,7 @@ import { revalidatePath } from "next/cache";
 import type { Product } from "@/lib/types";
 
 export async function getProducts(): Promise<Product[]> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return [];
 
@@ -24,7 +24,7 @@ export async function getProducts(): Promise<Product[]> {
 }
 
 export async function getProduct(id: string): Promise<Product | null> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return null;
 
@@ -42,7 +42,7 @@ export async function getProduct(id: string): Promise<Product | null> {
 export async function addProduct(
   formData: FormData
 ): Promise<{ success: boolean; error?: string; id?: string }> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { success: false, error: "Not authenticated" };
 
@@ -58,7 +58,6 @@ export async function addProduct(
   }
 
   const expiry_date = calculateExpiryDate(purchase_date, warranty_months);
-
   let invoice_url: string | null = null;
 
   if (invoiceFile && invoiceFile.size > 0) {
@@ -105,7 +104,7 @@ export async function addProduct(
 export async function deleteProduct(
   id: string
 ): Promise<{ success: boolean; error?: string }> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { success: false, error: "Not authenticated" };
 
