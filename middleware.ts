@@ -60,8 +60,20 @@ export const config = {
 
 ---
 
+**The file ends at the closing `};` above. Nothing else.**
+
+---
+
+**To fix on GitHub from your phone:**
+
+1. Open your repo → `middleware.ts`
+2. Tap the **pencil icon** (Edit)
+3. Scroll to the bottom of the file
+4. Delete everything after the last `};` — specifically remove these lines if present:
+```
 FILE: .env.local.example
 ```
-NEXT_PUBLIC_SUPABASE_URL=https://yqfwvnrnpydcrzomzdvr.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key_here
-NEXT_PUBLIC_APP_URL=https://quickscanz.vercel.app
+```
+NEXT_PUBLIC_SUPABASE_URL=...
+NEXT_PUBLIC_SUPABASE_ANON_KEY=...
+NEXT_PUBLIC_APP_URL=...
