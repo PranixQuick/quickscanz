@@ -58,7 +58,7 @@ export default function ProductDetailClient({ product }: Props) {
       {/* Header card */}
       <div className="card p-6">
         <div className="flex items-start gap-4">
-          <CountdownRing expiryDate={product.expiry_date} size={72} />
+          <CountdownRing expiryDate={product.expiry_date} warrantyMonths={product.warranty_months} purchaseDate={product.purchase_date} />
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-2">
               <div>
