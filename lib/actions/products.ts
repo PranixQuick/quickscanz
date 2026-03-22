@@ -16,10 +16,7 @@ export async function getProducts(): Promise<Product[]> {
     .eq("user_id", user.id)
     .order("created_at", { ascending: false });
 
-  if (error) {
-    console.error("Error fetching products:", error);
-    return [];
-  }
+  if (error) { console.error("Error fetching products:", error); return []; }
   return data || [];
 }
 
@@ -51,9 +48,16 @@ export async function addProduct(
   const purchase_date = formData.get("purchase_date") as string;
   const warranty_months = parseInt(formData.get("warranty_months") as string);
   const price = formData.get("price") as string;
+  const category = formData.get("category") as string;
+  const subcategory = formData.get("subcategory") as string;
+  const model_number = formData.get("model_number") as string;
+  const serial_number = formData.get("serial_number") as string;
+  const store_name = formData.get("store_name") as string;
+  const notes = formData.get("notes") as string;
+  const catalog_product_id = formData.get("catalog_product_id") as string;
   const invoiceFile = formData.get("invoice") as File | null;
 
-  if (!name || !brand || !purchase_date || !warranty_months) {
+  if (!name || !brand || !purchase_date) {
     return { success: false, error: "Required fields missing" };
   }
 
@@ -63,34 +67,34 @@ export async function addProduct(
   if (invoiceFile && invoiceFile.size > 0) {
     const fileExt = invoiceFile.name.split(".").pop();
     const fileName = `${user.id}/${Date.now()}.${fileExt}`;
-
     const { error: uploadError } = await supabase.storage
       .from("invoices")
       .upload(fileName, invoiceFile, { upsert: false });
-
-    if (uploadError) {
-      console.error("Upload error:", uploadError);
-    } else {
-      const { data: { publicUrl } } = supabase.storage
-        .from("invoices")
-        .getPublicUrl(fileName);
+    if (!uploadError) {
+      const { data: { publicUrl } } = supabase.storage.from("invoices").getPublicUrl(fileName);
       invoice_url = publicUrl;
     }
   }
 
+  const insertData: Record<string, unknown> = {
+    user_id: user.id, name, brand, purchase_date,
+    warranty_months, expiry_date,
+    price: price ? parseFloat(price) : null,
+    invoice_url, is_demo: false,
+  };
+
+  // Phase 2 fields (optional)
+  if (category) insertData.category = category;
+  if (subcategory) insertData.subcategory = subcategory;
+  if (model_number) insertData.model_number = model_number;
+  if (serial_number) insertData.serial_number = serial_number;
+  if (store_name) insertData.store_name = store_name;
+  if (notes) insertData.notes = notes;
+  if (catalog_product_id) insertData.catalog_product_id = catalog_product_id;
+
   const { data, error } = await supabase
     .from("products")
-    .insert({
-      user_id: user.id,
-      name,
-      brand,
-      purchase_date,
-      warranty_months,
-      expiry_date,
-      price: price ? parseFloat(price) : null,
-      invoice_url,
-      is_demo: false,
-    })
+    .insert(insertData)
     .select()
     .single();
 
