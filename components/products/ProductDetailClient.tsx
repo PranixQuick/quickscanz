@@ -14,6 +14,7 @@ import ProductIntelligenceCard from "@/components/products/ProductIntelligenceCa
 import ServiceCentreLocator from "@/components/products/ServiceCentreLocator";
 import HomeServiceFinder from "@/components/products/HomeServiceFinder";
 import ClaimAssistant from "@/components/ai/ClaimAssistant";
+import ProductReviewCard from "@/components/reviews/ProductReviewCard";
 import toast from "react-hot-toast";
 
 interface Props { product: Product; }
@@ -52,7 +53,9 @@ export default function ProductDetailClient({ product }: Props) {
   return (
     <div className="space-y-5 animate-fade-up pb-4">
       <Link href="/products" className="inline-flex items-center gap-1.5 text-xs text-ink-400 hover:text-ink-600 transition-colors">
-        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M8 2L4 6l4 4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/></svg>
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+          <path d="M8 2L4 6l4 4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
         Back to products
       </Link>
 
@@ -116,7 +119,6 @@ export default function ProductDetailClient({ product }: Props) {
           )}
         </div>
 
-        {/* Get Help */}
         <div className="mt-4">
           <GetHelpModal product={product} />
         </div>
@@ -139,6 +141,12 @@ export default function ProductDetailClient({ product }: Props) {
       {tab === "overview" && (
         <div className="space-y-4">
           <ProductIntelligenceCard name={product.name} brand={product.brand} />
+
+          {/* ─── REVIEW INTELLIGENCE ─── */}
+          {!product.is_demo && (
+            <ProductReviewCard brand={product.brand} productName={product.name} />
+          )}
+
           {product.invoice_url && (
             <div className="card p-4">
               <p className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-3">Invoice</p>
@@ -147,25 +155,37 @@ export default function ProductDetailClient({ product }: Props) {
                   <Image src={product.invoice_url} alt="Invoice" fill className="object-cover group-hover:scale-105 transition-transform duration-300" />
                 ) : (
                   <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
-                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none"><path d="M6 4h14l6 6v18H6V4z" stroke="#c9bfb3" strokeWidth="1.5"/><path d="M20 4v6h6" stroke="#c9bfb3" strokeWidth="1.5"/><path d="M11 16h10M11 20h7" stroke="#c9bfb3" strokeWidth="1.3" strokeLinecap="round"/></svg>
+                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                      <path d="M6 4h14l6 6v18H6V4z" stroke="#c9bfb3" strokeWidth="1.5"/>
+                      <path d="M20 4v6h6" stroke="#c9bfb3" strokeWidth="1.5"/>
+                      <path d="M11 16h10M11 20h7" stroke="#c9bfb3" strokeWidth="1.3" strokeLinecap="round"/>
+                    </svg>
                     <p className="text-xs text-ink-400">Tap to view PDF invoice</p>
                   </div>
                 )}
                 <div className="absolute inset-0 bg-ink-900/0 group-hover:bg-ink-900/10 transition-colors" />
               </button>
-              <a href={product.invoice_url} target="_blank" rel="noopener noreferrer" className="block text-center text-xs text-sand-500 hover:text-sand-400 mt-2">Open in new tab →</a>
+              <a href={product.invoice_url} target="_blank" rel="noopener noreferrer"
+                className="block text-center text-xs text-sand-500 hover:text-sand-400 mt-2">
+                Open in new tab →
+              </a>
             </div>
           )}
+
           <div className="pt-2">
             {!showDeleteConfirm ? (
-              <button onClick={() => setShowDeleteConfirm(true)} className="w-full py-3 text-sm text-ink-300 hover:text-blush-500 transition-colors">Remove product</button>
+              <button onClick={() => setShowDeleteConfirm(true)}
+                className="w-full py-3 text-sm text-ink-300 hover:text-blush-500 transition-colors">
+                Remove product
+              </button>
             ) : (
               <div className="card p-4 border-blush-200 bg-blush-50/30">
                 <p className="text-sm text-ink-700 font-medium mb-1">Remove this product?</p>
                 <p className="text-xs text-ink-400 mb-3">This will permanently delete the product and any uploaded invoice.</p>
                 <div className="flex gap-2">
                   <button onClick={() => setShowDeleteConfirm(false)} className="btn-secondary flex-1 py-2.5 text-sm" disabled={isPending}>Cancel</button>
-                  <button onClick={handleDelete} disabled={isPending} className="flex-1 py-2.5 px-4 bg-blush-500 text-white text-sm font-medium rounded-xl hover:bg-blush-600 transition-colors disabled:opacity-50">
+                  <button onClick={handleDelete} disabled={isPending}
+                    className="flex-1 py-2.5 px-4 bg-blush-500 text-white text-sm font-medium rounded-xl hover:bg-blush-600 transition-colors disabled:opacity-50">
                     {isPending ? "Removing..." : "Remove"}
                   </button>
                 </div>
@@ -179,7 +199,9 @@ export default function ProductDetailClient({ product }: Props) {
       {tab === "centres" && (
         <div className="space-y-4">
           <div className="card p-4">
-            <p className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-3">Authorized Service Centres — {product.brand}</p>
+            <p className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-3">
+              Authorized Service Centres — {product.brand}
+            </p>
             <ServiceCentreLocator brand={product.brand} />
           </div>
           <div className="card p-4">
@@ -207,14 +229,25 @@ export default function ProductDetailClient({ product }: Props) {
       {tab === "manual" && (
         <div className="card p-6 text-center space-y-4">
           <div className="w-16 h-16 rounded-2xl bg-cream-100 flex items-center justify-center mx-auto">
-            <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><path d="M6 4h11l5 5v15H6V4z" stroke="#c9bfb3" strokeWidth="1.5"/><path d="M17 4v5h5" stroke="#c9bfb3" strokeWidth="1.5"/><path d="M10 13h8M10 17h6M10 21h4" stroke="#c9bfb3" strokeWidth="1.2" strokeLinecap="round"/></svg>
+            <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+              <path d="M6 4h11l5 5v15H6V4z" stroke="#c9bfb3" strokeWidth="1.5"/>
+              <path d="M17 4v5h5" stroke="#c9bfb3" strokeWidth="1.5"/>
+              <path d="M10 13h8M10 17h6M10 21h4" stroke="#c9bfb3" strokeWidth="1.2" strokeLinecap="round"/>
+            </svg>
           </div>
           <div>
             <p className="text-sm font-medium text-ink-800">User Manual</p>
-            <p className="text-xs text-ink-400 mt-1 max-w-xs mx-auto">Search ManualsLib — the world&apos;s largest free manual database — for your {product.brand} {product.name}.</p>
+            <p className="text-xs text-ink-400 mt-1 max-w-xs mx-auto">
+              Search ManualsLib — the world&apos;s largest free manual database — for your {product.brand} {product.name}.
+            </p>
           </div>
-          <a href={`https://www.manualslib.com/search/?q=${encodeURIComponent(product.brand + " " + product.name)}`} target="_blank" rel="noopener noreferrer" className="btn-primary text-sm px-6 py-2.5 inline-flex items-center gap-2">
-            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="6" cy="6" r="4.5" stroke="currentColor" strokeWidth="1.2"/><path d="M9.5 9.5l2 2" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>
+          <a href={`https://www.manualslib.com/search/?q=${encodeURIComponent(product.brand + " " + product.name)}`}
+            target="_blank" rel="noopener noreferrer"
+            className="btn-primary text-sm px-6 py-2.5 inline-flex items-center gap-2">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+              <circle cx="6" cy="6" r="4.5" stroke="currentColor" strokeWidth="1.2"/>
+              <path d="M9.5 9.5l2 2" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+            </svg>
             Find Manual on ManualsLib
           </a>
           <p className="text-xs text-ink-300">Opens in a new tab · Free resource</p>
@@ -223,10 +256,14 @@ export default function ProductDetailClient({ product }: Props) {
 
       {/* Invoice modal */}
       {invoiceOpen && product.invoice_url && (
-        <div className="fixed inset-0 z-50 bg-ink-900/85 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setInvoiceOpen(false)}>
+        <div className="fixed inset-0 z-50 bg-ink-900/85 backdrop-blur-sm flex items-center justify-center p-4"
+          onClick={() => setInvoiceOpen(false)}>
           <div className="relative max-w-lg w-full" onClick={(e) => e.stopPropagation()}>
-            <button onClick={() => setInvoiceOpen(false)} className="absolute -top-12 right-0 w-10 h-10 rounded-full bg-ink-800 flex items-center justify-center text-cream-200 hover:text-white">
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 2l10 10M12 2L2 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+            <button onClick={() => setInvoiceOpen(false)}
+              className="absolute -top-12 right-0 w-10 h-10 rounded-full bg-ink-800 flex items-center justify-center text-cream-200 hover:text-white">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <path d="M2 2l10 10M12 2L2 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+              </svg>
             </button>
             {isImage ? (
               <div className="relative rounded-2xl overflow-hidden aspect-[3/4]">
@@ -235,7 +272,8 @@ export default function ProductDetailClient({ product }: Props) {
             ) : (
               <div className="card p-8 text-center">
                 <p className="text-sm text-ink-600 mb-4">PDF Invoice</p>
-                <a href={product.invoice_url} target="_blank" rel="noopener noreferrer" className="btn-primary text-sm px-6 py-2.5">Open PDF →</a>
+                <a href={product.invoice_url} target="_blank" rel="noopener noreferrer"
+                  className="btn-primary text-sm px-6 py-2.5">Open PDF →</a>
               </div>
             )}
           </div>
