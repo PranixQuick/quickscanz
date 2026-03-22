@@ -50,7 +50,7 @@ export default async function DashboardPage() {
           </h1>
           <p className="text-sm text-ink-400 mt-1">
             {stats.active} active {stats.active === 1 ? "warranty" : "warranties"}
-            {stats.expiring_soon > 0 ? ` · ${stats.expiring_soon} expiring soon` : " · all looking good"}
+            {stats.expiringSoon > 0 ? ` · ${stats.expiringSoon} expiring soon` : " · all looking good"}
           </p>
         </div>
 
