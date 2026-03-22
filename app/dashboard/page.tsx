@@ -26,8 +26,9 @@ export default async function DashboardPage() {
   const stats: DashboardStats = {
     total: products.length,
     active: products.filter((p) => getWarrantyStatus(p.expiry_date) === "active").length,
-    expiring_soon: products.filter((p) => getWarrantyStatus(p.expiry_date) === "expiring_soon").length,
+    expiringSoon: products.filter((p) => getWarrantyStatus(p.expiry_date) === "expiring_soon").length,
     expired: products.filter((p) => getWarrantyStatus(p.expiry_date) === "expired").length,
+    withInvoice: products.filter((p) => p.invoice_url).length,
   };
 
   const userName = user?.email?.split("@")[0] || "there";
