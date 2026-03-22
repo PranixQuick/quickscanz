@@ -34,14 +34,14 @@ export default function StatsGrid({ stats }: StatsGridProps) {
     },
     {
       label: "Expiring",
-      value: stats.expiring_soon,
+      value: stats.expiringSoon,
       icon: (
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
           <circle cx="8" cy="8" r="6" stroke="#d97706" strokeWidth="1.4"/>
           <path d="M8 5v3.5l2 1.5" stroke="#d97706" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
       ),
-      color: stats.expiring_soon > 0 ? "text-amber-600" : "text-ink-400",
+      color: stats.expiringSoon > 0 ? "text-amber-600" : "text-ink-400",
       sublabel: "within 30d",
     },
   ];
