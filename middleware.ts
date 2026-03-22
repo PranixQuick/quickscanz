@@ -35,6 +35,7 @@ export async function middleware(request: NextRequest) {
     "/smart-devices",
     "/energy",
     "/iot-hub",
+    "/account",
   ];
 
   const isProtected = protectedPaths.some((path) =>
