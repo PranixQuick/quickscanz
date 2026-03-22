@@ -1,5 +1,3 @@
-export type WarrantyStatus = "active" | "expiring_soon" | "expired";
-
 export interface Product {
   id: string;
   user_id: string;
@@ -10,69 +8,84 @@ export interface Product {
   expiry_date: string;
   price: number | null;
   invoice_url: string | null;
-  is_demo: boolean;
   created_at: string;
-}
-
-export interface ProductFormData {
-  name: string;
-  brand: string;
-  purchase_date: string;
-  warranty_months: number;
-  price: string;
-  invoice?: File;
+  is_demo: boolean;
+  // Phase 2 fields
+  category?: string;
+  subcategory?: string;
+  model_number?: string;
+  serial_number?: string;
+  store_name?: string;
+  installation_date?: string;
+  extended_warranty_months?: number;
+  manual_url?: string;
+  notes?: string;
+  catalog_product_id?: string;
 }
 
 export interface DashboardStats {
   total: number;
   active: number;
-  expiring_soon: number;
+  expiringSoon: number;
   expired: number;
+  withInvoice: number;
 }
 
-// ─── Future Phase 2/3 Scaffolding ────────────────────────────────────────────
+export type WarrantyStatus = "active" | "expiring_soon" | "expired";
 
-export interface ProductIntelligence {
+export interface CatalogProduct {
   id: string;
-  product_id: string;
-  avg_lifespan_months: number | null;
-  failure_rate_pct: number | null;
+  name: string;
+  brand: string;
+  category: string;
+  subcategory: string | null;
+  model_number: string | null;
+  standard_warranty_months: number;
+  avg_lifespan_years: number | null;
+  support_phone: string | null;
+  support_url: string | null;
+  features: string[] | null;
   common_issues: string[] | null;
-  last_updated: string;
 }
 
-export interface PriceHistory {
+export interface ServiceCentre {
   id: string;
-  product_id: string;
-  price: number;
-  recorded_at: string;
-  source: string | null;
+  brand: string;
+  name: string;
+  city: string;
+  state: string;
+  address: string;
+  phone: string | null;
+  email: string | null;
+  timings: string | null;
+  is_authorized: boolean;
 }
 
-export interface FailureReport {
+export interface RecallAlert {
   id: string;
-  product_id: string;
-  user_id: string;
+  brand: string;
+  product_name: string;
+  model_numbers: string[] | null;
+  severity: "low" | "medium" | "high" | "critical";
+  title: string;
   description: string;
-  reported_at: string;
-  resolved: boolean;
+  action_required: string;
+  source_url: string | null;
+  issued_date: string;
 }
 
-export interface Recommendation {
+export interface ClaimMessage {
+  role: "user" | "assistant";
+  content: string;
+}
+
+export interface ClaimSession {
   id: string;
   user_id: string;
   product_id: string;
-  reason: string;
-  score: number;
+  issue: string;
+  messages: ClaimMessage[];
+  status: "open" | "resolved" | "escalated";
   created_at: string;
-}
-
-export interface InvoiceCapture {
-  id: string;
-  user_id: string;
-  source: "whatsapp" | "email" | "sms" | "bank" | "manual";
-  raw_content: string | null;
-  parsed_product_id: string | null;
-  status: "pending" | "parsed" | "failed";
-  captured_at: string;
+  updated_at: string;
 }
