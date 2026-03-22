@@ -137,7 +137,7 @@ export default function ProductDetailClient({ product }: Props) {
       {/* Tab: Overview */}
       {tab === "overview" && (
         <div className="space-y-4">
-          <ProductIntelligenceCard productName={product.name} brand={product.brand} />
+          <ProductIntelligenceCard name={product.name} brand={product.brand} />
           {product.invoice_url && (
             <div className="card p-4">
               <p className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-3">Invoice</p>
