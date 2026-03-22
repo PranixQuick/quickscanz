@@ -12,6 +12,7 @@ import CountdownRing from "@/components/ui/CountdownRing";
 import GetHelpModal from "@/components/products/GetHelpModal";
 import ProductIntelligenceCard from "@/components/products/ProductIntelligenceCard";
 import ServiceCentreLocator from "@/components/products/ServiceCentreLocator";
+import HomeServiceFinder from "@/components/products/HomeServiceFinder";
 import ClaimAssistant from "@/components/ai/ClaimAssistant";
 import toast from "react-hot-toast";
 
@@ -176,9 +177,15 @@ export default function ProductDetailClient({ product }: Props) {
 
       {/* Tab: Service Centres */}
       {tab === "centres" && (
-        <div className="card p-4">
-          <p className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-3">Authorized Service Centres — {product.brand}</p>
-          <ServiceCentreLocator brand={product.brand} />
+        <div className="space-y-4">
+          <div className="card p-4">
+            <p className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-3">Authorized Service Centres — {product.brand}</p>
+            <ServiceCentreLocator brand={product.brand} />
+          </div>
+          <div className="card p-4">
+            <p className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-3">Book a Technician</p>
+            <HomeServiceFinder category={(product as any).category} productName={product.name} brand={product.brand} />
+          </div>
         </div>
       )}
 
