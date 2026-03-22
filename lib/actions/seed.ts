@@ -2,63 +2,63 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { calculateExpiryDate } from "@/lib/utils";
-import { revalidatePath } from "next/cache";
 
 const DEMO_PRODUCTS = [
   {
-    name: "Samsung Galaxy S23",
+    name: "Galaxy S23",
     brand: "Samsung",
-    purchase_date: new Date(Date.now() - 8 * 30 * 24 * 60 * 60 * 1000)
-      .toISOString()
-      .split("T")[0],
+    category: "Electronics",
+    subcategory: "Smartphone",
+    purchase_date: "2023-06-15",
     warranty_months: 12,
     price: 74999,
+    notes: "Demo product — your real products will appear here.",
   },
   {
-    name: "Dell Inspiron 15 Laptop",
-    brand: "Dell",
-    purchase_date: new Date(Date.now() - 14 * 30 * 24 * 60 * 60 * 1000)
-      .toISOString()
-      .split("T")[0],
-    warranty_months: 24,
-    price: 62000,
-  },
-  {
-    name: "Voltas 1.5 Ton Split AC",
+    name: "1.5T Inverter AC",
     brand: "Voltas",
-    purchase_date: new Date(Date.now() - 28 * 30 * 24 * 60 * 60 * 1000)
-      .toISOString()
-      .split("T")[0],
-    warranty_months: 30,
-    price: 38500,
+    category: "Home Appliance",
+    subcategory: "Air Conditioner",
+    purchase_date: "2023-04-01",
+    warranty_months: 12,
+    price: 38000,
+  },
+  {
+    name: "55\" OLED TV",
+    brand: "LG",
+    category: "Electronics",
+    subcategory: "Television",
+    purchase_date: "2022-11-10",
+    warranty_months: 12,
+    price: 99000,
   },
 ];
 
-export async function seedDemoProducts(): Promise<{ seeded: boolean }> {
+export async function seedDemoProducts(): Promise<void> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return { seeded: false };
+  if (!user) return;
 
   const { count } = await supabase
     .from("products")
-    .select("id", { count: "exact", head: true })
+    .select("*", { count: "exact", head: true })
     .eq("user_id", user.id);
 
-  if ((count ?? 0) > 0) return { seeded: false };
+  if ((count || 0) > 0) return;
 
-  const rows = DEMO_PRODUCTS.map((p) => ({
+  const inserts = DEMO_PRODUCTS.map((p) => ({
     user_id: user.id,
     name: p.name,
     brand: p.brand,
+    category: p.category,
+    subcategory: p.subcategory,
     purchase_date: p.purchase_date,
     warranty_months: p.warranty_months,
     expiry_date: calculateExpiryDate(p.purchase_date, p.warranty_months),
     price: p.price,
-    invoice_url: null,
     is_demo: true,
+    notes: p.notes || null,
   }));
 
-  await supabase.from("products").insert(rows);
-  revalidatePath("/dashboard");
-  return { seeded: true };
+  await supabase.from("products").insert(inserts);
 }
