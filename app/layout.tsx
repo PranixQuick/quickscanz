@@ -15,7 +15,7 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "QuickScanZ" }],
   creator: "QuickScanZ",
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://quickscanz.vercel.app"),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://quickscanz.com"),
   openGraph: {
     type: "website",
     locale: "en_IN",
