@@ -166,7 +166,7 @@ export default function NotificationSettings() {
       </div>
       {isSubscribed && (
         <div className="mt-3 pt-3 border-t border-cream-100">
-          <p className="text-xs text-ink-400">You'll receive:</p>
+          <p className="text-xs text-ink-400">You&apos;ll receive:</p>
           <div className="flex flex-wrap gap-1.5 mt-1.5">
             {["30-day expiry warning", "7-day urgent alert", "Service due reminders"].map((item) => (
               <span key={item} className="text-[10px] bg-sage-50 text-sage-600 border border-sage-200 px-2 py-0.5 rounded-full">
