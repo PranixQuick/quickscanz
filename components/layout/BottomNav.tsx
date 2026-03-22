@@ -29,6 +29,7 @@ const NAV_ITEMS = [
   {
     href: "/products/add",
     label: "Add",
+    special: true,
     icon: (_active: boolean) => (
       <div className="w-10 h-10 rounded-2xl bg-ink-900 flex items-center justify-center -mt-5 shadow-lg">
         <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
@@ -36,7 +37,6 @@ const NAV_ITEMS = [
         </svg>
       </div>
     ),
-    special: true,
   },
   {
     href: "/claim",
@@ -49,12 +49,12 @@ const NAV_ITEMS = [
     ),
   },
   {
-    href: "/dashboard",
-    label: "Account",
+    href: "/smart-devices",
+    label: "Smart",
     icon: (active: boolean) => (
       <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-        <circle cx="10" cy="7" r="3" stroke="currentColor" strokeWidth={active ? "1.6" : "1.3"} fill={active ? "currentColor" : "none"} fillOpacity={active ? "0.15" : "0"}/>
-        <path d="M4 17c0-3.3 2.7-6 6-6s6 2.7 6 6" stroke="currentColor" strokeWidth={active ? "1.6" : "1.3"} strokeLinecap="round"/>
+        <circle cx="10" cy="10" r="3" stroke="currentColor" strokeWidth={active ? "1.6" : "1.3"} fill={active ? "currentColor" : "none"} fillOpacity={active ? "0.15" : "0"}/>
+        <path d="M10 2v2M10 16v2M2 10h2M16 10h2M4.2 4.2l1.4 1.4M14.4 14.4l1.4 1.4M4.2 15.8l1.4-1.4M14.4 5.6l1.4-1.4" stroke="currentColor" strokeWidth={active ? "1.6" : "1.3"} strokeLinecap="round"/>
       </svg>
     ),
   },
@@ -66,13 +66,10 @@ export default function BottomNav() {
     <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white/90 backdrop-blur-md border-t border-cream-200 safe-area-pb">
       <div className="max-w-lg mx-auto flex items-end px-2 py-2">
         {NAV_ITEMS.map((item) => {
-          const active = item.special ? false : pathname.startsWith(item.href);
+          const active = item.special ? false : (pathname === item.href || pathname.startsWith(item.href + "/"));
           return (
-            <Link
-              key={item.href + item.label}
-              href={item.href}
-              className={`flex-1 flex flex-col items-center gap-1 ${item.special ? "pt-0" : "pt-1"}`}
-            >
+            <Link key={item.href + item.label} href={item.href}
+              className={`flex-1 flex flex-col items-center gap-1 ${item.special ? "pt-0" : "pt-1"}`}>
               {item.icon(active)}
               {!item.special && (
                 <span className={`text-[10px] font-medium transition-colors ${active ? "text-ink-900" : "text-ink-300"}`}>
