@@ -163,4 +163,4 @@ export function getProductIntelligence(name: string, brand: string): ProductInte
     }
   }
   return DEFAULT_INTELLIGENCE;
-}
+      }
