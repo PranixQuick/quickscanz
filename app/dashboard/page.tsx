@@ -1,6 +1,4 @@
-import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getProducts } from "@/lib/actions/products";
 import { seedDemoProducts } from "@/lib/actions/seed";
@@ -10,6 +8,8 @@ import StatsGrid from "@/components/products/StatsGrid";
 import ProductCard from "@/components/products/ProductCard";
 import EmptyState from "@/components/ui/EmptyState";
 import PWAInstallBanner from "@/components/ui/PWAInstallBanner";
+import Link from "next/link";
+import type { Metadata } from "next";
 import type { DashboardStats } from "@/lib/types";
 
 export const metadata: Metadata = { title: "Dashboard | QuickScanZ" };
@@ -36,8 +36,8 @@ export default async function DashboardPage() {
   });
 
   const expiringProducts = products.filter((p) => getWarrantyStatus(p.expiry_date) === "expiring_soon");
-  const userName = user?.email?.split("@")[0] || "there";
   const realProducts = products.filter((p) => !p.is_demo);
+  const userName = user?.email?.split("@")[0] || "there";
 
   return (
     <AppLayout>
@@ -66,7 +66,7 @@ export default async function DashboardPage() {
         {/* Stats */}
         <StatsGrid stats={stats} />
 
-        {/* Expiring soon alert */}
+        {/* Expiring soon */}
         {expiringProducts.length > 0 && (
           <div className="card p-4 border-amber-200 bg-amber-50/50">
             <div className="flex items-start gap-3">
@@ -92,14 +92,14 @@ export default async function DashboardPage() {
                 <p className="text-sm font-medium text-cream-100">Something broke? Try AI Claim Assistant</p>
                 <p className="text-xs text-cream-400 mt-0.5">Step-by-step warranty claim guidance</p>
               </div>
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="text-cream-400 group-hover:translate-x-0.5 transition-transform">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="text-cream-400 group-hover:translate-x-0.5 transition-transform flex-shrink-0">
                 <path d="M3 7h8M8 4l3 3-3 3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </div>
           </Link>
         )}
 
-        {/* Products list */}
+        {/* Products */}
         {products.length === 0 ? (
           <EmptyState
             title="Your warranty wallet is empty"
@@ -123,40 +123,30 @@ export default async function DashboardPage() {
           </div>
         )}
 
-        {/* Feature grid */}
-        <div className="grid grid-cols-2 gap-3">
-          <Link href="/products/lifecycle" className="card p-4 flex items-center gap-3 hover:border-sand-300 transition-colors group">
-            <div className="w-9 h-9 rounded-xl bg-cream-100 flex items-center justify-center text-lg group-hover:bg-sand-100 transition-colors">📊</div>
-            <div>
-              <p className="text-xs font-medium text-ink-800">Lifecycle</p>
-              <p className="text-[11px] text-ink-400">Cost & lifespan</p>
-            </div>
-          </Link>
-          <Link href="/smart-devices" className="card p-4 flex items-center gap-3 hover:border-sand-300 transition-colors group">
-            <div className="w-9 h-9 rounded-xl bg-cream-100 flex items-center justify-center text-lg group-hover:bg-sand-100 transition-colors">🏠</div>
-            <div>
-              <p className="text-xs font-medium text-ink-800">Smart Devices</p>
-              <p className="text-[11px] text-ink-400">IoT service alerts</p>
-            </div>
-          </Link>
-          <Link href="/family" className="card p-4 flex items-center gap-3 hover:border-sand-300 transition-colors group">
-            <div className="w-9 h-9 rounded-xl bg-cream-100 flex items-center justify-center text-lg group-hover:bg-sand-100 transition-colors">👨‍👩‍👧</div>
-            <div>
-              <p className="text-xs font-medium text-ink-800">Family Vault</p>
-              <p className="text-[11px] text-ink-400">Share with family</p>
-            </div>
-          </Link>
-          <Link href="/products/add" className="card p-4 flex items-center gap-3 hover:border-sand-300 transition-colors group">
-            <div className="w-9 h-9 rounded-xl bg-cream-100 flex items-center justify-center group-hover:bg-sand-100 transition-colors">
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <path d="M8 3v10M3 8h10" stroke="#c9bfb3" strokeWidth="1.4" strokeLinecap="round"/>
-              </svg>
-            </div>
-            <div>
-              <p className="text-xs font-medium text-ink-800">Add Product</p>
-              <p className="text-[11px] text-ink-400">30 seconds</p>
-            </div>
-          </Link>
+        {/* Feature grid — 6 tiles */}
+        <div>
+          <h2 className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-3">Explore</h2>
+          <div className="grid grid-cols-2 gap-3">
+            {[
+              { href: "/products/lifecycle", icon: "📊", title: "Lifecycle", sub: "Cost & lifespan" },
+              { href: "/smart-devices",      icon: "🏠", title: "Smart Devices", sub: "IoT service alerts" },
+              { href: "/energy",             icon: "⚡", title: "Energy Monitor", sub: "Power & cost" },
+              { href: "/iot-hub",            icon: "🔗", title: "IoT Hub", sub: "Alexa · Google · Matter" },
+              { href: "/family",             icon: "👨‍👩‍👧", title: "Family Vault", sub: "Share with family" },
+              { href: "/products/add",       icon: "➕", title: "Add Product", sub: "30 seconds" },
+            ].map((item) => (
+              <Link key={item.href} href={item.href}
+                className="card p-4 flex items-center gap-3 hover:border-sand-300 transition-colors group">
+                <div className="w-9 h-9 rounded-xl bg-cream-100 flex items-center justify-center text-lg group-hover:bg-sand-100 transition-colors flex-shrink-0">
+                  {item.icon}
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs font-medium text-ink-800">{item.title}</p>
+                  <p className="text-[11px] text-ink-400 truncate">{item.sub}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
         </div>
       </div>
     </AppLayout>
