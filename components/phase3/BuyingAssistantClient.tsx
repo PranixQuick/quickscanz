@@ -23,6 +23,7 @@ export default function BuyingAssistantClient({ categories }: Props) {
   const [result, setResult] = useState<{
     recommendations: BuyingRecommendation[];
     summary: string;
+    disclaimer: string;
     error?: string;
   } | null>(null);
 
@@ -39,19 +40,18 @@ export default function BuyingAssistantClient({ categories }: Props) {
       <div>
         <h1 className="font-display text-2xl font-light text-ink-900">Buying Assistant</h1>
         <p className="text-sm text-ink-400 mt-1">
-          Get recommendations based on budget, category, and real warranty data
+          Recommendations based on warranty data and expected lifespan
         </p>
         <div className="mt-2 inline-flex items-center gap-1.5 text-xs bg-amber-50 border border-amber-200 text-amber-700 px-2.5 py-1 rounded-full">
-          <span>🚧</span>
-          <span>Phase 3 · Rule-based recommendations · AI recommendations coming soon</span>
+          <span>ℹ️</span>
+          <span>Phase 3 · Catalog-based · No real-time prices · Check retailer links for pricing</span>
         </div>
       </div>
 
       {/* Input card */}
       <div className="card p-5 space-y-4">
-        {/* Budget */}
         <div>
-          <label className="block text-xs font-medium text-ink-500 mb-2">Budget</label>
+          <label className="block text-xs font-medium text-ink-500 mb-2">Your budget</label>
           <div className="flex flex-wrap gap-2 mb-2">
             {BUDGET_PRESETS.map((p) => (
               <button
@@ -71,13 +71,12 @@ export default function BuyingAssistantClient({ categories }: Props) {
             type="number"
             value={budget}
             onChange={(e) => setBudget(parseInt(e.target.value) || 0)}
-            placeholder="Or enter custom amount"
+            placeholder="Enter exact budget (₹)"
             min={1000}
             className="w-full px-3.5 py-2.5 bg-cream-100 border border-cream-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sand-300"
           />
         </div>
 
-        {/* Category */}
         <div>
           <label className="block text-xs font-medium text-ink-500 mb-1.5">Category</label>
           <select
@@ -86,17 +85,13 @@ export default function BuyingAssistantClient({ categories }: Props) {
             className="w-full px-3.5 py-2.5 bg-cream-100 border border-cream-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sand-300"
           >
             <option value="">Select category</option>
-            {categories.map((c) => (
-              <option key={c} value={c}>{c}</option>
-            ))}
-            {/* Common fallbacks */}
-            {["Smartphone", "Laptop", "Air Conditioner", "Refrigerator", "Washing Machine", "Television"].map((c) => (
+            {categories.map((c) => <option key={c} value={c}>{c}</option>)}
+            {["Electronics", "Home Appliance", "Vehicle"].map((c) => (
               !categories.includes(c) ? <option key={c} value={c}>{c}</option> : null
             ))}
           </select>
         </div>
 
-        {/* Optional query */}
         <div>
           <label className="block text-xs font-medium text-ink-500 mb-1.5">
             Specific requirements <span className="text-ink-300">(optional)</span>
@@ -118,7 +113,6 @@ export default function BuyingAssistantClient({ categories }: Props) {
         </button>
       </div>
 
-      {/* Results */}
       {result && (
         <div className="space-y-4">
           {result.error ? (
@@ -133,43 +127,40 @@ export default function BuyingAssistantClient({ categories }: Props) {
                 </div>
               )}
 
+              {/* FIX: Honest disclaimer - no fake prices */}
+              {result.disclaimer && (
+                <div className="card p-3 bg-amber-50/50 border-amber-200">
+                  <p className="text-xs text-amber-700">⚠️ {result.disclaimer}</p>
+                </div>
+              )}
+
               {result.recommendations.length === 0 ? (
                 <div className="card p-6 text-center">
-                  <p className="text-sm text-ink-500">
-                    No specific matches found. Try a broader category or different budget.
-                  </p>
+                  <p className="text-sm text-ink-500">No matches found. Try "Electronics", "Home Appliance", or "Vehicle".</p>
                 </div>
               ) : (
                 <div className="space-y-3">
-                  <p className="text-xs font-semibold text-ink-400 uppercase tracking-wider">
-                    {result.recommendations.length} Options
-                  </p>
                   {result.recommendations.map((rec, i) => (
                     <div key={i} className="card p-4">
                       <div className="flex items-start justify-between gap-3 mb-3">
                         <div>
-                          <div className="flex items-center gap-2">
-                            {i === 0 && (
-                              <span className="text-[10px] bg-sand-100 text-sand-700 px-2 py-0.5 rounded-full font-medium">
-                                Best match
-                              </span>
-                            )}
-                            <span className={`text-[10px] ${rec.confidence === "high" ? "text-sage-600" : "text-amber-600"} font-medium`}>
-                              {rec.confidence} confidence
+                          {i === 0 && (
+                            <span className="text-[10px] bg-sand-100 text-sand-700 px-2 py-0.5 rounded-full font-medium">
+                              Best lifespan
                             </span>
-                          </div>
+                          )}
                           <h3 className="text-sm font-medium text-ink-900 mt-1">{rec.brand} {rec.name}</h3>
                           <p className="text-xs text-ink-400 mt-0.5">{rec.whyRecommended}</p>
                         </div>
+                        {/* FIX: Show cost/day at budget, not a fake product price */}
                         <div className="text-right flex-shrink-0">
-                          <p className="text-sm font-medium text-ink-800">
-                            ~₹{rec.estimatedPrice.toLocaleString("en-IN")}
-                          </p>
-                          <p className="text-[10px] text-ink-400">₹{rec.costPerDay}/day</p>
+                          <p className="text-xs text-ink-400">{rec.budgetContext}</p>
+                          <p className="text-sm font-medium text-ink-800">₹{rec.costPerDayAtBudget}/day</p>
+                          <p className="text-[10px] text-ink-300">at your budget</p>
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-3 gap-2 mb-3">
+                      <div className="grid grid-cols-2 gap-2 mb-3">
                         <div className="bg-cream-100 rounded-xl p-2 text-center">
                           <p className="text-xs font-medium text-ink-800">{rec.warrantyMonths}m</p>
                           <p className="text-[9px] text-ink-400">Warranty</p>
@@ -178,15 +169,11 @@ export default function BuyingAssistantClient({ categories }: Props) {
                           <p className="text-xs font-medium text-ink-800">{rec.avgLifespanYears}yr</p>
                           <p className="text-[9px] text-ink-400">Lifespan</p>
                         </div>
-                        <div className="bg-cream-100 rounded-xl p-2 text-center">
-                          <p className="text-xs font-medium text-ink-800">₹{rec.costPerDay}</p>
-                          <p className="text-[9px] text-ink-400">Per day</p>
-                        </div>
                       </div>
 
                       <div className="flex gap-2">
-                        {rec.whereToCheck.slice(0, 2).map((url, j) => {
-                          const domain = url.includes("amazon") ? "Amazon" : url.includes("flipkart") ? "Flipkart" : "Brand site";
+                        {rec.whereToCheck.map((url, j) => {
+                          const domain = url.includes("amazon") ? "Amazon" : "Flipkart";
                           return (
                             <a key={j} href={url} target="_blank" rel="noopener noreferrer"
                               className="flex-1 text-center text-xs btn-secondary py-2">
@@ -199,11 +186,6 @@ export default function BuyingAssistantClient({ categories }: Props) {
                   ))}
                 </div>
               )}
-
-              <p className="text-[10px] text-ink-300 text-center">
-                Recommendations based on QuickScanZ catalog data. Prices are estimates.
-                Always verify on retailer site before purchasing.
-              </p>
             </>
           )}
         </div>
