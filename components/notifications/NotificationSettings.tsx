@@ -26,7 +26,6 @@ export function usePushNotifications() {
     if (typeof window !== "undefined" && "Notification" in window && "serviceWorker" in navigator) {
       setIsSupported(true);
       setPermission(Notification.permission);
-      // Check if already subscribed
       navigator.serviceWorker.ready.then((reg) => {
         reg.pushManager.getSubscription().then((sub) => {
           setIsSubscribed(!!sub);
@@ -95,8 +94,15 @@ export function usePushNotifications() {
   return { permission, isSubscribed, isSupported, subscribe, unsubscribe, requestPermission };
 }
 
-// ─── Notification Settings UI Component ─────────────────────────────────────
-export default function NotificationSettings() {
+// ─── Notification Settings UI Component ──────────────────────────────────────
+
+interface NotificationSettingsProps {
+  // userId is accepted but not yet used — reserved for OneSignal integration
+  // when edge functions are deployed. Making it optional so nothing breaks.
+  userId?: string;
+}
+
+export default function NotificationSettings({ userId: _userId }: NotificationSettingsProps = {}) {
   const { permission, isSubscribed, isSupported, subscribe, unsubscribe, requestPermission } = usePushNotifications();
   const [isPending, startTransition] = useTransition();
 
