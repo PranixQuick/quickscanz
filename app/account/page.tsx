@@ -13,22 +13,27 @@ export default async function AccountPage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const { count: productCount } = await supabase
-    .from("products")
-    .select("*", { count: "exact", head: true })
-    .eq("user_id", user.id)
-    .eq("is_demo", false);
-
-  const { count: smartCount } = await supabase
-    .from("smart_devices")
-    .select("*", { count: "exact", head: true })
-    .eq("user_id", user.id)
-    .eq("is_active", true);
+  const [
+    { count: productCount },
+    { count: smartCount },
+  ] = await Promise.all([
+    supabase
+      .from("products")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", user.id)
+      .eq("is_demo", false),
+    supabase
+      .from("smart_devices")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", user.id)
+      .eq("is_active", true),
+  ]);
 
   return (
     <AppLayout>
       <AccountClient
         email={user.email || ""}
+        userId={user.id}
         productCount={productCount || 0}
         smartDeviceCount={smartCount || 0}
       />
