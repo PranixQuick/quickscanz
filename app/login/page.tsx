@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { signIn } from "@/lib/actions/auth";
 
-// useSearchParams must be inside a Suspense boundary for static generation
+// Must be isolated — useSearchParams requires Suspense boundary for static gen
 function LoginForm() {
   const searchParams = useSearchParams();
   const urlError = searchParams.get("error");
@@ -100,13 +100,12 @@ export default function LoginPage() {
           <p className="text-sm text-ink-400 mt-1">Sign in to your warranty wallet</p>
         </div>
 
+        {/* Suspense wraps the form that uses useSearchParams */}
         <Suspense fallback={
-          <div className="card p-6">
-            <div className="space-y-4 animate-pulse">
-              <div className="h-10 bg-cream-200 rounded-xl" />
-              <div className="h-10 bg-cream-200 rounded-xl" />
-              <div className="h-11 bg-cream-200 rounded-xl" />
-            </div>
+          <div className="card p-6 space-y-4 animate-pulse">
+            <div className="h-10 bg-cream-200 rounded-xl" />
+            <div className="h-10 bg-cream-200 rounded-xl" />
+            <div className="h-11 bg-cream-200 rounded-xl" />
           </div>
         }>
           <LoginForm />
@@ -119,6 +118,7 @@ export default function LoginPage() {
           </Link>
         </p>
 
+        {/* Dev hint */}
         <div className="mt-8 card p-3 bg-cream-100">
           <p className="text-[10px] text-ink-300 text-center">
             Beta access: test1@quickscanz.com / 123456
