@@ -73,7 +73,7 @@ export async function createRazorpayOrder(
   }
 
   const amountPaise = plan.price_inr * 100;
-  const credentials = Buffer.from(`${RAZORPAY_KEY_ID}:${RAZORPAY_KEY_SECRET}`).toString("base64");
+  const credentials = btoa(`${RAZORPAY_KEY_ID}:${RAZORPAY_KEY_SECRET}`);
 
   const orderRes = await fetch("https://api.razorpay.com/v1/orders", {
     method: "POST",
@@ -137,7 +137,7 @@ export async function verifyRazorpayPayment(params: {
     ["sign"]
   );
   const signatureBuffer = await crypto.subtle.sign("HMAC", key, encoder.encode(body));
-  const expectedSignature = Array.from(new Uint8Array(signatureBuffer))
+  const expectedSignature = Array.from(new Uint8Array(signatureBuffer as ArrayBuffer))
     .map((b) => b.toString(16).padStart(2, "0"))
     .join("");
 
