@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
     ["sign"]
   );
   const signatureBuffer = await crypto.subtle.sign("HMAC", key, encoder.encode(body));
-  const expectedSig = Array.from(new Uint8Array(signatureBuffer))
+  const expectedSig = Array.from(new Uint8Array(signatureBuffer as ArrayBuffer))
     .map((b) => b.toString(16).padStart(2, "0"))
     .join("");
 
