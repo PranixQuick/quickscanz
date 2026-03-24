@@ -12,11 +12,18 @@ interface Props {
   userId: string;
   productCount: number;
   smartDeviceCount: number;
+  planId?: string;
+  planName?: string;
 }
 
-export default function AccountClient({ email, userId, productCount, smartDeviceCount }: Props) {
+export default function AccountClient({
+  email, userId, productCount, smartDeviceCount,
+  planId = "free", planName = "Free",
+}: Props) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const isPro = planId !== "free";
+  const username = email.split("@")[0];
 
   function handleSignOut() {
     startTransition(async () => {
@@ -27,8 +34,6 @@ export default function AccountClient({ email, userId, productCount, smartDevice
     });
   }
 
-  const username = email.split("@")[0];
-
   return (
     <div className="space-y-6 animate-fade-up">
       <div>
@@ -36,7 +41,7 @@ export default function AccountClient({ email, userId, productCount, smartDevice
         <p className="text-sm text-ink-400 mt-1">Settings and preferences</p>
       </div>
 
-      {/* Profile card */}
+      {/* Profile */}
       <div className="card p-5">
         <div className="flex items-center gap-4">
           <div className="w-12 h-12 rounded-2xl bg-ink-900 flex items-center justify-center text-cream-100 font-display text-xl font-light">
@@ -51,7 +56,7 @@ export default function AccountClient({ email, userId, productCount, smartDevice
           {[
             { label: "Products", value: productCount },
             { label: "Smart Devices", value: smartDeviceCount },
-            { label: "Plan", value: "Free" },
+            { label: "Plan", value: planName },
           ].map((s) => (
             <div key={s.label} className="text-center">
               <p className="font-display text-lg font-light text-ink-900">{s.value}</p>
@@ -61,13 +66,27 @@ export default function AccountClient({ email, userId, productCount, smartDevice
         </div>
       </div>
 
+      {/* Upgrade CTA */}
+      {!isPro && (
+        <Link href="/pricing" className="block card p-4 bg-gradient-to-r from-sand-100 to-cream-100 border-sand-200 group hover:border-sand-300 transition-all">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-sand-200 flex items-center justify-center text-xl flex-shrink-0">⭐</div>
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-ink-900">Upgrade to Pro</p>
+              <p className="text-xs text-ink-500 mt-0.5">Unlimited products · Family Vault · ₹149/month</p>
+            </div>
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="text-sand-500 group-hover:translate-x-0.5 transition-transform flex-shrink-0">
+              <path d="M3 7h8M8 4l3 3-3 3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </div>
+        </Link>
+      )}
+
       {/* Notifications */}
       <div>
         <p className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-3">Notifications</p>
         <NotificationSettings userId={userId} />
-        <p className="text-[11px] text-ink-300 mt-2 px-1">
-          Push notifications require installing QuickScanZ to your home screen (PWA).
-        </p>
+        <p className="text-[11px] text-ink-300 mt-2 px-1">Push notifications require installing QuickScanZ to your home screen (PWA).</p>
       </div>
 
       {/* Warranty Features */}
@@ -75,72 +94,66 @@ export default function AccountClient({ email, userId, productCount, smartDevice
         <p className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-3">Warranty Features</p>
         <div className="space-y-1">
           {[
-            { href: "/products",           icon: "📦", label: "All Products" },
-            { href: "/products/lifecycle",  icon: "📊", label: "Product Lifecycle" },
-            { href: "/claim",              icon: "🤖", label: "AI Claim Assistant" },
+            { href: "/products",          icon: "📦", label: "All Products" },
+            { href: "/products/lifecycle", icon: "📊", label: "Product Lifecycle" },
+            { href: "/claim",             icon: "🤖", label: "AI Claim Assistant" },
           ].map((item) => (
-            <Link key={item.href} href={item.href}
-              className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-cream-100 transition-colors group">
+            <Link key={item.href} href={item.href} className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-cream-100 transition-colors group">
               <span className="text-base">{item.icon}</span>
               <span className="text-sm text-ink-700 flex-1">{item.label}</span>
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="text-ink-200 group-hover:text-ink-400">
-                <path d="M5 3l4 4-4 4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
-              </svg>
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="text-ink-200 group-hover:text-ink-400"><path d="M5 3l4 4-4 4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>
             </Link>
           ))}
         </div>
       </div>
 
-      {/* Intelligence — Phase 2 + 3 */}
+      {/* Intelligence */}
       <div>
         <p className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-1">Intelligence</p>
         <p className="text-[10px] text-ink-300 mb-3 px-1">Phase 2 — now available</p>
         <div className="space-y-1">
           {[
-            { href: "/compare",           icon: "⚖️", label: "Compare Products" },
-            { href: "/buying-assistant",  icon: "🛒", label: "Buying Assistant" },
-            { href: "/energy",            icon: "⚡", label: "Energy Monitor" },
-            { href: "/smart-devices",     icon: "🏠", label: "Smart Devices" },
-            { href: "/iot-hub",           icon: "🔗", label: "IoT Hub" },
-            { href: "/family",            icon: "👨‍👩‍👧", label: "Family Vault" },
+            { href: "/compare",          icon: "⚖️", label: "Compare Products" },
+            { href: "/buying-assistant", icon: "🛒", label: "Buying Assistant" },
+            { href: "/energy",           icon: "⚡", label: "Energy Monitor" },
+            { href: "/smart-devices",    icon: "🏠", label: "Smart Devices" },
+            { href: "/iot-hub",          icon: "🔗", label: "IoT Hub" },
+            { href: "/family",           icon: "👨‍👩‍👧", label: "Family Vault" },
           ].map((item) => (
-            <Link key={item.href} href={item.href}
-              className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-cream-100 transition-colors group">
+            <Link key={item.href} href={item.href} className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-cream-100 transition-colors group">
               <span className="text-base">{item.icon}</span>
               <span className="text-sm text-ink-700 flex-1">{item.label}</span>
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="text-ink-200 group-hover:text-ink-400">
-                <path d="M5 3l4 4-4 4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
-              </svg>
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="text-ink-200 group-hover:text-ink-400"><path d="M5 3l4 4-4 4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>
             </Link>
           ))}
         </div>
+      </div>
+
+      {/* Billing */}
+      <div>
+        <p className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-3">Billing</p>
+        <Link href="/pricing" className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-cream-100 transition-colors group">
+          <span className="text-base">💳</span>
+          <span className="text-sm text-ink-700 flex-1">{isPro ? `${planName} Plan · Manage` : "View Plans & Upgrade"}</span>
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="text-ink-200 group-hover:text-ink-400"><path d="M5 3l4 4-4 4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>
+        </Link>
       </div>
 
       {/* Legal */}
       <div>
         <p className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-3">Legal</p>
         <div className="space-y-1">
-          {[
-            { href: "/privacy-policy", label: "Privacy Policy" },
-            { href: "/about",          label: "About QuickScanZ" },
-          ].map((item) => (
-            <Link key={item.href} href={item.href}
-              className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-cream-100 transition-colors">
+          {[{ href: "/privacy-policy", label: "Privacy Policy" }, { href: "/about", label: "About QuickScanZ" }].map((item) => (
+            <Link key={item.href} href={item.href} className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-cream-100 transition-colors">
               <span className="text-sm text-ink-700">{item.label}</span>
             </Link>
           ))}
         </div>
       </div>
 
-      {/* Sign out */}
-      <button
-        onClick={handleSignOut}
-        disabled={isPending}
-        className="w-full py-3.5 text-sm font-medium text-blush-500 hover:text-blush-600 hover:bg-blush-50/50 rounded-xl transition-colors disabled:opacity-40 border border-transparent hover:border-blush-200"
-      >
+      <button onClick={handleSignOut} disabled={isPending} className="w-full py-3.5 text-sm font-medium text-blush-500 hover:text-blush-600 hover:bg-blush-50/50 rounded-xl transition-colors disabled:opacity-40 border border-transparent hover:border-blush-200">
         {isPending ? "Signing out..." : "Sign out"}
       </button>
-
       <p className="text-center text-[10px] text-ink-200 pb-2">QuickScanZ · v2.0</p>
     </div>
   );
