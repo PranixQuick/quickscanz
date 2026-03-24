@@ -18,7 +18,10 @@ export default async function BuyingAssistantPage() {
     .select("category")
     .order("category");
 
-  const uniqueCategories = [...new Set((categories || []).map((c: any) => c.category))];
+  // Array.from() works under all TS targets — [...new Set()] requires es2015+ iterables
+  const uniqueCategories = Array.from(
+    new Set((categories || []).map((c: any) => c.category))
+  );
 
   return (
     <AppLayout>
