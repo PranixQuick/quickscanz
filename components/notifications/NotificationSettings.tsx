@@ -5,12 +5,14 @@ import toast from "react-hot-toast";
 
 const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || "";
 
+// Returns ArrayBuffer — required by pushManager.subscribe applicationServerKey
 function urlBase64ToUint8Array(base64String: string): ArrayBuffer {
   const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
   const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
   const rawData = window.atob(base64);
   const output = new Uint8Array(rawData.length);
   for (let i = 0; i < rawData.length; ++i) output[i] = rawData.charCodeAt(i);
+  // Return the underlying ArrayBuffer, not the Uint8Array view
   return output.buffer as ArrayBuffer;
 }
 
