@@ -35,64 +35,6 @@ export async function getUserProductsForComparison(): Promise<ComparisonItem[]> 
   return (data || []) as ComparisonItem[];
 }
 
-export interface ComparisonResult {
-  items: ComparisonItem[];
-  winner: {
-    bestValue: string | null;      // product id with lowest cost/day
-    longestWarranty: string | null;
-    bestLifespan: string | null;
-    mostExpensive: string | null;
-  };
-  insights: string[];
-}
-
-export function compareProducts(items: ComparisonItem[]): ComparisonResult {
-  if (items.length < 2) {
-    return { items, winner: { bestValue: null, longestWarranty: null, bestLifespan: null, mostExpensive: null }, insights: [] };
-  }
-
-  const withCost = items.filter((i) => i.cost_per_day !== null && i.cost_per_day > 0);
-  const bestValue = withCost.length > 0
-    ? withCost.reduce((a, b) => (a.cost_per_day! < b.cost_per_day! ? a : b)).id
-    : null;
-
-  const longestWarranty = items.reduce((a, b) =>
-    a.warranty_months > b.warranty_months ? a : b
-  ).id;
-
-  const withLifespan = items.filter((i) => i.avg_lifespan_years !== null);
-  const bestLifespan = withLifespan.length > 0
-    ? withLifespan.reduce((a, b) => ((a.avg_lifespan_years || 0) > (b.avg_lifespan_years || 0) ? a : b)).id
-    : null;
-
-  const withPrice = items.filter((i) => i.price !== null);
-  const mostExpensive = withPrice.length > 0
-    ? withPrice.reduce((a, b) => ((a.price || 0) > (b.price || 0) ? a : b)).id
-    : null;
-
-  const insights: string[] = [];
-
-  if (bestValue) {
-    const b = items.find((i) => i.id === bestValue)!;
-    insights.push(`💰 ${b.brand} ${b.name} has the best value at ₹${b.cost_per_day?.toFixed(2)}/day`);
-  }
-  if (longestWarranty) {
-    const b = items.find((i) => i.id === longestWarranty)!;
-    insights.push(`🛡️ ${b.brand} ${b.name} has the longest warranty (${b.warranty_months} months)`);
-  }
-  if (bestLifespan) {
-    const b = items.find((i) => i.id === bestLifespan)!;
-    insights.push(`⏳ ${b.brand} ${b.name} has the longest expected lifespan (~${b.avg_lifespan_years} years)`);
-  }
-
-  // Warranty status comparison
-  const expired = items.filter((i) => i.warranty_status === "expired");
-  if (expired.length > 0) {
-    insights.push(`⚠️ ${expired.map((i) => i.name).join(", ")} — warranty expired, consider extended warranty or replacement`);
-  }
-
-  return { items, winner: { bestValue, longestWarranty, bestLifespan, mostExpensive }, insights };
-}
 
 // ─── BUYING ASSISTANT ─────────────────────────────────────────────────────────
 
