@@ -7,22 +7,41 @@ import EmptyState from "@/components/ui/EmptyState";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "My Products",
+  title: "My Products | QuickScanZ",
   description: "All your tracked products and warranties.",
 };
 
-export default async function ProductsPage() {
+interface ProductsPageProps {
+  searchParams: { status?: string };
+}
+
+export default async function ProductsPage({ searchParams }: ProductsPageProps) {
   const products = await getProducts();
+  const filterStatus = searchParams?.status || null;
 
   const expiringSoon = products.filter((p) => getWarrantyStatus(p.expiry_date) === "expiring_soon");
   const active = products.filter((p) => getWarrantyStatus(p.expiry_date) === "active");
   const expired = products.filter((p) => getWarrantyStatus(p.expiry_date) === "expired");
 
-  const sections = [
-    { label: "Expiring Soon", items: expiringSoon, show: expiringSoon.length > 0 },
-    { label: "Active", items: active, show: active.length > 0 },
-    { label: "Expired", items: expired, show: expired.length > 0 },
-  ];
+  // If filtering from dashboard card click, show only that section at top
+  const sections = filterStatus
+    ? [
+        { label: "Expiring Soon", items: expiringSoon, show: filterStatus === "expiring_soon" || filterStatus === "all" },
+        { label: "Active", items: active, show: filterStatus === "active" || filterStatus === "all" },
+        { label: "Expired", items: expired, show: filterStatus === "expired" || filterStatus === "all" },
+      ].filter((s) => s.show)
+    : [
+        { label: "Expiring Soon", items: expiringSoon, show: expiringSoon.length > 0 },
+        { label: "Active", items: active, show: active.length > 0 },
+        { label: "Expired", items: expired, show: expired.length > 0 },
+      ];
+
+  const shownProducts = filterStatus
+    ? filterStatus === "active" ? active
+      : filterStatus === "expiring_soon" ? expiringSoon
+      : filterStatus === "expired" ? expired
+      : products
+    : products;
 
   return (
     <AppLayout>
@@ -31,16 +50,43 @@ export default async function ProductsPage() {
           <div>
             <h1 className="font-display text-2xl font-light text-ink-900">My Products</h1>
             <p className="text-sm text-ink-400 mt-0.5">
-              {products.length} {products.length === 1 ? "product" : "products"} tracked
+              {filterStatus && filterStatus !== "all"
+                ? `${shownProducts.length} ${filterStatus === "expiring_soon" ? "expiring soon" : filterStatus} · `
+                : ""}
+              {products.length} total tracked
             </p>
           </div>
-          <Link href="/products/add" className="btn-primary text-xs px-4 py-2">
+          <Link href="/products/add" className="btn-primary text-xs px-4 py-2 flex items-center gap-1.5">
             <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
               <path d="M6 2v8M2 6h8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
             </svg>
             Add
           </Link>
         </div>
+
+        {/* Filter pills */}
+        {products.length > 0 && (
+          <div className="flex gap-2 flex-wrap">
+            {[
+              { label: "All", href: "/products", active: !filterStatus },
+              { label: "Active", href: "/products?status=active", active: filterStatus === "active" },
+              { label: "Expiring", href: "/products?status=expiring_soon", active: filterStatus === "expiring_soon" },
+              { label: "Expired", href: "/products?status=expired", active: filterStatus === "expired" },
+            ].map((f) => (
+              <Link
+                key={f.label}
+                href={f.href}
+                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                  f.active
+                    ? "bg-ink-900 text-cream-100"
+                    : "bg-cream-100 text-ink-500 hover:bg-cream-200"
+                }`}
+              >
+                {f.label}
+              </Link>
+            ))}
+          </div>
+        )}
 
         {products.length === 0 && (
           <EmptyState
@@ -62,7 +108,11 @@ export default async function ProductsPage() {
               </div>
               <div className="space-y-3">
                 {items.map((product, i) => (
-                  <div key={product.id} className="animate-fade-up" style={{ animationDelay: `${i * 50}ms`, animationFillMode: "both" }}>
+                  <div
+                    key={product.id}
+                    className="animate-fade-up"
+                    style={{ animationDelay: `${i * 50}ms`, animationFillMode: "both" }}
+                  >
                     <ProductCard product={product} />
                   </div>
                 ))}
