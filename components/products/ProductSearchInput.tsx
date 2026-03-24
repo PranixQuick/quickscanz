@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { VoiceSearchButton } from "@/hooks/useVoiceSearch";
+import { VoiceSearchButton } from "@/components/ui/VoiceSearchButton";
 
 interface CatalogProduct {
   id: string;
@@ -185,4 +185,4 @@ export default function ProductSearchInput({
       )}
     </div>
   );
-                  }
+}
