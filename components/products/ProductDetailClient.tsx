@@ -7,6 +7,7 @@ import Link from "next/link";
 import { deleteProduct } from "@/lib/actions/products";
 import { formatDate, formatCurrency, getWarrantyStatus } from "@/lib/utils";
 import type { Product } from "@/lib/types";
+import type { PriceEntry, MaintenanceTask } from "@/lib/actions/phase2";
 import StatusBadge from "@/components/ui/StatusBadge";
 import CountdownRing from "@/components/ui/CountdownRing";
 import GetHelpModal from "@/components/products/GetHelpModal";
@@ -16,12 +17,25 @@ import HomeServiceFinder from "@/components/products/HomeServiceFinder";
 import ClaimAssistant from "@/components/ai/ClaimAssistant";
 import ProductReviewCard from "@/components/reviews/ProductReviewCard";
 import EditProductModal from "@/components/products/EditProductModal";
+// Phase 2 panels
+import PriceHistoryCard from "@/components/phase2/PriceHistoryCard";
+import MaintenanceCard from "@/components/phase2/MaintenanceCard";
+import ResaleCard from "@/components/phase2/ResaleCard";
 import toast from "react-hot-toast";
 
-interface Props { product: Product; }
-type Tab = "overview" | "centres" | "claim" | "manual";
+interface Props {
+  product: Product;
+  priceHistory?: PriceEntry[];
+  maintenanceTasks?: MaintenanceTask[];
+}
 
-export default function ProductDetailClient({ product: initialProduct }: Props) {
+type Tab = "overview" | "intelligence" | "centres" | "claim" | "manual";
+
+export default function ProductDetailClient({
+  product: initialProduct,
+  priceHistory = [],
+  maintenanceTasks = [],
+}: Props) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [product, setProduct] = useState(initialProduct);
@@ -47,10 +61,11 @@ export default function ProductDetailClient({ product: initialProduct }: Props) 
   }
 
   const TABS: { key: Tab; label: string; icon: string }[] = [
-    { key: "overview", label: "Overview", icon: "📋" },
-    { key: "centres",  label: "Service",  icon: "📍" },
-    { key: "claim",    label: "Claim AI", icon: "🤖" },
-    { key: "manual",   label: "Manual",   icon: "📖" },
+    { key: "overview",     label: "Overview",     icon: "📋" },
+    { key: "intelligence", label: "Intelligence",  icon: "📊" },
+    { key: "centres",      label: "Service",       icon: "📍" },
+    { key: "claim",        label: "Claim AI",      icon: "🤖" },
+    { key: "manual",       label: "Manual",        icon: "📖" },
   ];
 
   return (
@@ -135,23 +150,24 @@ export default function ProductDetailClient({ product: initialProduct }: Props) 
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="flex gap-1 bg-cream-100 p-1 rounded-2xl">
-        {TABS.map((t) => (
-          <button key={t.key} onClick={() => setTab(t.key)}
-            className={`flex-1 flex items-center justify-center gap-1 py-2 px-2 rounded-xl text-[11px] font-medium transition-all ${
-              tab === t.key ? "bg-white text-ink-900 shadow-sm" : "text-ink-400 hover:text-ink-600"
-            }`}>
-            <span>{t.icon}</span>
-            <span className="hidden sm:inline">{t.label}</span>
-          </button>
-        ))}
+      {/* Tabs - scrollable on mobile */}
+      <div className="overflow-x-auto -mx-1 px-1">
+        <div className="flex gap-1 bg-cream-100 p-1 rounded-2xl min-w-max">
+          {TABS.map((t) => (
+            <button key={t.key} onClick={() => setTab(t.key)}
+              className={`flex items-center justify-center gap-1 py-2 px-3 rounded-xl text-[11px] font-medium transition-all whitespace-nowrap ${
+                tab === t.key ? "bg-white text-ink-900 shadow-sm" : "text-ink-400 hover:text-ink-600"
+              }`}>
+              <span>{t.icon}</span>
+              <span>{t.label}</span>
+            </button>
+          ))}
+        </div>
       </div>
 
+      {/* Tab: Overview */}
       {tab === "overview" && (
         <div className="space-y-4">
-          <ProductIntelligenceCard name={product.name} brand={product.brand} />
-          {!product.is_demo && <ProductReviewCard brand={product.brand} productName={product.name} />}
           {product.invoice_url && (
             <div className="card p-4">
               <p className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-3">Invoice</p>
@@ -176,6 +192,9 @@ export default function ProductDetailClient({ product: initialProduct }: Props) 
               </a>
             </div>
           )}
+
+          {!product.is_demo && <ProductReviewCard brand={product.brand} productName={product.name} />}
+
           <div className="pt-2">
             {!showDeleteConfirm ? (
               <button onClick={() => setShowDeleteConfirm(true)}
@@ -199,6 +218,35 @@ export default function ProductDetailClient({ product: initialProduct }: Props) 
         </div>
       )}
 
+      {/* Tab: Intelligence (Phase 2) */}
+      {tab === "intelligence" && (
+        <div className="space-y-4">
+          <ProductIntelligenceCard name={product.name} brand={product.brand} />
+
+          {/* Phase 2: Maintenance */}
+          <MaintenanceCard
+            productId={product.id}
+            category={(product as any).category || null}
+            tasks={maintenanceTasks}
+          />
+
+          {/* Phase 2: Price history */}
+          {!product.is_demo && (
+            <PriceHistoryCard
+              productId={product.id}
+              originalPrice={product.price}
+              entries={priceHistory}
+            />
+          )}
+
+          {/* Phase 2: Resale estimate */}
+          {!product.is_demo && product.price && (
+            <ResaleCard product={product} />
+          )}
+        </div>
+      )}
+
+      {/* Tab: Service Centres */}
       {tab === "centres" && (
         <div className="space-y-4">
           <div className="card p-4">
@@ -212,6 +260,7 @@ export default function ProductDetailClient({ product: initialProduct }: Props) 
         </div>
       )}
 
+      {/* Tab: Claim AI */}
       {tab === "claim" && (
         <div className="card p-4">
           <div className="flex items-center gap-2 mb-4">
@@ -225,6 +274,7 @@ export default function ProductDetailClient({ product: initialProduct }: Props) 
         </div>
       )}
 
+      {/* Tab: Manual */}
       {tab === "manual" && (
         <div className="card p-6 text-center space-y-4">
           <div className="w-16 h-16 rounded-2xl bg-cream-100 flex items-center justify-center mx-auto">
@@ -282,4 +332,4 @@ export default function ProductDetailClient({ product: initialProduct }: Props) 
       )}
     </div>
   );
-}
+            }
