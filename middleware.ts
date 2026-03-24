@@ -36,6 +36,7 @@ export async function middleware(request: NextRequest) {
     // Phase 2 + 3
     "/compare",
     "/buying-assistant",
+    "/pricing",
   ];
 
   const isProtected = protectedPaths.some((path) =>
