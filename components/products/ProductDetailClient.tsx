@@ -15,15 +15,18 @@ import ServiceCentreLocator from "@/components/products/ServiceCentreLocator";
 import HomeServiceFinder from "@/components/products/HomeServiceFinder";
 import ClaimAssistant from "@/components/ai/ClaimAssistant";
 import ProductReviewCard from "@/components/reviews/ProductReviewCard";
+import EditProductModal from "@/components/products/EditProductModal";
 import toast from "react-hot-toast";
 
 interface Props { product: Product; }
 type Tab = "overview" | "centres" | "claim" | "manual";
 
-export default function ProductDetailClient({ product }: Props) {
+export default function ProductDetailClient({ product: initialProduct }: Props) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const [product, setProduct] = useState(initialProduct);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showEdit, setShowEdit] = useState(false);
   const [invoiceOpen, setInvoiceOpen] = useState(false);
   const [tab, setTab] = useState<Tab>("overview");
   const [claimSessionId] = useState(`claim_${product.id}_${Date.now()}`);
@@ -73,9 +76,17 @@ export default function ProductDetailClient({ product }: Props) {
                   {(product as any).category ? ` · ${(product as any).category}` : ""}
                 </p>
               </div>
-              {product.is_demo && (
-                <span className="text-[10px] font-medium text-ink-300 bg-cream-200 px-2 py-1 rounded-full">Sample</span>
-              )}
+              <div className="flex items-center gap-2 flex-shrink-0">
+                {!product.is_demo && (
+                  <button onClick={() => setShowEdit(true)}
+                    className="text-[11px] bg-cream-100 hover:bg-cream-200 text-ink-500 px-2.5 py-1.5 rounded-lg transition-colors border border-cream-200">
+                    ✏️ Edit
+                  </button>
+                )}
+                {product.is_demo && (
+                  <span className="text-[10px] font-medium text-ink-300 bg-cream-200 px-2 py-1 rounded-full">Sample</span>
+                )}
+              </div>
             </div>
             <div className="mt-2"><StatusBadge expiryDate={product.expiry_date} /></div>
           </div>
@@ -137,16 +148,10 @@ export default function ProductDetailClient({ product }: Props) {
         ))}
       </div>
 
-      {/* Tab: Overview */}
       {tab === "overview" && (
         <div className="space-y-4">
           <ProductIntelligenceCard name={product.name} brand={product.brand} />
-
-          {/* ─── REVIEW INTELLIGENCE ─── */}
-          {!product.is_demo && (
-            <ProductReviewCard brand={product.brand} productName={product.name} />
-          )}
-
+          {!product.is_demo && <ProductReviewCard brand={product.brand} productName={product.name} />}
           {product.invoice_url && (
             <div className="card p-4">
               <p className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-3">Invoice</p>
@@ -171,7 +176,6 @@ export default function ProductDetailClient({ product }: Props) {
               </a>
             </div>
           )}
-
           <div className="pt-2">
             {!showDeleteConfirm ? (
               <button onClick={() => setShowDeleteConfirm(true)}
@@ -195,13 +199,10 @@ export default function ProductDetailClient({ product }: Props) {
         </div>
       )}
 
-      {/* Tab: Service Centres */}
       {tab === "centres" && (
         <div className="space-y-4">
           <div className="card p-4">
-            <p className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-3">
-              Authorized Service Centres — {product.brand}
-            </p>
+            <p className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-3">Authorized Service Centres — {product.brand}</p>
             <ServiceCentreLocator brand={product.brand} />
           </div>
           <div className="card p-4">
@@ -211,7 +212,6 @@ export default function ProductDetailClient({ product }: Props) {
         </div>
       )}
 
-      {/* Tab: AI Claim */}
       {tab === "claim" && (
         <div className="card p-4">
           <div className="flex items-center gap-2 mb-4">
@@ -225,7 +225,6 @@ export default function ProductDetailClient({ product }: Props) {
         </div>
       )}
 
-      {/* Tab: Manual */}
       {tab === "manual" && (
         <div className="card p-6 text-center space-y-4">
           <div className="w-16 h-16 rounded-2xl bg-cream-100 flex items-center justify-center mx-auto">
@@ -238,19 +237,13 @@ export default function ProductDetailClient({ product }: Props) {
           <div>
             <p className="text-sm font-medium text-ink-800">User Manual</p>
             <p className="text-xs text-ink-400 mt-1 max-w-xs mx-auto">
-              Search ManualsLib — the world&apos;s largest free manual database — for your {product.brand} {product.name}.
+              Search ManualsLib for your {product.brand} {product.name}.
             </p>
           </div>
           <a href={`https://www.manualslib.com/search/?q=${encodeURIComponent(product.brand + " " + product.name)}`}
-            target="_blank" rel="noopener noreferrer"
-            className="btn-primary text-sm px-6 py-2.5 inline-flex items-center gap-2">
-            <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
-              <circle cx="6" cy="6" r="4.5" stroke="currentColor" strokeWidth="1.2"/>
-              <path d="M9.5 9.5l2 2" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
-            </svg>
+            target="_blank" rel="noopener noreferrer" className="btn-primary text-sm px-6 py-2.5 inline-flex items-center gap-2">
             Find Manual on ManualsLib
           </a>
-          <p className="text-xs text-ink-300">Opens in a new tab · Free resource</p>
         </div>
       )}
 
@@ -271,13 +264,21 @@ export default function ProductDetailClient({ product }: Props) {
               </div>
             ) : (
               <div className="card p-8 text-center">
-                <p className="text-sm text-ink-600 mb-4">PDF Invoice</p>
                 <a href={product.invoice_url} target="_blank" rel="noopener noreferrer"
                   className="btn-primary text-sm px-6 py-2.5">Open PDF →</a>
               </div>
             )}
           </div>
         </div>
+      )}
+
+      {/* Edit modal */}
+      {showEdit && (
+        <EditProductModal
+          product={product}
+          onClose={() => setShowEdit(false)}
+          onUpdated={() => router.refresh()}
+        />
       )}
     </div>
   );
