@@ -1,13 +1,17 @@
 // supabase/functions/send-warranty-emails/index.ts
 // Deploy: supabase functions deploy send-warranty-emails
-// Schedule: supabase functions deploy send-warranty-emails --schedule "0 8 * * *"
-// Env vars needed: RESEND_API_KEY, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
+// Env vars needed in Supabase secrets:
+//   RESEND_API_KEY       — from resend.com (free: 3000 emails/month)
+//   SUPABASE_URL         — auto-available in edge functions
+//   SUPABASE_SERVICE_ROLE_KEY — auto-available in edge functions
+//   CRON_SECRET          — any random string you set (used to authorise cron trigger)
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY")!;
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+const CRON_SECRET = Deno.env.get("CRON_SECRET") || "";
 const FROM_EMAIL = "QuickScanZ <noreply@quickscanz.com>";
 const APP_URL = "https://quickscanz.com";
 
@@ -21,7 +25,6 @@ interface ExpiringProduct {
   brand: string;
   expiry_date: string;
   days_remaining: number;
-  has_push: boolean;
 }
 
 function warrantyEmailHtml(product: ExpiringProduct): string {
@@ -34,73 +37,42 @@ function warrantyEmailHtml(product: ExpiringProduct): string {
   return `<!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-<body style="margin:0;padding:0;background:#fdfcf8;font-family:'DM Sans',Arial,sans-serif;">
+<body style="margin:0;padding:0;background:#fdfcf8;font-family:Arial,sans-serif;">
   <table width="100%" cellpadding="0" cellspacing="0" style="background:#fdfcf8;padding:40px 20px;">
     <tr><td align="center">
       <table width="520" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;border:1px solid #e8dfd0;overflow:hidden;">
-        <!-- Header -->
-        <tr>
-          <td style="background:#1a1612;padding:24px 32px;">
-            <p style="margin:0;color:#fdfcf8;font-size:20px;font-weight:300;letter-spacing:-0.5px;">QuickScanZ</p>
-            <p style="margin:4px 0 0;color:#9a8f83;font-size:12px;">Your Warranty Wallet</p>
-          </td>
-        </tr>
-        <!-- Body -->
-        <tr>
-          <td style="padding:32px;">
-            <p style="margin:0 0 4px;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:${urgencyColor};">${urgency}</p>
-            <h1 style="margin:0 0 20px;font-size:22px;font-weight:300;color:#1a1612;line-height:1.3;">
-              Your ${product.brand} ${product.product_name} warranty expires in ${product.days_remaining} day${product.days_remaining !== 1 ? "s" : ""}
-            </h1>
-            <!-- Product card -->
-            <table width="100%" cellpadding="0" cellspacing="0" style="background:#f7f2eb;border-radius:12px;margin-bottom:24px;">
-              <tr>
-                <td style="padding:20px;">
-                  <p style="margin:0 0 4px;font-size:13px;font-weight:500;color:#1a1612;">${product.brand} ${product.product_name}</p>
-                  <p style="margin:0;font-size:12px;color:#786e62;">Warranty expires: <strong style="color:${urgencyColor};">${expiryFormatted}</strong></p>
-                </td>
-              </tr>
-            </table>
-            <!-- Action buttons -->
-            <table width="100%" cellpadding="0" cellspacing="0">
-              <tr>
-                <td style="padding-right:8px;">
-                  <a href="${APP_URL}/claim" style="display:block;background:#1a1612;color:#fdfcf8;text-decoration:none;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:500;text-align:center;">
-                    Start Warranty Claim
-                  </a>
-                </td>
-                <td style="padding-left:8px;">
-                  <a href="${APP_URL}/products" style="display:block;background:#f7f2eb;color:#1a1612;text-decoration:none;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:500;text-align:center;border:1px solid #e8dfd0;">
-                    View All Products
-                  </a>
-                </td>
-              </tr>
-            </table>
-            <!-- Tips -->
-            <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:24px;background:#fefaf4;border-radius:12px;border:1px solid #e8dfd0;">
-              <tr>
-                <td style="padding:16px;">
-                  <p style="margin:0 0 8px;font-size:12px;font-weight:600;color:#786e62;text-transform:uppercase;letter-spacing:0.5px;">What to do now</p>
-                  <ul style="margin:0;padding-left:16px;color:#786e62;font-size:12px;line-height:1.8;">
-                    <li>Document any existing issues before warranty ends</li>
-                    <li>Use the AI Claim Assistant to file issues</li>
-                    <li>Check if extended warranty is available</li>
-                    <li>Book a service visit via our service centre locator</li>
-                  </ul>
-                </td>
-              </tr>
-            </table>
-          </td>
-        </tr>
-        <!-- Footer -->
-        <tr>
-          <td style="padding:20px 32px;border-top:1px solid #e8dfd0;">
-            <p style="margin:0;font-size:11px;color:#c9bfb3;text-align:center;">
-              You're receiving this because you track this product on QuickScanZ. 
-              <a href="${APP_URL}/dashboard" style="color:#c9bfb3;">Manage notifications</a>
-            </p>
-          </td>
-        </tr>
+        <tr><td style="background:#1a1612;padding:24px 32px;">
+          <p style="margin:0;color:#fdfcf8;font-size:20px;font-weight:300;">QuickScanZ</p>
+          <p style="margin:4px 0 0;color:#9a8f83;font-size:12px;">Your Warranty Wallet</p>
+        </td></tr>
+        <tr><td style="padding:32px;">
+          <p style="margin:0 0 4px;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:${urgencyColor};">${urgency}</p>
+          <h1 style="margin:0 0 20px;font-size:22px;font-weight:300;color:#1a1612;line-height:1.3;">
+            Your ${product.brand} ${product.product_name} warranty expires in ${product.days_remaining} day${product.days_remaining !== 1 ? "s" : ""}
+          </h1>
+          <table width="100%" cellpadding="0" cellspacing="0" style="background:#f7f2eb;border-radius:12px;margin-bottom:24px;">
+            <tr><td style="padding:20px;">
+              <p style="margin:0 0 4px;font-size:13px;font-weight:500;color:#1a1612;">${product.brand} ${product.product_name}</p>
+              <p style="margin:0;font-size:12px;color:#786e62;">Expires: <strong style="color:${urgencyColor};">${expiryFormatted}</strong></p>
+            </td></tr>
+          </table>
+          <table width="100%" cellpadding="0" cellspacing="0">
+            <tr>
+              <td style="padding-right:8px;">
+                <a href="${APP_URL}/claim" style="display:block;background:#1a1612;color:#fdfcf8;text-decoration:none;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:500;text-align:center;">Start Warranty Claim</a>
+              </td>
+              <td style="padding-left:8px;">
+                <a href="${APP_URL}/products" style="display:block;background:#f7f2eb;color:#1a1612;text-decoration:none;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:500;text-align:center;border:1px solid #e8dfd0;">View Products</a>
+              </td>
+            </tr>
+          </table>
+        </td></tr>
+        <tr><td style="padding:20px 32px;border-top:1px solid #e8dfd0;">
+          <p style="margin:0;font-size:11px;color:#c9bfb3;text-align:center;">
+            You receive this because you track this product on QuickScanZ.
+            <a href="${APP_URL}/account" style="color:#c9bfb3;">Manage notifications</a>
+          </p>
+        </td></tr>
       </table>
     </td></tr>
   </table>
@@ -117,19 +89,40 @@ async function sendEmail(to: string, subject: string, html: string): Promise<boo
     },
     body: JSON.stringify({ from: FROM_EMAIL, to, subject, html }),
   });
+  if (!res.ok) {
+    const text = await res.text();
+    console.error("[warranty-emails] Resend error:", res.status, text);
+  }
   return res.ok;
 }
 
 Deno.serve(async (req) => {
-  // Allow manual trigger via POST or scheduled CRON trigger
-  if (req.method !== "POST" && req.headers.get("x-cron-key") !== Deno.env.get("CRON_SECRET")) {
+  // Accept POST from pg_cron via http extension, or manual trigger
+  const cronKey = req.headers.get("x-cron-key");
+  if (req.method !== "POST" && cronKey !== CRON_SECRET) {
     return new Response("Unauthorized", { status: 401 });
   }
 
+  if (!RESEND_API_KEY) {
+    return new Response(JSON.stringify({ error: "RESEND_API_KEY not set" }), {
+      status: 500, headers: { "Content-Type": "application/json" },
+    });
+  }
+
   try {
-    // Get products expiring in 30 days that haven't been notified
+    // Use direct SQL query instead of RPC (more reliable)
     const { data: expiring, error } = await supabase
-      .rpc("get_expiring_products", { days_ahead: 30 });
+      .from("products")
+      .select(`
+        id,
+        user_id,
+        name,
+        brand,
+        expiry_date
+      `)
+      .gte("expiry_date", new Date().toISOString().split("T")[0])
+      .lte("expiry_date", new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0])
+      .eq("is_demo", false);
 
     if (error) throw error;
     if (!expiring || expiring.length === 0) {
@@ -141,23 +134,51 @@ Deno.serve(async (req) => {
     let sent = 0;
     const errors: string[] = [];
 
-    for (const product of expiring as ExpiringProduct[]) {
-      const type = product.days_remaining <= 7 ? "7_days" : "30_days";
-      const subject = product.days_remaining <= 7
-        ? `🚨 ${product.brand} ${product.product_name} warranty expires in ${product.days_remaining} days!`
-        : `⚠️ ${product.brand} ${product.product_name} warranty expires in 30 days`;
+    for (const product of expiring) {
+      // Get user email
+      const { data: userData } = await supabase.auth.admin.getUserById(product.user_id);
+      if (!userData?.user?.email) continue;
 
-      const html = warrantyEmailHtml(product);
-      const ok = await sendEmail(product.user_email, subject, html);
+      const daysRemaining = Math.ceil(
+        (new Date(product.expiry_date).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
+      );
+
+      // Check if already notified within last 7 days
+      const { data: existing } = await supabase
+        .from("notification_queue")
+        .select("id")
+        .eq("user_id", product.user_id)
+        .eq("product_id", product.id)
+        .eq("sent", true)
+        .gte("sent_at", new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
+        .single();
+
+      if (existing) continue; // Skip if notified recently
+
+      const type = daysRemaining <= 7 ? "7_days" : "30_days";
+      const subject = daysRemaining <= 7
+        ? `🚨 ${product.brand} ${product.name} warranty expires in ${daysRemaining} days!`
+        : `⚠️ ${product.brand} ${product.name} warranty expires in 30 days`;
+
+      const productData: ExpiringProduct = {
+        product_id: product.id,
+        user_id: product.user_id,
+        user_email: userData.user.email,
+        product_name: product.name,
+        brand: product.brand,
+        expiry_date: product.expiry_date,
+        days_remaining: daysRemaining,
+      };
+
+      const ok = await sendEmail(userData.user.email, subject, warrantyEmailHtml(productData));
 
       if (ok) {
-        // Record in notification queue as sent
         await supabase.from("notification_queue").upsert({
           user_id: product.user_id,
-          product_id: product.product_id,
-          email: product.user_email,
+          product_id: product.id,
+          email: userData.user.email,
           type,
-          product_name: product.product_name,
+          product_name: product.name,
           brand: product.brand,
           expiry_date: product.expiry_date,
           sent: true,
@@ -166,7 +187,7 @@ Deno.serve(async (req) => {
         }, { onConflict: "user_id,product_id" });
         sent++;
       } else {
-        errors.push(`Failed to send to ${product.user_email} for ${product.product_name}`);
+        errors.push(`Failed: ${userData.user.email} / ${product.name}`);
       }
     }
 
@@ -177,8 +198,7 @@ Deno.serve(async (req) => {
   } catch (err) {
     console.error("[warranty-emails] Error:", err);
     return new Response(JSON.stringify({ error: String(err) }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
+      status: 500, headers: { "Content-Type": "application/json" },
     });
   }
 });
