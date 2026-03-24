@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { estimateResaleValue, saveResaleEstimate } from "@/lib/actions/phase2";
+import { estimateResaleValue } from "@/lib/calculations";
+import { saveResaleEstimate } from "@/lib/actions/phase2";
 import { formatCurrency, getWarrantyStatus } from "@/lib/utils";
 import type { Product } from "@/lib/types";
 import toast from "react-hot-toast";
