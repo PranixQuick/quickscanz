@@ -40,18 +40,3 @@ export default async function AccountPage() {
     </AppLayout>
   );
 }
-```
-
----
-
-## Upload just FILE 1 — that's the only change needed
-
-`app/account/page.tsx` is **already correct in your repo** (it's at commit 195892c). The only missing piece was `components/AccountClient.tsx` still had the old Props without `userId`. **Upload only `components/AccountClient.tsx`** — that single file upload will trigger a new deploy and it will pass.
-
----
-
-## CRON_SECRET — here is what to use
-
-For `CRON_SECRET`, use this value:
-```
-qs_cron_secret_2026_xK9mPvRnL4wQ
