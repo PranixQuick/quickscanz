@@ -9,11 +9,12 @@ import toast from "react-hot-toast";
 
 interface Props {
   email: string;
+  userId: string;
   productCount: number;
   smartDeviceCount: number;
 }
 
-export default function AccountClient({ email, productCount, smartDeviceCount }: Props) {
+export default function AccountClient({ email, userId, productCount, smartDeviceCount }: Props) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
@@ -63,22 +64,45 @@ export default function AccountClient({ email, productCount, smartDeviceCount }:
       {/* Notifications */}
       <div>
         <p className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-3">Notifications</p>
-        <NotificationSettings />
+        <NotificationSettings userId={userId} />
         <p className="text-[11px] text-ink-300 mt-2 px-1">
           Push notifications require installing QuickScanZ to your home screen (PWA).
         </p>
       </div>
 
-      {/* Quick links */}
+      {/* Warranty Features */}
       <div>
-        <p className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-3">Features</p>
+        <p className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-3">Warranty Features</p>
         <div className="space-y-1">
           {[
-            { href: "/products/lifecycle", icon: "📊", label: "Product Lifecycle" },
-            { href: "/energy",             icon: "⚡", label: "Energy Monitor" },
-            { href: "/iot-hub",            icon: "🔗", label: "IoT Hub" },
-            { href: "/family",             icon: "👨‍👩‍👧", label: "Family Vault" },
-            { href: "/smart-devices",      icon: "🏠", label: "Smart Devices" },
+            { href: "/products",           icon: "📦", label: "All Products" },
+            { href: "/products/lifecycle",  icon: "📊", label: "Product Lifecycle" },
+            { href: "/claim",              icon: "🤖", label: "AI Claim Assistant" },
+          ].map((item) => (
+            <Link key={item.href} href={item.href}
+              className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-cream-100 transition-colors group">
+              <span className="text-base">{item.icon}</span>
+              <span className="text-sm text-ink-700 flex-1">{item.label}</span>
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="text-ink-200 group-hover:text-ink-400">
+                <path d="M5 3l4 4-4 4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+              </svg>
+            </Link>
+          ))}
+        </div>
+      </div>
+
+      {/* Intelligence — Phase 2 + 3 */}
+      <div>
+        <p className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-1">Intelligence</p>
+        <p className="text-[10px] text-ink-300 mb-3 px-1">Phase 2 — now available</p>
+        <div className="space-y-1">
+          {[
+            { href: "/compare",           icon: "⚖️", label: "Compare Products" },
+            { href: "/buying-assistant",  icon: "🛒", label: "Buying Assistant" },
+            { href: "/energy",            icon: "⚡", label: "Energy Monitor" },
+            { href: "/smart-devices",     icon: "🏠", label: "Smart Devices" },
+            { href: "/iot-hub",           icon: "🔗", label: "IoT Hub" },
+            { href: "/family",            icon: "👨‍👩‍👧", label: "Family Vault" },
           ].map((item) => (
             <Link key={item.href} href={item.href}
               className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-cream-100 transition-colors group">
@@ -98,7 +122,7 @@ export default function AccountClient({ email, productCount, smartDeviceCount }:
         <div className="space-y-1">
           {[
             { href: "/privacy-policy", label: "Privacy Policy" },
-            { href: "/about", label: "About QuickScanZ" },
+            { href: "/about",          label: "About QuickScanZ" },
           ].map((item) => (
             <Link key={item.href} href={item.href}
               className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-cream-100 transition-colors">
@@ -109,12 +133,15 @@ export default function AccountClient({ email, productCount, smartDeviceCount }:
       </div>
 
       {/* Sign out */}
-      <button onClick={handleSignOut} disabled={isPending}
-        className="w-full py-3.5 text-sm font-medium text-blush-500 hover:text-blush-600 hover:bg-blush-50/50 rounded-xl transition-colors disabled:opacity-40 border border-transparent hover:border-blush-200">
+      <button
+        onClick={handleSignOut}
+        disabled={isPending}
+        className="w-full py-3.5 text-sm font-medium text-blush-500 hover:text-blush-600 hover:bg-blush-50/50 rounded-xl transition-colors disabled:opacity-40 border border-transparent hover:border-blush-200"
+      >
         {isPending ? "Signing out..." : "Sign out"}
       </button>
 
-      <p className="text-center text-[10px] text-ink-200 pb-2">QuickScanZ · Your Warranty Wallet</p>
+      <p className="text-center text-[10px] text-ink-200 pb-2">QuickScanZ · v2.0</p>
     </div>
   );
 }
