@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { compareProducts, type ComparisonItem } from "@/lib/actions/phase3";
+import { compareProducts, type ComparisonResult } from "@/lib/calculations";
+import type { ComparisonItem } from "@/lib/types";
 import { formatCurrency, formatDate, getWarrantyStatus } from "@/lib/utils";
 import Link from "next/link";
 
@@ -216,4 +217,4 @@ export default function ProductCompareClient({ products }: Props) {
       )}
     </div>
   );
-                        }
+}
