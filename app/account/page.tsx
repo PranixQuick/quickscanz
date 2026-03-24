@@ -2,11 +2,10 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import AppLayout from "@/components/layout/AppLayout";
 import AccountClient from "@/components/AccountClient";
+import { getUserSubscription } from "@/lib/actions/subscriptions";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = {
-  title: "Account | QuickScanZ",
-};
+export const metadata: Metadata = { title: "Account | QuickScanZ" };
 
 export default async function AccountPage() {
   const supabase = await createClient();
@@ -15,18 +14,12 @@ export default async function AccountPage() {
 
   const [
     { count: productCount },
-    { count: smartCount },
+    { count: smartDeviceCount },
+    subscription,
   ] = await Promise.all([
-    supabase
-      .from("products")
-      .select("*", { count: "exact", head: true })
-      .eq("user_id", user.id)
-      .eq("is_demo", false),
-    supabase
-      .from("smart_devices")
-      .select("*", { count: "exact", head: true })
-      .eq("user_id", user.id)
-      .eq("is_active", true),
+    supabase.from("products").select("*", { count: "exact", head: true }).eq("user_id", user.id),
+    supabase.from("smart_devices").select("*", { count: "exact", head: true }).eq("user_id", user.id),
+    getUserSubscription(),
   ]);
 
   return (
@@ -35,7 +28,9 @@ export default async function AccountPage() {
         email={user.email || ""}
         userId={user.id}
         productCount={productCount || 0}
-        smartDeviceCount={smartCount || 0}
+        smartDeviceCount={smartDeviceCount || 0}
+        planId={subscription?.plan_id || "free"}
+        planName={(subscription as any)?.plan?.name || "Free"}
       />
     </AppLayout>
   );
