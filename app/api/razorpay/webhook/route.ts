@@ -1,13 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
-// Use service-role client for webhook — no user session available
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
-
 export async function POST(req: NextRequest) {
+  // Create supabase client INSIDE the handler — not at module level.
+  // Module-level init crashes Next.js build because SUPABASE_SERVICE_ROLE_KEY
+  // is not available during the build-time page data collection phase.
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+
   const WEBHOOK_SECRET = process.env.RAZORPAY_WEBHOOK_SECRET;
   if (!WEBHOOK_SECRET) {
     console.error("RAZORPAY_WEBHOOK_SECRET not set");
@@ -39,6 +41,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let event: { event: string; payload: any };
   try {
     event = JSON.parse(body);
