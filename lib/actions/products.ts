@@ -43,17 +43,18 @@ export async function addProduct(
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { success: false, error: "Not authenticated" };
 
-  const name = formData.get("name") as string;
-  const brand = formData.get("brand") as string;
+  // FIX: trim() all string inputs to prevent trailing/leading spaces in DB
+  const name = (formData.get("name") as string)?.trim();
+  const brand = (formData.get("brand") as string)?.trim();
   const purchase_date = formData.get("purchase_date") as string;
   const warranty_months = parseInt(formData.get("warranty_months") as string);
   const price = formData.get("price") as string;
-  const category = formData.get("category") as string;
-  const subcategory = formData.get("subcategory") as string;
-  const model_number = formData.get("model_number") as string;
-  const serial_number = formData.get("serial_number") as string;
-  const store_name = formData.get("store_name") as string;
-  const notes = formData.get("notes") as string;
+  const category = (formData.get("category") as string)?.trim();
+  const subcategory = (formData.get("subcategory") as string)?.trim();
+  const model_number = (formData.get("model_number") as string)?.trim();
+  const serial_number = (formData.get("serial_number") as string)?.trim();
+  const store_name = (formData.get("store_name") as string)?.trim();
+  const notes = (formData.get("notes") as string)?.trim();
   const catalog_product_id = formData.get("catalog_product_id") as string;
   const invoiceFile = formData.get("invoice") as File | null;
 
@@ -104,7 +105,6 @@ export async function addProduct(
   return { success: true, id: data.id };
 }
 
-// ─── NEW: Update product ──────────────────────────────────────────────────────
 export async function updateProduct(
   id: string,
   updates: Partial<{
@@ -125,13 +125,23 @@ export async function updateProduct(
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { success: false, error: "Not authenticated" };
 
-  // Recalculate expiry if warranty months or purchase date changed
-  const updateData: Record<string, unknown> = { ...updates };
-  if (updates.purchase_date || updates.warranty_months) {
+  // FIX: trim string fields on update as well
+  const trimmed: typeof updates = { ...updates };
+  if (trimmed.name) trimmed.name = trimmed.name.trim();
+  if (trimmed.brand) trimmed.brand = trimmed.brand.trim();
+  if (trimmed.category) trimmed.category = trimmed.category.trim();
+  if (trimmed.subcategory) trimmed.subcategory = trimmed.subcategory.trim();
+  if (trimmed.model_number) trimmed.model_number = trimmed.model_number.trim();
+  if (trimmed.serial_number) trimmed.serial_number = trimmed.serial_number.trim();
+  if (trimmed.store_name) trimmed.store_name = trimmed.store_name.trim();
+  if (trimmed.notes) trimmed.notes = trimmed.notes.trim();
+
+  const updateData: Record<string, unknown> = { ...trimmed };
+  if (trimmed.purchase_date || trimmed.warranty_months) {
     const existing = await getProduct(id);
     if (existing) {
-      const pd = updates.purchase_date || existing.purchase_date;
-      const wm = updates.warranty_months || existing.warranty_months;
+      const pd = trimmed.purchase_date || existing.purchase_date;
+      const wm = trimmed.warranty_months || existing.warranty_months;
       updateData.expiry_date = calculateExpiryDate(pd, wm);
     }
   }
