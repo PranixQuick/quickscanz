@@ -227,6 +227,7 @@ export default function ProductDetailClient({
           <MaintenanceCard
             productId={product.id}
             category={(product as any).category || null}
+            subcategory={(product as any).subcategory || null}
             tasks={maintenanceTasks}
           />
 
@@ -332,4 +333,4 @@ export default function ProductDetailClient({
       )}
     </div>
   );
-            }
+}
