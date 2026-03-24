@@ -83,7 +83,6 @@ export async function addProduct(
     invoice_url, is_demo: false,
   };
 
-  // Phase 2 fields (optional)
   if (category) insertData.category = category;
   if (subcategory) insertData.subcategory = subcategory;
   if (model_number) insertData.model_number = model_number;
@@ -103,6 +102,52 @@ export async function addProduct(
   revalidatePath("/dashboard");
   revalidatePath("/products");
   return { success: true, id: data.id };
+}
+
+// ─── NEW: Update product ──────────────────────────────────────────────────────
+export async function updateProduct(
+  id: string,
+  updates: Partial<{
+    name: string;
+    brand: string;
+    purchase_date: string;
+    warranty_months: number;
+    price: number | null;
+    category: string;
+    subcategory: string;
+    model_number: string;
+    serial_number: string;
+    store_name: string;
+    notes: string;
+  }>
+): Promise<{ success: boolean; error?: string }> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { success: false, error: "Not authenticated" };
+
+  // Recalculate expiry if warranty months or purchase date changed
+  const updateData: Record<string, unknown> = { ...updates };
+  if (updates.purchase_date || updates.warranty_months) {
+    const existing = await getProduct(id);
+    if (existing) {
+      const pd = updates.purchase_date || existing.purchase_date;
+      const wm = updates.warranty_months || existing.warranty_months;
+      updateData.expiry_date = calculateExpiryDate(pd, wm);
+    }
+  }
+
+  const { error } = await supabase
+    .from("products")
+    .update(updateData)
+    .eq("id", id)
+    .eq("user_id", user.id);
+
+  if (error) return { success: false, error: error.message };
+
+  revalidatePath("/dashboard");
+  revalidatePath("/products");
+  revalidatePath(`/products/${id}`);
+  return { success: true };
 }
 
 export async function deleteProduct(
