@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getProducts } from "@/lib/actions/products";
 import { seedDemoProducts } from "@/lib/actions/seed";
 import { getAllDueMaintenance } from "@/lib/actions/phase2";
+import { getUserSubscription } from "@/lib/actions/subscriptions";
 import { getWarrantyStatus } from "@/lib/utils";
 import AppLayout from "@/components/layout/AppLayout";
 import StatsGrid from "@/components/products/StatsGrid";
@@ -22,10 +23,13 @@ export default async function DashboardPage() {
 
   await seedDemoProducts();
 
-  const [products, dueMaintenance] = await Promise.all([
+  const [products, dueMaintenance, subscription] = await Promise.all([
     getProducts(),
     getAllDueMaintenance(),
+    getUserSubscription(),
   ]);
+
+  const isPro = !!subscription && subscription.plan_id !== "free";
 
   const stats: DashboardStats = {
     total: products.length,
@@ -42,11 +46,23 @@ export default async function DashboardPage() {
 
   const expiringProducts = products.filter((p) => getWarrantyStatus(p.expiry_date) === "expiring_soon");
   const realProducts = products.filter((p) => !p.is_demo);
-  const overdueMaintenance = dueMaintenance.filter((t) => {
-    if (!t.next_due_at) return false;
-    return new Date(t.next_due_at) < new Date();
-  });
+  const overdueMaintenance = dueMaintenance.filter(
+    (t) => t.next_due_at && new Date(t.next_due_at) < new Date()
+  );
   const userName = user?.email?.split("@")[0] || "there";
+
+  const exploreTiles = [
+    { href: "/products/lifecycle",  icon: "📊", title: "Lifecycle",        sub: "Cost & lifespan" },
+    { href: "/compare",             icon: "⚖️",  title: "Compare",          sub: "Side-by-side products" },
+    { href: "/buying-assistant",    icon: "🛒", title: "Buying Assistant", sub: "Budget recommendations" },
+    { href: "/smart-devices",       icon: "🏠", title: "Smart Devices",    sub: "IoT service alerts" },
+    { href: "/energy",              icon: "⚡", title: "Energy Monitor",   sub: "Power & cost" },
+    { href: "/family",              icon: "👨‍👩‍👧", title: "Family Vault",    sub: "Share with family" },
+    isPro
+      ? { href: "/account",  icon: "⭐", title: "Pro Plan",        sub: "Manage subscription" }
+      : { href: "/pricing",  icon: "⭐", title: "Upgrade to Pro",  sub: "Unlimited · ₹149/mo" },
+    { href: "/products/add",        icon: "➕", title: "Add Product",      sub: "30 seconds" },
+  ];
 
   return (
     <AppLayout>
@@ -71,10 +87,12 @@ export default async function DashboardPage() {
           </Link>
         </div>
 
+        {/* Stat cards — now clickable */}
         <StatsGrid stats={stats} />
 
+        {/* Expiry alert — clickable */}
         {expiringProducts.length > 0 && (
-          <div className="card p-4 border-amber-200 bg-amber-50/50">
+          <Link href="/products?status=expiring_soon" className="block card p-4 border-amber-200 bg-amber-50/50 hover:border-amber-300 transition-colors">
             <div className="flex items-start gap-3">
               <span className="text-lg mt-0.5">⏰</span>
               <div>
@@ -86,11 +104,12 @@ export default async function DashboardPage() {
                 </p>
               </div>
             </div>
-          </div>
+          </Link>
         )}
 
+        {/* Maintenance overdue */}
         {overdueMaintenance.length > 0 && (
-          <div className="card p-4 border-blush-200 bg-blush-50/40">
+          <Link href="/products" className="block card p-4 border-blush-200 bg-blush-50/40 hover:border-blush-300 transition-colors">
             <div className="flex items-start gap-3">
               <span className="text-lg mt-0.5">🔧</span>
               <div className="flex-1 min-w-0">
@@ -101,13 +120,11 @@ export default async function DashboardPage() {
                   {overdueMaintenance.map((t) => `${t.product_name} — ${t.task_name}`).join(" · ")}
                 </p>
               </div>
-              <Link href="/products" className="text-xs text-blush-600 hover:text-blush-700 font-medium flex-shrink-0">
-                View →
-              </Link>
             </div>
-          </div>
+          </Link>
         )}
 
+        {/* AI Claim CTA */}
         {realProducts.length > 0 && (
           <Link href="/claim" className="block card p-4 bg-gradient-to-r from-ink-900 to-ink-800 border-ink-800 group hover:from-ink-800 hover:to-ink-700 transition-all">
             <div className="flex items-center gap-3">
@@ -125,6 +142,23 @@ export default async function DashboardPage() {
           </Link>
         )}
 
+        {/* Upgrade nudge — free users with 4+ real products */}
+        {!isPro && realProducts.length >= 4 && (
+          <Link href="/pricing" className="block card p-4 border-sand-200 bg-gradient-to-r from-sand-50 to-cream-50 hover:border-sand-300 transition-all group">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-sand-100 flex items-center justify-center flex-shrink-0 text-xl">⭐</div>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-ink-900">You&apos;re nearing the free limit</p>
+                <p className="text-xs text-ink-500 mt-0.5">Upgrade to Pro for unlimited products · ₹149/mo</p>
+              </div>
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="text-sand-400 group-hover:translate-x-0.5 transition-transform flex-shrink-0">
+                <path d="M3 7h8M8 4l3 3-3 3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </div>
+          </Link>
+        )}
+
+        {/* Products */}
         {products.length === 0 ? (
           <EmptyState
             title="Your warranty wallet is empty"
@@ -148,22 +182,21 @@ export default async function DashboardPage() {
           </div>
         )}
 
+        {/* Explore */}
         <div>
           <h2 className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-3">Explore</h2>
           <div className="grid grid-cols-2 gap-3">
-            {[
-              { href: "/products/lifecycle",  icon: "📊", title: "Lifecycle",        sub: "Cost & lifespan" },
-              { href: "/compare",             icon: "⚖️", title: "Compare",          sub: "Side-by-side products" },
-              { href: "/buying-assistant",    icon: "🛒", title: "Buying Assistant", sub: "Budget recommendations" },
-              { href: "/smart-devices",       icon: "🏠", title: "Smart Devices",    sub: "IoT service alerts" },
-              { href: "/energy",              icon: "⚡", title: "Energy Monitor",   sub: "Power & cost" },
-              { href: "/iot-hub",             icon: "🔗", title: "IoT Hub",          sub: "Alexa · Google · Matter" },
-              { href: "/family",              icon: "👨‍👩‍👧", title: "Family Vault",   sub: "Share with family" },
-              { href: "/products/add",        icon: "➕", title: "Add Product",      sub: "30 seconds" },
-            ].map((item) => (
-              <Link key={item.href} href={item.href}
-                className="card p-4 flex items-center gap-3 hover:border-sand-300 transition-colors group">
-                <div className="w-9 h-9 rounded-xl bg-cream-100 flex items-center justify-center text-lg group-hover:bg-sand-100 transition-colors flex-shrink-0">
+            {exploreTiles.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`card p-4 flex items-center gap-3 hover:border-sand-300 transition-colors group ${
+                  item.href === "/pricing" ? "border-sand-200 bg-gradient-to-br from-sand-50 to-cream-50" : ""
+                }`}
+              >
+                <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-lg group-hover:bg-sand-100 transition-colors flex-shrink-0 ${
+                  item.href === "/pricing" ? "bg-sand-100" : "bg-cream-100"
+                }`}>
                   {item.icon}
                 </div>
                 <div className="min-w-0">
