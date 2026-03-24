@@ -9,33 +9,41 @@ import {
 } from "@/lib/actions/phase2";
 import toast from "react-hot-toast";
 
-// Common maintenance tasks by category (suggestions)
+// FIX: Keys must match subcategory values stored in DB, not broad category names.
+// Also added broad category fallbacks for "Electronics" and "Home Appliance".
 const TASK_SUGGESTIONS: Record<string, { task: string; intervalDays: number }[]> = {
-  "Air Conditioner":  [
-    { task: "Clean filters", intervalDays: 30 },
-    { task: "Service (full)", intervalDays: 180 },
-  ],
-  "Refrigerator":     [{ task: "Clean coils", intervalDays: 180 }, { task: "Check door seals", intervalDays: 90 }],
-  "Washing Machine":  [{ task: "Clean drum", intervalDays: 30 }, { task: "Service", intervalDays: 365 }],
-  "Laptop":           [{ task: "Clean vents", intervalDays: 180 }, { task: "Battery calibration", intervalDays: 90 }],
-  "Smartphone":       [{ task: "Software update", intervalDays: 30 }],
-  "Television":       [{ task: "Clean vents", intervalDays: 90 }],
-  "Geyser":           [{ task: "Annual service", intervalDays: 365 }],
+  // Subcategory-level keys (matched from product.subcategory)
+  "Air Conditioner":   [{ task: "Clean filters", intervalDays: 30 }, { task: "Full service", intervalDays: 180 }],
+  "Refrigerator":      [{ task: "Clean coils", intervalDays: 180 }, { task: "Check door seals", intervalDays: 90 }],
+  "Washing Machine":   [{ task: "Clean drum", intervalDays: 30 }, { task: "Annual service", intervalDays: 365 }],
+  "Laptop":            [{ task: "Clean vents", intervalDays: 180 }, { task: "Battery calibration", intervalDays: 90 }],
+  "Smartphone":        [{ task: "Software update check", intervalDays: 30 }, { task: "Clean charging port", intervalDays: 90 }],
+  "Television":        [{ task: "Clean vents", intervalDays: 90 }],
+  "Geyser":            [{ task: "Annual service", intervalDays: 365 }],
+  "Tablet":            [{ task: "Software update check", intervalDays: 30 }],
+  "Camera":            [{ task: "Sensor clean", intervalDays: 180 }],
+  // FIX: Broad category fallbacks — used when subcategory is null
+  "Electronics":       [{ task: "Software update check", intervalDays: 30 }, { task: "Clean device", intervalDays: 90 }],
+  "Home Appliance":    [{ task: "Annual service", intervalDays: 365 }, { task: "Check for wear", intervalDays: 180 }],
+  "Vehicle":           [{ task: "Oil change", intervalDays: 90 }, { task: "Tyre check", intervalDays: 60 }],
 };
 
 interface Props {
   productId: string;
   category: string | null;
+  subcategory?: string | null;  // FIX: accept subcategory as separate prop
   tasks: MaintenanceTask[];
 }
 
-export default function MaintenanceCard({ productId, category, tasks }: Props) {
+export default function MaintenanceCard({ productId, category, subcategory, tasks }: Props) {
   const [isPending, startTransition] = useTransition();
   const [showAdd, setShowAdd] = useState(false);
   const [newTask, setNewTask] = useState("");
   const [newInterval, setNewInterval] = useState("90");
 
-  const suggestions = category ? (TASK_SUGGESTIONS[category] || []) : [];
+  // FIX: Try subcategory first, then category fallback
+  const lookupKey = subcategory || category || "";
+  const suggestions = TASK_SUGGESTIONS[lookupKey] || [];
 
   function getDaysUntilDue(nextDue: string | null): number | null {
     if (!nextDue) return null;
@@ -100,10 +108,10 @@ export default function MaintenanceCard({ productId, category, tasks }: Props) {
         </button>
       </div>
 
-      {/* Suggestions for empty state */}
+      {/* Suggestions — now shows for Electronics, Home Appliance and all subcategories */}
       {tasks.length === 0 && suggestions.length > 0 && (
         <div className="mb-4">
-          <p className="text-xs text-ink-400 mb-2">Suggested for {category}:</p>
+          <p className="text-xs text-ink-400 mb-2">Suggested for {lookupKey}:</p>
           <div className="flex flex-wrap gap-2">
             {suggestions.map((s) => (
               <button
@@ -150,12 +158,11 @@ export default function MaintenanceCard({ productId, category, tasks }: Props) {
         </div>
       )}
 
-      {/* Task list */}
-      {tasks.length === 0 ? (
+      {tasks.length === 0 && suggestions.length === 0 ? (
         <p className="text-xs text-ink-300 text-center py-3">
           No maintenance tasks. Add tasks to track service schedules.
         </p>
-      ) : (
+      ) : tasks.length === 0 ? null : (
         <div className="space-y-2">
           {[...overdue, ...upcoming].map((task) => {
             const daysUntil = getDaysUntilDue(task.next_due_at);
@@ -175,7 +182,9 @@ export default function MaintenanceCard({ productId, category, tasks }: Props) {
                       : daysUntil !== null
                       ? `Due in ${daysUntil} days`
                       : `Every ${task.interval_days} days`}
-                    {task.last_done_at ? ` · Last done: ${new Date(task.last_done_at).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}` : ""}
+                    {task.last_done_at
+                      ? ` · Last done: ${new Date(task.last_done_at).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}`
+                      : ""}
                   </p>
                 </div>
                 <div className="flex gap-1 flex-shrink-0">
@@ -201,4 +210,4 @@ export default function MaintenanceCard({ productId, category, tasks }: Props) {
       )}
     </div>
   );
-                                         }
+}
