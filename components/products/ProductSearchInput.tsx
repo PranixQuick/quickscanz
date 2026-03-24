@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { VoiceSearchButton } from "@/hooks/useVoiceSearch";
 
 interface CatalogProduct {
   id: string;
@@ -84,38 +85,51 @@ export default function ProductSearchInput({
     setQuery(""); setSelected(null); setResults([]); setOpen(false); onManualEntry("");
   }
 
+  // Voice search result handler
+  function handleVoiceResult(text: string) {
+    handleChange(text);
+  }
+
   return (
     <div ref={wrapperRef} className="relative">
-      <div className="relative">
-        <div className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none">
-          {loading ? (
-            <svg className="animate-spin w-4 h-4 text-ink-300" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
-            </svg>
-          ) : (
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <circle cx="7" cy="7" r="5" stroke="#c9bfb3" strokeWidth="1.4"/>
-              <path d="M11 11l3 3" stroke="#c9bfb3" strokeWidth="1.4" strokeLinecap="round"/>
-            </svg>
+      <div className="relative flex gap-2">
+        <div className="relative flex-1">
+          <div className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none">
+            {loading ? (
+              <svg className="animate-spin w-4 h-4 text-ink-300" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+              </svg>
+            ) : (
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <circle cx="7" cy="7" r="5" stroke="#c9bfb3" strokeWidth="1.4"/>
+                <path d="M11 11l3 3" stroke="#c9bfb3" strokeWidth="1.4" strokeLinecap="round"/>
+              </svg>
+            )}
+          </div>
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => handleChange(e.target.value)}
+            onFocus={() => results.length > 0 && setOpen(true)}
+            placeholder={placeholder}
+            className="w-full pl-9 pr-10 py-3 bg-cream-100 border border-cream-200 rounded-xl text-sm text-ink-900 placeholder-ink-300 focus:outline-none focus:ring-2 focus:ring-sand-300 focus:border-sand-300 transition-all"
+          />
+          {(query || selected) && (
+            <button
+              type="button"
+              onClick={handleClear}
+              className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-cream-200 flex items-center justify-center hover:bg-cream-300 transition-colors"
+            >
+              <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
+                <path d="M1 1l6 6M7 1L1 7" stroke="#6b5d52" strokeWidth="1.2" strokeLinecap="round"/>
+              </svg>
+            </button>
           )}
         </div>
-        <input
-          type="text"
-          value={query}
-          onChange={(e) => handleChange(e.target.value)}
-          onFocus={() => results.length > 0 && setOpen(true)}
-          placeholder={placeholder}
-          className="w-full pl-9 pr-10 py-3 bg-cream-100 border border-cream-200 rounded-xl text-sm text-ink-900 placeholder-ink-300 focus:outline-none focus:ring-2 focus:ring-sand-300 focus:border-sand-300 transition-all"
-        />
-        {(query || selected) && (
-          <button type="button" onClick={handleClear}
-            className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-cream-200 flex items-center justify-center hover:bg-cream-300 transition-colors">
-            <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
-              <path d="M1 1l6 6M7 1L1 7" stroke="#6b5d52" strokeWidth="1.2" strokeLinecap="round"/>
-            </svg>
-          </button>
-        )}
+
+        {/* Voice search button */}
+        <VoiceSearchButton onResult={handleVoiceResult} />
       </div>
 
       {selected && (
@@ -137,8 +151,11 @@ export default function ProductSearchInput({
           <ul className="max-h-64 overflow-y-auto">
             {results.map((p) => (
               <li key={p.id}>
-                <button type="button" onClick={() => handleSelect(p)}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-cream-50 transition-colors text-left">
+                <button
+                  type="button"
+                  onClick={() => handleSelect(p)}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-cream-50 transition-colors text-left"
+                >
                   <span className="text-xl flex-shrink-0">{CATEGORY_ICONS[p.category] || "📦"}</span>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-ink-900 truncate">{p.brand} {p.name}</p>
@@ -156,8 +173,11 @@ export default function ProductSearchInput({
             ))}
           </ul>
           <div className="px-3 py-2 border-t border-cream-100">
-            <button type="button" onClick={() => { setOpen(false); onManualEntry(query); }}
-              className="text-[11px] text-ink-400 hover:text-ink-600 transition-colors">
+            <button
+              type="button"
+              onClick={() => { setOpen(false); onManualEntry(query); }}
+              className="text-[11px] text-ink-400 hover:text-ink-600 transition-colors"
+            >
               Not in list? Continue with &ldquo;{query}&rdquo; →
             </button>
           </div>
@@ -165,4 +185,4 @@ export default function ProductSearchInput({
       )}
     </div>
   );
-}
+                  }
