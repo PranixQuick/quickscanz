@@ -16,7 +16,7 @@ export function useVoiceSearch(onResult?: (text: string) => void): UseVoiceSearc
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState("");
   const [error, setError] = useState<string | null>(null);
-  // Use any — SpeechRecognition is a browser Web API not included in Next.js default tsconfig lib
+  // any is intentional — SpeechRecognition is a browser Web API, not in Next.js default tsconfig lib
   const recognitionRef = useRef<any>(null);
 
   const isSupported =
@@ -31,7 +31,6 @@ export function useVoiceSearch(onResult?: (text: string) => void): UseVoiceSearc
     setError(null);
     setTranscript("");
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const SpeechRecognitionAPI = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     const recognition = new SpeechRecognitionAPI();
 
@@ -42,10 +41,8 @@ export function useVoiceSearch(onResult?: (text: string) => void): UseVoiceSearc
 
     recognition.onstart = () => setIsListening(true);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     recognition.onresult = (event: any) => {
       const current = Array.from(event.results as any[])
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .map((r: any) => r[0].transcript)
         .join("");
       setTranscript(current);
@@ -54,7 +51,6 @@ export function useVoiceSearch(onResult?: (text: string) => void): UseVoiceSearc
       }
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     recognition.onerror = (event: any) => {
       setIsListening(false);
       if (event.error === "not-allowed") {
