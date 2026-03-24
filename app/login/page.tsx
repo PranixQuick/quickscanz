@@ -1,18 +1,20 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useState, useTransition, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { signIn } from "@/lib/actions/auth";
 
-export default function LoginPage() {
-  const router = useRouter();
+// useSearchParams must be inside a Suspense boundary for static generation
+function LoginForm() {
   const searchParams = useSearchParams();
   const urlError = searchParams.get("error");
 
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState(
-    urlError === "auth_callback_failed" ? "Verification link expired. Please sign in and request a new one." : ""
+    urlError === "auth_callback_failed"
+      ? "Verification link expired. Please sign in and request a new one."
+      : ""
   );
   const [form, setForm] = useState({ email: "", password: "" });
 
@@ -25,12 +27,62 @@ export default function LoginPage() {
 
     startTransition(async () => {
       const result = await signIn(fd);
-      if (result?.error) {
-        setError(result.error);
-      }
+      if (result?.error) setError(result.error);
     });
   }
 
+  return (
+    <form onSubmit={handleSubmit} className="card p-6 space-y-4">
+      <div>
+        <label className="block text-xs font-medium text-ink-500 mb-1.5">Email address</label>
+        <input
+          type="email"
+          value={form.email}
+          onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))}
+          placeholder="you@example.com"
+          required
+          autoFocus
+          autoComplete="email"
+          className="w-full px-3.5 py-3 bg-cream-100 border border-cream-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sand-300 transition-all"
+        />
+      </div>
+
+      <div>
+        <div className="flex items-center justify-between mb-1.5">
+          <label className="text-xs font-medium text-ink-500">Password</label>
+          <Link href="/forgot-password" className="text-xs text-sand-500 hover:text-sand-400 transition-colors">
+            Forgot password?
+          </Link>
+        </div>
+        <input
+          type="password"
+          value={form.password}
+          onChange={(e) => setForm((p) => ({ ...p, password: e.target.value }))}
+          placeholder="Your password"
+          required
+          autoComplete="current-password"
+          className="w-full px-3.5 py-3 bg-cream-100 border border-cream-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sand-300 transition-all"
+        />
+      </div>
+
+      {error && (
+        <div className="px-3 py-2.5 bg-blush-50 border border-blush-200 rounded-xl">
+          <p className="text-xs text-blush-600">{error}</p>
+        </div>
+      )}
+
+      <button
+        type="submit"
+        disabled={isPending}
+        className="w-full btn-primary py-3 text-sm font-medium disabled:opacity-40"
+      >
+        {isPending ? "Signing in…" : "Sign in"}
+      </button>
+    </form>
+  );
+}
+
+export default function LoginPage() {
   return (
     <div className="min-h-screen bg-cream-50 flex flex-col items-center justify-center px-5">
       <div className="w-full max-w-sm">
@@ -48,53 +100,17 @@ export default function LoginPage() {
           <p className="text-sm text-ink-400 mt-1">Sign in to your warranty wallet</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="card p-6 space-y-4">
-          <div>
-            <label className="block text-xs font-medium text-ink-500 mb-1.5">Email address</label>
-            <input
-              type="email"
-              value={form.email}
-              onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))}
-              placeholder="you@example.com"
-              required
-              autoFocus
-              autoComplete="email"
-              className="w-full px-3.5 py-3 bg-cream-100 border border-cream-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sand-300 transition-all"
-            />
-          </div>
-
-          <div>
-            <div className="flex items-center justify-between mb-1.5">
-              <label className="text-xs font-medium text-ink-500">Password</label>
-              <Link href="/forgot-password" className="text-xs text-sand-500 hover:text-sand-400 transition-colors">
-                Forgot password?
-              </Link>
+        <Suspense fallback={
+          <div className="card p-6">
+            <div className="space-y-4 animate-pulse">
+              <div className="h-10 bg-cream-200 rounded-xl" />
+              <div className="h-10 bg-cream-200 rounded-xl" />
+              <div className="h-11 bg-cream-200 rounded-xl" />
             </div>
-            <input
-              type="password"
-              value={form.password}
-              onChange={(e) => setForm((p) => ({ ...p, password: e.target.value }))}
-              placeholder="Your password"
-              required
-              autoComplete="current-password"
-              className="w-full px-3.5 py-3 bg-cream-100 border border-cream-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sand-300 transition-all"
-            />
           </div>
-
-          {error && (
-            <div className="px-3 py-2.5 bg-blush-50 border border-blush-200 rounded-xl">
-              <p className="text-xs text-blush-600">{error}</p>
-            </div>
-          )}
-
-          <button
-            type="submit"
-            disabled={isPending}
-            className="w-full btn-primary py-3 text-sm font-medium disabled:opacity-40"
-          >
-            {isPending ? "Signing in…" : "Sign in"}
-          </button>
-        </form>
+        }>
+          <LoginForm />
+        </Suspense>
 
         <p className="text-center text-sm text-ink-400 mt-6">
           Don&apos;t have an account?{" "}
@@ -103,7 +119,6 @@ export default function LoginPage() {
           </Link>
         </p>
 
-        {/* Dev hint */}
         <div className="mt-8 card p-3 bg-cream-100">
           <p className="text-[10px] text-ink-300 text-center">
             Beta access: test1@quickscanz.com / 123456
@@ -112,4 +127,4 @@ export default function LoginPage() {
       </div>
     </div>
   );
-            }
+}
