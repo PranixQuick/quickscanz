@@ -5,32 +5,32 @@ import { calculateExpiryDate } from "@/lib/utils";
 
 const DEMO_PRODUCTS = [
   {
-    name: "Galaxy S23",
+    name: "Samsung Galaxy S23",
     brand: "Samsung",
     category: "Electronics",
     subcategory: "Smartphone",
-    purchase_date: "2023-06-15",
+    purchase_date: "2025-07-25",
     warranty_months: 12,
     price: 74999,
     notes: "Demo product — your real products will appear here.",
   },
   {
-    name: "1.5T Inverter AC",
+    name: "Voltas 1.5 Ton Split AC",
     brand: "Voltas",
     category: "Home Appliance",
     subcategory: "Air Conditioner",
-    purchase_date: "2023-04-01",
-    warranty_months: 12,
-    price: 38000,
+    purchase_date: "2023-12-03",
+    warranty_months: 30,
+    price: 38500,
   },
   {
-    name: "55\" OLED TV",
-    brand: "LG",
+    name: "Dell Inspiron 15 Laptop",
+    brand: "Dell",
     category: "Electronics",
-    subcategory: "Television",
-    purchase_date: "2022-11-10",
-    warranty_months: 12,
-    price: 99000,
+    subcategory: "Laptop",
+    purchase_date: "2025-01-26",
+    warranty_months: 24,
+    price: 62000,
   },
 ];
 
@@ -38,13 +38,6 @@ export async function seedDemoProducts(): Promise<void> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return;
-
-  const { count } = await supabase
-    .from("products")
-    .select("*", { count: "exact", head: true })
-    .eq("user_id", user.id);
-
-  if ((count || 0) > 0) return;
 
   const inserts = DEMO_PRODUCTS.map((p) => ({
     user_id: user.id,
@@ -57,8 +50,15 @@ export async function seedDemoProducts(): Promise<void> {
     expiry_date: calculateExpiryDate(p.purchase_date, p.warranty_months),
     price: p.price,
     is_demo: true,
-    notes: p.notes || null,
+    notes: (p as any).notes || null,
   }));
 
-  await supabase.from("products").insert(inserts);
+  // FIX: Use atomic DB-level RPC instead of read-count-then-insert.
+  // seed_demo_products_if_empty() uses SELECT ... FOR UPDATE inside a transaction
+  // so two simultaneous requests cannot both pass the count=0 check.
+  // This eliminates the race condition that caused test1 to get 6 demo products.
+  await supabase.rpc("seed_demo_products_if_empty", {
+    p_user_id: user.id,
+    p_products: inserts,
+  });
 }
