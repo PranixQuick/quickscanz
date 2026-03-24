@@ -16,7 +16,8 @@ export function useVoiceSearch(onResult?: (text: string) => void): UseVoiceSearc
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  // Use any — SpeechRecognition is a browser Web API not included in Next.js default tsconfig lib
+  const recognitionRef = useRef<any>(null);
 
   const isSupported =
     typeof window !== "undefined" &&
@@ -30,9 +31,9 @@ export function useVoiceSearch(onResult?: (text: string) => void): UseVoiceSearc
     setError(null);
     setTranscript("");
 
-    const SpeechRecognitionAPI =
-      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    const recognition: SpeechRecognition = new SpeechRecognitionAPI();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const SpeechRecognitionAPI = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    const recognition = new SpeechRecognitionAPI();
 
     recognition.lang = "en-IN";
     recognition.interimResults = true;
@@ -41,9 +42,11 @@ export function useVoiceSearch(onResult?: (text: string) => void): UseVoiceSearc
 
     recognition.onstart = () => setIsListening(true);
 
-    recognition.onresult = (event: SpeechRecognitionEvent) => {
-      const current = Array.from(event.results)
-        .map((r) => r[0].transcript)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    recognition.onresult = (event: any) => {
+      const current = Array.from(event.results as any[])
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .map((r: any) => r[0].transcript)
         .join("");
       setTranscript(current);
       if (event.results[event.results.length - 1].isFinal) {
@@ -51,7 +54,8 @@ export function useVoiceSearch(onResult?: (text: string) => void): UseVoiceSearc
       }
     };
 
-    recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    recognition.onerror = (event: any) => {
       setIsListening(false);
       if (event.error === "not-allowed") {
         setError("Microphone access denied — enable in browser settings");
