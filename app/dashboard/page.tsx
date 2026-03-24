@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getProducts } from "@/lib/actions/products";
 import { seedDemoProducts } from "@/lib/actions/seed";
+import { getAllDueMaintenance } from "@/lib/actions/phase2";
 import { getWarrantyStatus } from "@/lib/utils";
 import AppLayout from "@/components/layout/AppLayout";
 import StatsGrid from "@/components/products/StatsGrid";
@@ -20,7 +21,11 @@ export default async function DashboardPage() {
   if (!user) redirect("/login");
 
   await seedDemoProducts();
-  const products = await getProducts();
+
+  const [products, dueMaintenance] = await Promise.all([
+    getProducts(),
+    getAllDueMaintenance(),
+  ]);
 
   const stats: DashboardStats = {
     total: products.length,
@@ -37,6 +42,10 @@ export default async function DashboardPage() {
 
   const expiringProducts = products.filter((p) => getWarrantyStatus(p.expiry_date) === "expiring_soon");
   const realProducts = products.filter((p) => !p.is_demo);
+  const overdueMaintenance = dueMaintenance.filter((t) => {
+    if (!t.next_due_at) return false;
+    return new Date(t.next_due_at) < new Date();
+  });
   const userName = user?.email?.split("@")[0] || "there";
 
   return (
@@ -44,7 +53,6 @@ export default async function DashboardPage() {
       <div className="space-y-6 animate-fade-up">
         <PWAInstallBanner />
 
-        {/* Header */}
         <div className="flex items-start justify-between">
           <div>
             <h1 className="font-display text-2xl font-light text-ink-900">
@@ -63,10 +71,8 @@ export default async function DashboardPage() {
           </Link>
         </div>
 
-        {/* Stats */}
         <StatsGrid stats={stats} />
 
-        {/* Expiring soon */}
         {expiringProducts.length > 0 && (
           <div className="card p-4 border-amber-200 bg-amber-50/50">
             <div className="flex items-start gap-3">
@@ -75,13 +81,33 @@ export default async function DashboardPage() {
                 <p className="text-sm font-medium text-amber-800">
                   {expiringProducts.length} warrant{expiringProducts.length === 1 ? "y expires" : "ies expire"} within 30 days
                 </p>
-                <p className="text-xs text-amber-600 mt-0.5">{expiringProducts.map((p) => p.name).join(", ")}</p>
+                <p className="text-xs text-amber-600 mt-0.5">
+                  {expiringProducts.map((p) => p.name).join(", ")}
+                </p>
               </div>
             </div>
           </div>
         )}
 
-        {/* AI Claim CTA */}
+        {overdueMaintenance.length > 0 && (
+          <div className="card p-4 border-blush-200 bg-blush-50/40">
+            <div className="flex items-start gap-3">
+              <span className="text-lg mt-0.5">🔧</span>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-blush-700">
+                  {overdueMaintenance.length} maintenance task{overdueMaintenance.length !== 1 ? "s" : ""} overdue
+                </p>
+                <p className="text-xs text-blush-500 mt-0.5 truncate">
+                  {overdueMaintenance.map((t) => `${t.product_name} — ${t.task_name}`).join(" · ")}
+                </p>
+              </div>
+              <Link href="/products" className="text-xs text-blush-600 hover:text-blush-700 font-medium flex-shrink-0">
+                View →
+              </Link>
+            </div>
+          </div>
+        )}
+
         {realProducts.length > 0 && (
           <Link href="/claim" className="block card p-4 bg-gradient-to-r from-ink-900 to-ink-800 border-ink-800 group hover:from-ink-800 hover:to-ink-700 transition-all">
             <div className="flex items-center gap-3">
@@ -99,7 +125,6 @@ export default async function DashboardPage() {
           </Link>
         )}
 
-        {/* Products */}
         {products.length === 0 ? (
           <EmptyState
             title="Your warranty wallet is empty"
@@ -123,17 +148,18 @@ export default async function DashboardPage() {
           </div>
         )}
 
-        {/* Feature grid — 6 tiles */}
         <div>
           <h2 className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-3">Explore</h2>
           <div className="grid grid-cols-2 gap-3">
             {[
-              { href: "/products/lifecycle", icon: "📊", title: "Lifecycle", sub: "Cost & lifespan" },
-              { href: "/smart-devices",      icon: "🏠", title: "Smart Devices", sub: "IoT service alerts" },
-              { href: "/energy",             icon: "⚡", title: "Energy Monitor", sub: "Power & cost" },
-              { href: "/iot-hub",            icon: "🔗", title: "IoT Hub", sub: "Alexa · Google · Matter" },
-              { href: "/family",             icon: "👨‍👩‍👧", title: "Family Vault", sub: "Share with family" },
-              { href: "/products/add",       icon: "➕", title: "Add Product", sub: "30 seconds" },
+              { href: "/products/lifecycle",  icon: "📊", title: "Lifecycle",        sub: "Cost & lifespan" },
+              { href: "/compare",             icon: "⚖️", title: "Compare",          sub: "Side-by-side products" },
+              { href: "/buying-assistant",    icon: "🛒", title: "Buying Assistant", sub: "Budget recommendations" },
+              { href: "/smart-devices",       icon: "🏠", title: "Smart Devices",    sub: "IoT service alerts" },
+              { href: "/energy",              icon: "⚡", title: "Energy Monitor",   sub: "Power & cost" },
+              { href: "/iot-hub",             icon: "🔗", title: "IoT Hub",          sub: "Alexa · Google · Matter" },
+              { href: "/family",              icon: "👨‍👩‍👧", title: "Family Vault",   sub: "Share with family" },
+              { href: "/products/add",        icon: "➕", title: "Add Product",      sub: "30 seconds" },
             ].map((item) => (
               <Link key={item.href} href={item.href}
                 className="card p-4 flex items-center gap-3 hover:border-sand-300 transition-colors group">
