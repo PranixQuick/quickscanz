@@ -1,3 +1,6 @@
+"use client";
+
+import { useRouter } from "next/navigation";
 import type { DashboardStats } from "@/lib/types";
 
 interface StatsGridProps {
@@ -5,6 +8,8 @@ interface StatsGridProps {
 }
 
 export default function StatsGrid({ stats }: StatsGridProps) {
+  const router = useRouter();
+
   const items = [
     {
       label: "Total",
@@ -19,6 +24,8 @@ export default function StatsGrid({ stats }: StatsGridProps) {
       ),
       color: "text-ink-800",
       sublabel: "products",
+      href: "/products",
+      active: stats.total > 0,
     },
     {
       label: "Active",
@@ -31,6 +38,8 @@ export default function StatsGrid({ stats }: StatsGridProps) {
       ),
       color: "text-sage-500",
       sublabel: "warranties",
+      href: "/products?status=active",
+      active: stats.active > 0,
     },
     {
       label: "Expiring",
@@ -43,20 +52,30 @@ export default function StatsGrid({ stats }: StatsGridProps) {
       ),
       color: stats.expiringSoon > 0 ? "text-amber-600" : "text-ink-400",
       sublabel: "within 30d",
+      href: "/products?status=expiring_soon",
+      active: stats.expiringSoon > 0,
     },
   ];
 
   return (
     <div className="grid grid-cols-3 gap-3">
       {items.map((item) => (
-        <div key={item.label} className="card p-4">
+        <button
+          key={item.label}
+          onClick={() => router.push(item.href)}
+          className={`card p-4 text-left transition-all ${
+            item.active
+              ? "hover:border-sand-300 hover:shadow-sm active:scale-95 cursor-pointer"
+              : "cursor-default opacity-80"
+          }`}
+        >
           <div className="flex items-center gap-1.5 mb-2">
             {item.icon}
             <span className="text-[10px] font-medium text-ink-400 uppercase tracking-wider">{item.label}</span>
           </div>
           <div className={`font-display text-3xl font-light ${item.color} leading-none mb-1`}>{item.value}</div>
           <div className="text-[10px] text-ink-300">{item.sublabel}</div>
-        </div>
+        </button>
       ))}
     </div>
   );
