@@ -136,7 +136,7 @@ export default function BuyingAssistantClient({ categories }: Props) {
 
               {result.recommendations.length === 0 ? (
                 <div className="card p-6 text-center">
-                  <p className="text-sm text-ink-500">No matches found. Try "Electronics", "Home Appliance", or "Vehicle".</p>
+                  <p className="text-sm text-ink-500">No matches found. Try Electronics, Home Appliance, or Vehicle.</p>
                 </div>
               ) : (
                 <div className="space-y-3">
