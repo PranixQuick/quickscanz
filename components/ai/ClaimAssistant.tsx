@@ -127,7 +127,8 @@ TONE: Friendly, confident, helpful. Use Indian context (₹, mention local proce
 
 If the warranty has expired, acknowledge it but still help them understand their options (extended warranty, out-of-warranty service rates, consumer court if product failed within reasonable lifespan).`;
 
-      const response = await fetch("https://api.anthropic.com/v1/messages", {
+      // Call our secure server-side proxy — ANTHROPIC_API_KEY stays server-side only
+      const response = await fetch("/api/ai", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -141,8 +142,13 @@ If the warranty has expired, acknowledge it but still help them understand their
         }),
       });
 
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData.error || `HTTP ${response.status}`);
+      }
+
       const data = await response.json();
-      const text = data.content?.[0]?.text || "I'm having trouble responding right now. Please try again.";
+      const text = data.content?.[0]?.text || "I\'m having trouble responding right now. Please try again.";
 
       const assistantMsg: ClaimMessage = { role: "assistant", content: text };
       const newMessages = [...userMessages, assistantMsg];
