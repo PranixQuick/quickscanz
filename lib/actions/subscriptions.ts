@@ -35,7 +35,9 @@ export async function getSubscriptionPlans(): Promise<SubscriptionPlan[]> {
 
 export async function getUserSubscription(): Promise<UserSubscription | null> {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return null;
 
   const { data } = await supabase
@@ -52,9 +54,14 @@ export async function getUserSubscription(): Promise<UserSubscription | null> {
 
 export async function createRazorpayOrder(
   planId: string
-): Promise<{ orderId: string; amount: number; currency: string; key: string } | { error: string }> {
+): Promise<
+  | { orderId: string; amount: number; currency: string; key: string }
+  | { error: string }
+> {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return { error: "Not authenticated" };
 
   const { data: plan } = await supabase
@@ -69,41 +76,110 @@ export async function createRazorpayOrder(
   const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET;
 
   if (!RAZORPAY_KEY_ID || !RAZORPAY_KEY_SECRET) {
-    return { error: "Payment not configured yet — contact support" };
+    console.error("[Razorpay] Keys not set in Vercel environment variables");
+    return { error: "Payment not configured — please contact support" };
+  }
+
+  // Validate key format — Razorpay live keys: rzp_live_xxx, test keys: rzp_test_xxx
+  if (
+    !RAZORPAY_KEY_ID.startsWith("rzp_live_") &&
+    !RAZORPAY_KEY_ID.startsWith("rzp_test_")
+  ) {
+    console.error(
+      "[Razorpay] Invalid key format — key must start with rzp_live_ or rzp_test_. Got:",
+      RAZORPAY_KEY_ID.slice(0, 12)
+    );
+    return { error: "Payment configuration error — please contact support" };
   }
 
   const amountPaise = plan.price_inr * 100;
-  const credentials = btoa(`${RAZORPAY_KEY_ID}:${RAZORPAY_KEY_SECRET}`);
 
-  const orderRes = await fetch("https://api.razorpay.com/v1/orders", {
-    method: "POST",
-    headers: {
-      "Authorization": `Basic ${credentials}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      amount: amountPaise,
-      currency: "INR",
-      receipt: `qs_${user.id.slice(0, 8)}_${Date.now()}`,
-      notes: { user_id: user.id, plan_id: planId },
-    }),
-  });
+  // Use Buffer.from for base64 encoding — btoa() can fail in the Node.js edge runtime
+  const credentials = Buffer.from(
+    `${RAZORPAY_KEY_ID}:${RAZORPAY_KEY_SECRET}`
+  ).toString("base64");
+
+  let orderRes: Response;
+  try {
+    orderRes = await fetch("https://api.razorpay.com/v1/orders", {
+      method: "POST",
+      headers: {
+        Authorization: `Basic ${credentials}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        amount: amountPaise,
+        currency: "INR",
+        receipt: `qs_${user.id.slice(0, 8)}_${Date.now()}`,
+        notes: { user_id: user.id, plan_id: planId },
+      }),
+    });
+  } catch (fetchErr) {
+    console.error("[Razorpay] Network error reaching Razorpay API:", fetchErr);
+    return {
+      error: "Could not reach payment server — check your internet and retry",
+    };
+  }
 
   if (!orderRes.ok) {
-    const err = await orderRes.text();
-    console.error("Razorpay order error:", err);
-    return { error: "Payment initiation failed — try again" };
+    const errBody = await orderRes.text();
+    let friendlyError = "Payment initiation failed — please try again";
+
+    try {
+      const parsed = JSON.parse(errBody);
+      const code = parsed?.error?.code || "";
+      const description = parsed?.error?.description || "";
+      const field = parsed?.error?.field || "";
+
+      // Log the full Razorpay error so you can see it in Vercel logs
+      console.error("[Razorpay] Order creation failed:", {
+        httpStatus: orderRes.status,
+        errorCode: code,
+        description,
+        field,
+        keyPrefix: RAZORPAY_KEY_ID.slice(0, 12) + "...",
+        planId,
+        amountPaise,
+      });
+
+      // Map common Razorpay errors to user-friendly messages
+      if (orderRes.status === 401) {
+        friendlyError =
+          "Payment credentials are invalid — please contact support";
+      } else if (
+        code === "BAD_REQUEST_ERROR" &&
+        description.toLowerCase().includes("amount")
+      ) {
+        friendlyError = "Invalid payment amount — please contact support";
+      } else if (code === "GATEWAY_ERROR") {
+        friendlyError = "Payment gateway error — please try again in a moment";
+      }
+    } catch {
+      // errBody wasn't valid JSON
+      console.error(
+        "[Razorpay] Order error (raw):",
+        orderRes.status,
+        errBody.slice(0, 500)
+      );
+    }
+
+    return { error: friendlyError };
   }
 
   const order = await orderRes.json();
 
-  // Save pending order to DB
-  await supabase.from("user_subscriptions").upsert({
-    user_id: user.id,
-    plan_id: planId,
-    status: "trial",
-    razorpay_order_id: order.id,
-  }, { onConflict: "user_id" });
+  // Save the pending order to DB so the webhook can match it
+  await supabase
+    .from("user_subscriptions")
+    .upsert(
+      {
+        user_id: user.id,
+        plan_id: planId,
+        status: "trial",
+        razorpay_order_id: order.id,
+      },
+      { onConflict: "user_id" }
+    );
 
   return {
     orderId: order.id,
@@ -120,15 +196,19 @@ export async function verifyRazorpayPayment(params: {
   planId: string;
 }): Promise<{ success: boolean; error?: string }> {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return { success: false, error: "Not authenticated" };
 
   const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET;
-  if (!RAZORPAY_KEY_SECRET) return { success: false, error: "Payment not configured" };
+  if (!RAZORPAY_KEY_SECRET)
+    return { success: false, error: "Payment not configured" };
 
-  // Verify signature using Web Crypto
+  // Verify Razorpay signature using HMAC-SHA256
   const body = `${params.orderId}|${params.paymentId}`;
   const encoder = new TextEncoder();
+
   const key = await crypto.subtle.importKey(
     "raw",
     encoder.encode(RAZORPAY_KEY_SECRET),
@@ -136,17 +216,30 @@ export async function verifyRazorpayPayment(params: {
     false,
     ["sign"]
   );
-  const signatureBuffer = await crypto.subtle.sign("HMAC", key, encoder.encode(body));
-  const expectedSignature = Array.from(new Uint8Array(signatureBuffer as ArrayBuffer))
+
+  const signatureBuffer = await crypto.subtle.sign(
+    "HMAC",
+    key,
+    encoder.encode(body)
+  );
+
+  const expectedSignature = Array.from(
+    new Uint8Array(signatureBuffer as ArrayBuffer)
+  )
     .map((b) => b.toString(16).padStart(2, "0"))
     .join("");
 
   if (expectedSignature !== params.signature) {
+    console.error(
+      "[Razorpay] Signature mismatch — possible tampered or replayed payment",
+      { orderId: params.orderId, paymentId: params.paymentId }
+    );
     return { success: false, error: "Payment verification failed" };
   }
 
-  // Activate subscription
+  // Activate the subscription
   const now = new Date();
+
   const { data: plan } = await supabase
     .from("subscription_plans")
     .select("interval")
@@ -173,7 +266,10 @@ export async function verifyRazorpayPayment(params: {
     })
     .eq("user_id", user.id);
 
-  if (error) return { success: false, error: error.message };
+  if (error) {
+    console.error("[Razorpay] Failed to activate subscription in DB:", error.message);
+    return { success: false, error: error.message };
+  }
 
   revalidatePath("/account");
   revalidatePath("/pricing");
