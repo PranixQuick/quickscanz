@@ -37,7 +37,9 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
+  // maximumScale removed — setting it to 1 disables pinch-to-zoom which is
+  // an accessibility violation (WCAG 2.1 SC 1.4.4) and harms users with
+  // visual impairments. Fonts and layout are mobile-optimised so zoom is safe.
   themeColor: "#fdfcf8",
 };
 
@@ -45,6 +47,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className="scroll-smooth">
       <head>
+        {/* Preconnect to Google Fonts for faster font loading */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       </head>
