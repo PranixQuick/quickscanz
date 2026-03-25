@@ -30,7 +30,7 @@ function loadRazorpay(): Promise<boolean> {
 export default function PricingClient({ plans, currentPlanId, userEmail }: Props) {
   const [isPending, startTransition] = useTransition();
   const [processingPlanId, setProcessingPlanId] = useState<string | null>(null);
-  const [interval, setInterval] = useState<"monthly" | "yearly">("monthly");
+  const [interval, setInterval] = useState<"monthly" | "yearly">("yearly");
 
   const displayed = plans.filter(
     (p) => p.id === "free" || p.interval === interval
@@ -111,27 +111,36 @@ export default function PricingClient({ plans, currentPlanId, userEmail }: Props
         </p>
       </div>
 
-      {/* Billing toggle */}
-      <div className="flex items-center gap-3">
-        <button
-          onClick={() => setInterval("monthly")}
-          className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-            interval === "monthly" ? "bg-ink-900 text-cream-100" : "bg-cream-100 text-ink-500"
-          }`}
-        >
-          Monthly
-        </button>
-        <button
-          onClick={() => setInterval("yearly")}
-          className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-            interval === "yearly" ? "bg-ink-900 text-cream-100" : "bg-cream-100 text-ink-500"
-          }`}
-        >
-          Yearly
-          <span className="ml-1.5 text-[10px] bg-sage-100 text-sage-700 px-1.5 py-0.5 rounded-full font-semibold">
-            Save 33%
-          </span>
-        </button>
+      {/* Billing toggle — default yearly, prominent */}
+      <div className="card p-3 bg-cream-50 border-cream-200">
+        <p className="text-[10px] text-ink-400 uppercase tracking-wider mb-2 font-medium">Billing cycle</p>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setInterval("monthly")}
+            className={`flex-1 py-2.5 rounded-xl text-sm font-medium transition-all ${
+              interval === "monthly"
+                ? "bg-white text-ink-900 shadow-sm border border-cream-200"
+                : "text-ink-400 hover:text-ink-600"
+            }`}
+          >
+            Monthly
+            <p className="text-[10px] font-normal mt-0.5 opacity-70">&#8377;149 / month</p>
+          </button>
+          <button
+            onClick={() => setInterval("yearly")}
+            className={`flex-1 py-2.5 rounded-xl text-sm font-medium transition-all relative ${
+              interval === "yearly"
+                ? "bg-ink-900 text-cream-100 shadow-sm"
+                : "bg-sage-50 text-sage-700 border border-sage-200 hover:bg-sage-100"
+            }`}
+          >
+            <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 text-[9px] bg-sage-500 text-white px-2 py-0.5 rounded-full font-bold uppercase tracking-wide whitespace-nowrap">
+              Best value
+            </span>
+            Yearly
+            <p className="text-[10px] font-normal mt-0.5 opacity-80">&#8377;999 / year &middot; save &#8377;789</p>
+          </button>
+        </div>
       </div>
 
       {/* Plan cards */}
