@@ -62,9 +62,21 @@ Respond ONLY with a valid JSON object (no markdown, no backticks) matching this 
 
 Use realistic Indian market data. avg_rating should be 1.0-5.0. review_count is approximate. sentiment must be one of the three values. If you don't have specific data, make reasonable estimates based on the brand's reputation for this product category.`;
 
+    // Use server-side AI proxy — ANTHROPIC_API_KEY must stay server-only
+    // reviews.ts is a "use server" action so it can use process.env directly
+    const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
+    if (!ANTHROPIC_API_KEY) {
+      console.error("[product-reviews] ANTHROPIC_API_KEY not set");
+      return null;
+    }
+
     const response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": ANTHROPIC_API_KEY,
+        "anthropic-version": "2023-06-01",
+      },
       body: JSON.stringify({
         model: "claude-sonnet-4-20250514",
         max_tokens: 600,
@@ -72,7 +84,11 @@ Use realistic Indian market data. avg_rating should be 1.0-5.0. review_count is 
       }),
     });
 
-    if (!response.ok) return null;
+    if (!response.ok) {
+      const errText = await response.text();
+      console.error("[product-reviews] Anthropic error:", response.status, errText.slice(0, 200));
+      return null;
+    }
 
     const data = await response.json();
     const text = data.content?.[0]?.text || "";
