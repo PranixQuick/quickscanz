@@ -288,13 +288,42 @@ export default function ProductDetailClient({
           <div>
             <p className="text-sm font-medium text-ink-800">User Manual</p>
             <p className="text-xs text-ink-400 mt-1 max-w-xs mx-auto">
-              Search ManualsLib for your {product.brand} {product.name}.
+              Find the official user manual for your {product.brand} {product.name}.
             </p>
           </div>
-          <a href={`https://www.manualslib.com/search/?q=${encodeURIComponent(product.brand + " " + product.name)}`}
-            target="_blank" rel="noopener noreferrer" className="btn-primary text-sm px-6 py-2.5 inline-flex items-center gap-2">
-            Find Manual on ManualsLib
-          </a>
+          <div className="flex flex-col gap-2">
+            <a
+              href={`https://www.google.com/search?q=${encodeURIComponent(product.brand + " " + product.name + " user manual PDF")}`}
+              target="_blank" rel="noopener noreferrer"
+              className="btn-primary text-sm px-6 py-2.5 inline-flex items-center justify-center gap-2"
+            >
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <circle cx="6" cy="6" r="4.5" stroke="currentColor" strokeWidth="1.3"/>
+                <path d="M9.5 9.5L12 12" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+              </svg>
+              Search on Google
+            </a>
+            <a
+              href={`https://www.manualslib.com/search/?q=${encodeURIComponent(product.brand + " " + product.name)}`}
+              target="_blank" rel="noopener noreferrer"
+              className="text-xs text-sand-500 hover:text-sand-400 transition-colors"
+            >
+              Try ManualsLib →
+            </a>
+            {(product as any).category?.toLowerCase().includes("samsung") || product.brand?.toLowerCase() === "samsung" ? (
+              <a href="https://www.samsung.com/in/support/" target="_blank" rel="noopener noreferrer" className="text-xs text-ink-400 hover:text-ink-600 transition-colors">
+                Samsung India Support →
+              </a>
+            ) : product.brand?.toLowerCase() === "lg" ? (
+              <a href="https://www.lg.com/in/support/" target="_blank" rel="noopener noreferrer" className="text-xs text-ink-400 hover:text-ink-600 transition-colors">
+                LG India Support →
+              </a>
+            ) : product.brand?.toLowerCase().includes("apple") ? (
+              <a href="https://support.apple.com/en-in" target="_blank" rel="noopener noreferrer" className="text-xs text-ink-400 hover:text-ink-600 transition-colors">
+                Apple India Support →
+              </a>
+            ) : null}
+          </div>
         </div>
       )}
 
@@ -333,4 +362,4 @@ export default function ProductDetailClient({
       )}
     </div>
   );
-}
+              }
