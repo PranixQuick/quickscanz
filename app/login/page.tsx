@@ -117,13 +117,6 @@ export default function LoginPage() {
             Create one free
           </Link>
         </p>
-
-        {/* Dev hint */}
-        <div className="mt-8 card p-3 bg-cream-100">
-          <p className="text-[10px] text-ink-300 text-center">
-            Beta access: test1@quickscanz.com / 123456
-          </p>
-        </div>
       </div>
     </div>
   );
