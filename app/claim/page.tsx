@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getProducts } from "@/lib/actions/products";
 import AppLayout from "@/components/layout/AppLayout";
@@ -21,7 +22,31 @@ export default async function ClaimPage({
   const products = await getProducts();
   const realProducts = products.filter((p) => !p.is_demo);
 
-  if (realProducts.length === 0) redirect("/products/add");
+  // Empty state — don't redirect, show clear guidance instead
+  if (realProducts.length === 0) {
+    return (
+      <AppLayout>
+        <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-6 animate-fade-up">
+          <div className="w-16 h-16 rounded-3xl bg-sand-100 border border-sand-200 flex items-center justify-center mb-4">
+            <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+              <path d="M4 6h20a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H6l-4 3V7a1 1 0 0 1 1-1z" stroke="#c49572" strokeWidth="1.5" strokeLinejoin="round"/>
+              <path d="M9 13h.5M14 13h.5M19 13h.5" stroke="#c49572" strokeWidth="1.5" strokeLinecap="round"/>
+            </svg>
+          </div>
+          <h1 className="font-display text-2xl font-light text-ink-900 mb-2">Add a product first</h1>
+          <p className="text-sm text-ink-400 leading-relaxed mb-6 max-w-xs">
+            Claim AI guides you through warranty claims for your products. Add your first real product to get started.
+          </p>
+          <Link href="/products/add" className="btn-primary text-sm px-6 py-2.5">
+            Add your first product →
+          </Link>
+          <p className="text-xs text-ink-300 mt-4">
+            Demo products are excluded — Claim AI only works with products you own.
+          </p>
+        </div>
+      </AppLayout>
+    );
+  }
 
   const selected = searchParams.product
     ? realProducts.find((p) => p.id === searchParams.product) || realProducts[0]
