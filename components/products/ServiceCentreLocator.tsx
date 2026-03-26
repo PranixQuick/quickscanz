@@ -195,8 +195,6 @@ export default function ServiceCentreLocator({ brand }: ServiceCentreLocatorProp
                   )}
                   <a
                     href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(sc.name + " " + sc.address)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
                     className="flex items-center gap-1 text-[11px] text-sand-600 hover:text-sand-500 bg-sand-50 px-2 py-1 rounded-lg"
                   >
                     <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
