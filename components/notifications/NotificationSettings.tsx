@@ -102,7 +102,7 @@ export default function NotificationSettings({ userId: _userId }: NotificationSe
           <div className="w-10 h-10 rounded-xl bg-cream-100 flex items-center justify-center text-xl">📧</div>
           <div>
             <p className="text-sm font-medium text-ink-800">Warranty Alerts</p>
-            <p className="text-xs text-ink-400">Email alerts are active at your registered address. You'll be notified 30 days and 7 days before warranties expire.</p>
+            <p className="text-xs text-ink-400">Email alerts are active at your registered address. You&apos;ll be notified 30 days and 7 days before warranties expire.</p>
           </div>
         </div>
       </div>
@@ -159,7 +159,7 @@ export default function NotificationSettings({ userId: _userId }: NotificationSe
             <p className="text-sm font-medium text-ink-800">Push Notifications</p>
             <p className="text-xs text-ink-400">
               {isSubscribed
-                ? "Enabled — you'll be notified before warranties expire"
+                ? "Enabled — you&apos;ll be notified before warranties expire"
                 : permission === "denied"
                 ? "Blocked in browser settings"
                 : "Get alerts 30 days before warranties expire"}
