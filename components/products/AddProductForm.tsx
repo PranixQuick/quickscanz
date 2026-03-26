@@ -206,7 +206,7 @@ export default function AddProductForm() {
       <div>
         <label className="block text-xs font-semibold text-ink-400 uppercase tracking-wider mb-3">Invoice / Receipt</label>
         <div {...getRootProps()} className={`border-2 border-dashed rounded-2xl p-6 text-center cursor-pointer transition-all ${isDragActive ? "border-sand-400 bg-sand-50" : invoiceFile ? "border-sage-300 bg-sage-50" : "border-cream-300 hover:border-sand-300 hover:bg-cream-100"}`}>
-          <input {...getInputProps()} />
+          <input {...getInputProps()} capture="environment" />
           {invoiceFile ? (
             <div className="flex items-center justify-center gap-2">
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 2h8l4 4v8H2V2z" stroke="#7aa67a" strokeWidth="1.2"/><path d="M10 2v4h4" stroke="#7aa67a" strokeWidth="1.2"/></svg>
