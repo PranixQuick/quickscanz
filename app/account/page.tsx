@@ -17,7 +17,7 @@ export default async function AccountPage() {
     { count: smartDeviceCount },
     subscription,
   ] = await Promise.all([
-    supabase.from("products").select("*", { count: "exact", head: true }).eq("user_id", user.id),
+    supabase.from("products").select("*", { count: "exact", head: true }).eq("user_id", user.id).eq("is_demo", false),
     supabase.from("smart_devices").select("*", { count: "exact", head: true }).eq("user_id", user.id),
     getUserSubscription(),
   ]);
