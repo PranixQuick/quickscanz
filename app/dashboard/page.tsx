@@ -21,7 +21,7 @@ export default async function DashboardPage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  await seedDemoProducts();
+  void seedDemoProducts().catch(() => undefined);
 
   const [products, dueMaintenance, subscription] = await Promise.all([
     getProducts(),
