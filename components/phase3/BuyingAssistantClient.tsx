@@ -175,7 +175,7 @@ export default function BuyingAssistantClient({ categories }: Props) {
                         {rec.whereToCheck.map((url, j) => {
                           const domain = url.includes("amazon") ? "Amazon" : "Flipkart";
                           return (
-                            <a key={j} href={url} target="_blank" rel="noopener noreferrer"
+                            <a key={j} href={url} rel="noopener noreferrer"
                               className="flex-1 text-center text-xs btn-secondary py-2">
                               Check {domain} →
                             </a>
