@@ -31,7 +31,7 @@ export default function ForgotPasswordPage() {
 
   if (done) {
     return (
-      <div className="min-h-screen bg-cream-50 flex flex-col items-center justify-center px-5">
+      <div className="min-h-screen bg-cream-50 flex flex-col items-center overflow-y-auto px-5 py-12">
         <div className="w-full max-w-sm text-center">
           <div className="w-16 h-16 rounded-3xl bg-sand-100 border border-sand-200 flex items-center justify-center mx-auto mb-6">
             <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
@@ -51,7 +51,7 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen bg-cream-50 flex flex-col items-center justify-center px-5">
+    <div className="min-h-screen bg-cream-50 flex flex-col items-center overflow-y-auto px-5 py-12">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
           <div className="w-12 h-12 rounded-2xl bg-ink-900 flex items-center justify-center mx-auto mb-4">
