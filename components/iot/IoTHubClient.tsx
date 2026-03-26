@@ -146,7 +146,7 @@ export default function IoTHubClient() {
                           ✓ Linked successfully
                         </div>
                       )}
-                      <a href={p.skillUrl} target="_blank" rel="noopener noreferrer"
+                      <a href={p.skillUrl} rel="noopener noreferrer"
                         className="btn-secondary text-xs px-4 py-2.5">
                         Open App →
                       </a>
