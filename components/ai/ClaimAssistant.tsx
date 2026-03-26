@@ -36,11 +36,8 @@ function TypingIndicator() {
       <div className="bg-cream-100 rounded-2xl rounded-bl-sm px-4 py-3">
         <div className="flex gap-1 items-center h-4">
           {[0, 1, 2].map((i) => (
-            <span
-              key={i}
-              className="w-1.5 h-1.5 bg-ink-300 rounded-full animate-bounce"
-              style={{ animationDelay: `${i * 150}ms` }}
-            />
+            <span key={i} className="w-1.5 h-1.5 bg-ink-300 rounded-full animate-bounce"
+              style={{ animationDelay: `${i * 150}ms` }} />
           ))}
         </div>
       </div>
@@ -62,13 +59,9 @@ function Message({ msg }: { msg: ClaimMessage }) {
           </svg>
         </div>
       )}
-      <div
-        className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-relaxed whitespace-pre-wrap ${
-          isUser
-            ? "bg-ink-900 text-cream-50 rounded-br-sm"
-            : "bg-cream-100 text-ink-800 rounded-bl-sm"
-        }`}
-      >
+      <div className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-relaxed whitespace-pre-wrap ${
+        isUser ? "bg-ink-900 text-cream-50 rounded-br-sm" : "bg-cream-100 text-ink-800 rounded-bl-sm"
+      }`}>
         {msg.content}
       </div>
     </div>
@@ -80,7 +73,8 @@ export default function ClaimAssistant({ product, sessionId, initialMessages = [
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [started, setStarted] = useState(initialMessages.length > 0);
-  const [isPending, startTransition] = useTransition();
+  const [limitReached, setLimitReached] = useState(false);
+  const [, startTransition] = useTransition();
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const status = getWarrantyStatus(product.expiry_date);
@@ -92,14 +86,13 @@ export default function ClaimAssistant({ product, sessionId, initialMessages = [
   async function callAI(userMessages: ClaimMessage[]) {
     setLoading(true);
     try {
-      const systemPrompt = `You are QuickScanZ AI Claim Assistant — a knowledgeable, empathetic assistant helping Indian consumers navigate warranty claims and product issues.
+      const systemPrompt = `You are QuickScanZ AI Claim Assistant — a knowledgeable, empathetic assistant helping Indian consumers navigate warranty claims.
 
 PRODUCT CONTEXT:
 - Product: ${product.name}
 - Brand: ${product.brand}
 - Category: ${(product as any).category || "Consumer Product"}
 - Model: ${(product as any).model_number || "N/A"}
-- Serial: ${(product as any).serial_number || "N/A"}
 - Purchase Date: ${formatDate(product.purchase_date)}
 - Warranty Expiry: ${formatDate(product.expiry_date)}
 - Warranty Status: ${status}
@@ -107,63 +100,46 @@ PRODUCT CONTEXT:
 - Invoice stored: ${product.invoice_url ? "Yes" : "No"}
 - Store: ${(product as any).store_name || "Not recorded"}
 
-YOUR JOB:
-1. Understand the issue clearly (ask 1-2 targeted questions if needed)
-2. Determine if the issue is covered under warranty (manufacturing defect = covered; physical damage, liquid damage, misuse = NOT covered)
-3. Provide step-by-step claim guidance specific to ${product.brand} in India
-4. Generate a ready-to-send complaint email if appropriate
-5. Mention what documents to carry to the service centre (invoice, warranty card, ID proof)
-6. Be direct and actionable — Indian users need fast answers
-
-WARRANTY COVERAGE RULES:
+RULES:
 - Manufacturing defects: COVERED
-- Physical damage, cracked screens, dents: NOT COVERED (unless accidental damage cover purchased)
-- Liquid damage: NOT COVERED
-- Normal wear and tear: NOT COVERED
-- Software issues from official updates: Usually COVERED
-- Accessories (charger, earphones): Usually NOT covered after 6 months
+- Physical/liquid damage: NOT COVERED
+- Keep responses under 150 words unless drafting an email
+- Use Indian context (₹, local processes, Consumer Protection Act 2019)
+- If warranty expired, still help with out-of-warranty options`;
 
-TONE: Friendly, confident, helpful. Use Indian context (₹, mention local processes). Keep responses concise — max 150 words unless generating an email.
-
-If the warranty has expired, acknowledge it but still help them understand their options (extended warranty, out-of-warranty service rates, consumer court if product failed within reasonable lifespan).`;
-
-      // Call our secure server-side proxy — ANTHROPIC_API_KEY stays server-side only
-      const response = await fetch("/api/ai", {
+      const res = await fetch("/api/ai", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           model: "claude-sonnet-4-20250514",
           max_tokens: 1000,
           system: systemPrompt,
-          messages: userMessages.map((m) => ({
-            role: m.role,
-            content: m.content,
-          })),
+          messages: userMessages.map((m) => ({ role: m.role, content: m.content })),
+          product_id: product.id, // for server-side usage tracking
         }),
       });
 
-      if (!response.ok) {
-        const errData = await response.json().catch(() => ({}));
-        throw new Error(errData.error || `HTTP ${response.status}`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+      const data = await res.json();
+
+      if (data._usage_limit_reached) {
+        setLimitReached(true);
       }
 
-      const data = await response.json();
-      const text = data.content?.[0]?.text || "I\'m having trouble responding right now. Please try again.";
-
+      const text = data.content?.[0]?.text || "Please describe your issue and I'll help with your claim.";
       const assistantMsg: ClaimMessage = { role: "assistant", content: text };
       const newMessages = [...userMessages, assistantMsg];
       setMessages(newMessages);
 
-      // Persist to Supabase
-      startTransition(async () => {
-        await updateClaimSession(sessionId, newMessages);
-      });
-    } catch (err) {
-      const errorMsg: ClaimMessage = {
+      startTransition(async () => { await updateClaimSession(sessionId, newMessages); });
+    } catch {
+      // Graceful fallback — never crash, never show technical errors
+      const fallbackMsg: ClaimMessage = {
         role: "assistant",
-        content: "I'm having trouble connecting right now. Please check your internet and try again.",
+        content: "I'm here to help with your warranty claim. Please describe the issue with your product and I'll guide you through the process.",
       };
-      setMessages((prev) => [...prev, errorMsg]);
+      setMessages((prev) => [...prev, fallbackMsg]);
     } finally {
       setLoading(false);
     }
@@ -171,15 +147,14 @@ If the warranty has expired, acknowledge it but still help them understand their
 
   async function handleStart(issue: string) {
     setStarted(true);
-    const greeting = `I need help with my ${product.brand} ${product.name}. Issue: ${issue}`;
-    const userMsg: ClaimMessage = { role: "user", content: greeting };
+    const userMsg: ClaimMessage = { role: "user", content: `I need help with my ${product.brand} ${product.name}. Issue: ${issue}` };
     const newMessages = [userMsg];
     setMessages(newMessages);
     await callAI(newMessages);
   }
 
   async function handleSend() {
-    if (!input.trim() || loading) return;
+    if (!input.trim() || loading || limitReached) return;
     const userMsg: ClaimMessage = { role: "user", content: input.trim() };
     const newMessages = [...messages, userMsg];
     setMessages(newMessages);
@@ -213,11 +188,8 @@ If the warranty has expired, acknowledge it but still help them understand their
           <p className="text-xs font-medium text-ink-400 uppercase tracking-wider mb-2">What&apos;s the issue?</p>
           <div className="grid grid-cols-2 gap-2">
             {QUICK_ISSUES.map((issue) => (
-              <button
-                key={issue}
-                onClick={() => handleStart(issue)}
-                className="text-left text-xs px-3 py-2.5 bg-cream-100 hover:bg-cream-200 border border-cream-200 hover:border-sand-300 rounded-xl text-ink-600 transition-all leading-snug"
-              >
+              <button key={issue} onClick={() => handleStart(issue)}
+                className="text-left text-xs px-3 py-2.5 bg-cream-100 hover:bg-cream-200 border border-cream-200 hover:border-sand-300 rounded-xl text-ink-600 transition-all leading-snug">
                 {issue}
               </button>
             ))}
@@ -225,19 +197,11 @@ If the warranty has expired, acknowledge it but still help them understand their
         </div>
 
         <div className="flex gap-2">
-          <textarea
-            ref={inputRef}
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Or describe your issue in detail..."
-            rows={2}
-            className="flex-1 px-3 py-2.5 bg-cream-100 border border-cream-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sand-300 resize-none"
-          />
-          <button
-            onClick={() => input.trim() && handleStart(input.trim())}
-            disabled={!input.trim()}
-            className="px-4 bg-ink-900 text-cream-50 rounded-xl hover:bg-ink-700 transition-colors disabled:opacity-40"
-          >
+          <textarea ref={inputRef} value={input} onChange={(e) => setInput(e.target.value)}
+            placeholder="Or describe your issue in detail..." rows={2}
+            className="flex-1 px-3 py-2.5 bg-cream-100 border border-cream-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sand-300 resize-none" />
+          <button onClick={() => input.trim() && handleStart(input.trim())} disabled={!input.trim()}
+            className="px-4 bg-ink-900 text-cream-50 rounded-xl hover:bg-ink-700 transition-colors disabled:opacity-40">
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
               <path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
@@ -249,42 +213,35 @@ If the warranty has expired, acknowledge it but still help them understand their
 
   return (
     <div className="flex flex-col" style={{ height: "440px" }}>
-      {/* Messages */}
       <div className="flex-1 overflow-y-auto space-y-3 pr-1 pb-2">
-        {messages.map((msg, i) => (
-          <Message key={i} msg={msg} />
-        ))}
+        {messages.map((msg, i) => <Message key={i} msg={msg} />)}
         {loading && <TypingIndicator />}
         <div ref={bottomRef} />
       </div>
 
-      {/* Input */}
-      <div className="pt-3 border-t border-cream-200 flex gap-2 mt-2">
-        <textarea
-          ref={inputRef}
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && !e.shiftKey) {
-              e.preventDefault();
-              handleSend();
-            }
-          }}
-          placeholder="Type your response... (Enter to send)"
-          rows={2}
-          disabled={loading}
-          className="flex-1 px-3 py-2.5 bg-cream-100 border border-cream-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sand-300 resize-none disabled:opacity-50"
-        />
-        <button
-          onClick={handleSend}
-          disabled={!input.trim() || loading}
-          className="px-4 bg-ink-900 text-cream-50 rounded-xl hover:bg-ink-700 transition-colors disabled:opacity-40 self-end pb-2.5 pt-2.5"
-        >
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-            <path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-        </button>
-      </div>
+      {limitReached ? (
+        <div className="pt-3 border-t border-cream-200 mt-2">
+          <div className="p-3 bg-sand-50 border border-sand-200 rounded-xl text-center">
+            <p className="text-sm font-medium text-ink-700">Usage limit reached for this product</p>
+            <p className="text-xs text-ink-400 mt-1">
+              Upgrade to Pro for more AI messages, or visit an authorised service centre directly.
+            </p>
+          </div>
+        </div>
+      ) : (
+        <div className="pt-3 border-t border-cream-200 flex gap-2 mt-2">
+          <textarea ref={inputRef} value={input} onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
+            placeholder="Type your response... (Enter to send)" rows={2} disabled={loading}
+            className="flex-1 px-3 py-2.5 bg-cream-100 border border-cream-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sand-300 resize-none disabled:opacity-50" />
+          <button onClick={handleSend} disabled={!input.trim() || loading}
+            className="px-4 bg-ink-900 text-cream-50 rounded-xl hover:bg-ink-700 transition-colors disabled:opacity-40 self-end pb-2.5 pt-2.5">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
+        </div>
+      )}
       <p className="text-[10px] text-ink-300 mt-1.5 text-center">AI guidance · Not legal advice · Shift+Enter for new line</p>
     </div>
   );
