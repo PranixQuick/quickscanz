@@ -2,13 +2,10 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 export async function middleware(request: NextRequest) {
-  // www → canonical redirect
-  const host = request.headers.get("host") || "";
-  if (host.startsWith("www.")) {
-    const canonical = new URL(request.url);
-    canonical.host = host.replace(/^www\./, "");
-    return NextResponse.redirect(canonical, { status: 301 });
-  }
+  // CANONICAL DOMAIN: quickscanz.com (apex)
+  // www → apex redirect is handled by Vercel CDN (Primary Domain config in dashboard).
+  // Do NOT add www redirect logic here — it conflicts with Vercel's own redirect
+  // and creates an infinite loop: quickscanz.com→www→quickscanz.com→...
 
   let supabaseResponse = NextResponse.next({ request });
 
