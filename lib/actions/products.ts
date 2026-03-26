@@ -42,6 +42,28 @@ export async function addProduct(
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { success: false, error: "Not authenticated" };
+  // Subscription limit enforcement (server-side, cannot be bypassed)
+  const [{ data: activeSub }, { count: realCount }] = await Promise.all([
+    supabase
+      .from("user_subscriptions")
+      .select("plan_id, plan:subscription_plans(product_limit)")
+      .eq("user_id", user.id)
+      .eq("status", "active")
+      .limit(1)
+      .maybeSingle(),
+    supabase
+      .from("products")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", user.id)
+      .eq("is_demo", false),
+  ]);
+  const limit: number = (activeSub as any)?.plan?.product_limit ?? 5;
+  if ((realCount ?? 0) >= limit) {
+    return {
+      success: false,
+      error: `Free plan limit reached (${limit} products). Upgrade to Pro for unlimited tracking.`,
+    };
+  }
 
   // FIX: trim() all string inputs to prevent trailing/leading spaces in DB
   const name = (formData.get("name") as string)?.trim();
