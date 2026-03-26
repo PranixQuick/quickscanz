@@ -313,7 +313,7 @@ export default function ProductDetailClient({
             </a>
             <a
               href={`https://www.manualslib.com/search/?q=${encodeURIComponent(product.brand + " " + product.name)}`}
-              target="_blank" rel="noopener noreferrer"
+              rel="noopener noreferrer"
               className="text-xs text-sand-500 hover:text-sand-400 transition-colors"
             >
               Try ManualsLib →
@@ -351,10 +351,9 @@ export default function ProductDetailClient({
                 <Image src={product.invoice_url} alt="Invoice" fill className="object-contain bg-white" />
               </div>
             ) : (
-              <div className="card p-8 text-center">
-                <a href={product.invoice_url} target="_blank" rel="noopener noreferrer"
-                  className="btn-primary text-sm px-6 py-2.5">Open PDF →</a>
-              </div>
+              <div className="rounded-2xl overflow-hidden bg-white" style={{ height: "80vh" }}>
+  <iframe src={product.invoice_url} className="w-full h-full border-0" title="Invoice PDF" />
+</div>
             )}
           </div>
         </div>
