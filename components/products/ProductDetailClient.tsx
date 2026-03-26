@@ -4,24 +4,32 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { deleteProduct } from "@/lib/actions/products";
 import { formatDate, formatCurrency, getWarrantyStatus } from "@/lib/utils";
 import type { Product } from "@/lib/types";
 import type { PriceEntry, MaintenanceTask } from "@/lib/actions/phase2";
 import StatusBadge from "@/components/ui/StatusBadge";
 import CountdownRing from "@/components/ui/CountdownRing";
-import GetHelpModal from "@/components/products/GetHelpModal";
-import ProductIntelligenceCard from "@/components/products/ProductIntelligenceCard";
-import ServiceCentreLocator from "@/components/products/ServiceCentreLocator";
-import HomeServiceFinder from "@/components/products/HomeServiceFinder";
-import ClaimAssistant from "@/components/ai/ClaimAssistant";
-import ProductReviewCard from "@/components/reviews/ProductReviewCard";
-import EditProductModal from "@/components/products/EditProductModal";
-// Phase 2 panels
-import PriceHistoryCard from "@/components/phase2/PriceHistoryCard";
-import MaintenanceCard from "@/components/phase2/MaintenanceCard";
-import ResaleCard from "@/components/phase2/ResaleCard";
 import toast from "react-hot-toast";
+
+const GetHelpModal = dynamic(() => import("@/components/products/GetHelpModal"));
+const ProductIntelligenceCard = dynamic(() => import("@/components/products/ProductIntelligenceCard"));
+const ServiceCentreLocator = dynamic(() => import("@/components/products/ServiceCentreLocator"));
+const HomeServiceFinder = dynamic(() => import("@/components/products/HomeServiceFinder"));
+const ClaimAssistant = dynamic(() => import("@/components/ai/ClaimAssistant"), {
+  loading: () => (
+    <div className="card p-8 text-center">
+      <div className="w-8 h-8 rounded-full border-2 border-sand-200 border-t-sand-500 animate-spin mx-auto mb-3" />
+      <p className="text-sm text-ink-400">Loading AI assistant…</p>
+    </div>
+  ),
+});
+const ProductReviewCard = dynamic(() => import("@/components/reviews/ProductReviewCard"));
+const EditProductModal = dynamic(() => import("@/components/products/EditProductModal"));
+const PriceHistoryCard = dynamic(() => import("@/components/phase2/PriceHistoryCard"));
+const MaintenanceCard = dynamic(() => import("@/components/phase2/MaintenanceCard"));
+const ResaleCard = dynamic(() => import("@/components/phase2/ResaleCard"));
 
 interface Props {
   product: Product;
