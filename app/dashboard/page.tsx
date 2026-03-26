@@ -21,7 +21,19 @@ export default async function DashboardPage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  void seedDemoProducts().catch(() => undefined);
+  // Seed demo products ONLY if user has no products at all (first login).
+  // The seed RPC is idempotent — it uses FOR UPDATE SKIP LOCKED to prevent
+  // race conditions and will no-op if products already exist.
+  // We check product count first to avoid running the RPC on every page load.
+  const { count: existingCount } = await supabase
+    .from("products")
+    .select("*", { count: "exact", head: true })
+    .eq("user_id", user.id);
+
+  if ((existingCount ?? 0) === 0) {
+    // New user — seed demo products in background, don't block page render
+    void seedDemoProducts().catch(() => undefined);
+  }
 
   const [products, dueMaintenance, subscription] = await Promise.all([
     getProducts(),
@@ -52,16 +64,16 @@ export default async function DashboardPage() {
   const userName = user?.email?.split("@")[0] || "there";
 
   const exploreTiles = [
-    { href: "/products/lifecycle",  icon: "📊", title: "Lifecycle",        sub: "Cost & lifespan" },
-    { href: "/compare",             icon: "⚖️",  title: "Compare",          sub: "Side-by-side products" },
-    { href: "/buying-assistant",    icon: "🛒", title: "Buying Assistant", sub: "Budget recommendations" },
-    { href: "/smart-devices",       icon: "🏠", title: "Smart Devices",    sub: "IoT service alerts" },
-    { href: "/energy",              icon: "⚡", title: "Energy Monitor",   sub: "Power & cost" },
-    { href: "/family",              icon: "👨‍👩‍👧", title: "Family Vault",    sub: "Share with family" },
+    { href: "/products/lifecycle", icon: "📊", title: "Lifecycle",        sub: "Cost & lifespan" },
+    { href: "/compare",            icon: "⚖️",  title: "Compare",          sub: "Side-by-side products" },
+    { href: "/buying-assistant",   icon: "🛒", title: "Buying Assistant", sub: "Budget recommendations" },
+    { href: "/smart-devices",      icon: "🏠", title: "Smart Devices",    sub: "IoT service alerts" },
+    { href: "/energy",             icon: "⚡", title: "Energy Monitor",   sub: "Power & cost" },
+    { href: "/family",             icon: "👨‍👩‍👧", title: "Family Vault",    sub: "Share with family" },
     isPro
       ? { href: "/account",  icon: "⭐", title: "Pro Plan",        sub: "Manage subscription" }
       : { href: "/pricing",  icon: "⭐", title: "Upgrade to Pro",  sub: "Unlimited · ₹149/mo" },
-    { href: "/products/add",        icon: "➕", title: "Add Product",      sub: "30 seconds" },
+    { href: "/products/add", icon: "➕", title: "Add Product",      sub: "30 seconds" },
   ];
 
   return (
@@ -87,10 +99,8 @@ export default async function DashboardPage() {
           </Link>
         </div>
 
-        {/* Stat cards — now clickable */}
         <StatsGrid stats={stats} />
 
-        {/* Expiry alert — clickable */}
         {expiringProducts.length > 0 && (
           <Link href="/products?status=expiring_soon" className="block card p-4 border-amber-200 bg-amber-50/50 hover:border-amber-300 transition-colors">
             <div className="flex items-start gap-3">
@@ -99,15 +109,12 @@ export default async function DashboardPage() {
                 <p className="text-sm font-medium text-amber-800">
                   {expiringProducts.length} warrant{expiringProducts.length === 1 ? "y expires" : "ies expire"} within 30 days
                 </p>
-                <p className="text-xs text-amber-600 mt-0.5">
-                  {expiringProducts.map((p) => p.name).join(", ")}
-                </p>
+                <p className="text-xs text-amber-600 mt-0.5">{expiringProducts.map((p) => p.name).join(", ")}</p>
               </div>
             </div>
           </Link>
         )}
 
-        {/* Maintenance overdue */}
         {overdueMaintenance.length > 0 && (
           <Link href="/products" className="block card p-4 border-blush-200 bg-blush-50/40 hover:border-blush-300 transition-colors">
             <div className="flex items-start gap-3">
@@ -124,7 +131,6 @@ export default async function DashboardPage() {
           </Link>
         )}
 
-        {/* AI Claim CTA */}
         {realProducts.length > 0 && (
           <Link href="/claim" className="block card p-4 bg-gradient-to-r from-ink-900 to-ink-800 border-ink-800 group hover:from-ink-800 hover:to-ink-700 transition-all">
             <div className="flex items-center gap-3">
@@ -142,7 +148,6 @@ export default async function DashboardPage() {
           </Link>
         )}
 
-        {/* Upgrade nudge — free users with 4+ real products */}
         {!isPro && realProducts.length >= 4 && (
           <Link href="/pricing" className="block card p-4 border-sand-200 bg-gradient-to-r from-sand-50 to-cream-50 hover:border-sand-300 transition-all group">
             <div className="flex items-center gap-3">
@@ -158,7 +163,6 @@ export default async function DashboardPage() {
           </Link>
         )}
 
-        {/* Products */}
         {products.length === 0 ? (
           <EmptyState
             title="Your warranty wallet is empty"
@@ -182,18 +186,14 @@ export default async function DashboardPage() {
           </div>
         )}
 
-        {/* Explore */}
         <div>
           <h2 className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-3">Explore</h2>
           <div className="grid grid-cols-2 gap-3">
             {exploreTiles.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
+              <Link key={item.href} href={item.href}
                 className={`card p-4 flex items-center gap-3 hover:border-sand-300 transition-colors group ${
                   item.href === "/pricing" ? "border-sand-200 bg-gradient-to-br from-sand-50 to-cream-50" : ""
-                }`}
-              >
+                }`}>
                 <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-lg group-hover:bg-sand-100 transition-colors flex-shrink-0 ${
                   item.href === "/pricing" ? "bg-sand-100" : "bg-cream-100"
                 }`}>
