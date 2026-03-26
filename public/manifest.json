@@ -2,7 +2,7 @@
   "name": "QuickScanZ",
   "short_name": "QuickScanZ",
   "description": "Your Warranty Wallet — never lose a warranty or invoice again",
-  "start_url": "/dashboard",
+  "start_url": "/?source=pwa",
   "display": "standalone",
   "background_color": "#fdfcf8",
   "theme_color": "#fdfcf8",
