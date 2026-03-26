@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import dynamic from "next/dynamic";
-import { deleteProduct } from "@/lib/actions/products";
+import { deleteProduct, getInvoiceSignedUrl } from "@/lib/actions/products";
 import { formatDate, formatCurrency, getWarrantyStatus } from "@/lib/utils";
 import type { Product } from "@/lib/types";
 import type { PriceEntry, MaintenanceTask } from "@/lib/actions/phase2";
@@ -50,10 +50,28 @@ export default function ProductDetailClient({
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
   const [invoiceOpen, setInvoiceOpen] = useState(false);
+  const [signedInvoiceUrl, setSignedInvoiceUrl] = useState<string | null>(null);
   const [tab, setTab] = useState<Tab>("overview");
   const [claimSessionId] = useState(`claim_${product.id}_${Date.now()}`);
 
+  // Fetch signed URL for private invoice bucket
+  // Runs on mount and whenever invoice modal opens
+  useEffect(() => {
+    if (product.invoice_url) {
+      getInvoiceSignedUrl(product.invoice_url).then(setSignedInvoiceUrl);
+    }
+  }, [product.invoice_url]);
+
+  // Refresh signed URL when modal opens (URL may have expired)
+  const handleInvoiceOpen = () => {
+    if (product.invoice_url) {
+      getInvoiceSignedUrl(product.invoice_url).then(setSignedInvoiceUrl);
+    }
+    setInvoiceOpen(true);
+  };
+
   const status = getWarrantyStatus(product.expiry_date);
+  // Determine file type from stored path (not signed URL which has query params)
   const isImage = product.invoice_url?.match(/\.(jpg|jpeg|png|webp)$/i);
 
   function handleDelete() {
@@ -179,9 +197,9 @@ export default function ProductDetailClient({
           {product.invoice_url && (
             <div className="card p-4">
               <p className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-3">Invoice</p>
-              <button onClick={() => setInvoiceOpen(true)} className="relative w-full aspect-[4/3] rounded-xl overflow-hidden bg-cream-100 group">
-                {isImage ? (
-                  <Image src={product.invoice_url} alt="Invoice" fill className="object-cover group-hover:scale-105 transition-transform duration-300" />
+              <button onClick={handleInvoiceOpen} className="relative w-full aspect-[4/3] rounded-xl overflow-hidden bg-cream-100 group">
+                {isImage && signedInvoiceUrl ? (
+                  <Image src={signedInvoiceUrl} alt="Invoice" fill className="object-cover group-hover:scale-105 transition-transform duration-300" />
                 ) : (
                   <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
                     <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
@@ -189,15 +207,17 @@ export default function ProductDetailClient({
                       <path d="M20 4v6h6" stroke="#c9bfb3" strokeWidth="1.5"/>
                       <path d="M11 16h10M11 20h7" stroke="#c9bfb3" strokeWidth="1.3" strokeLinecap="round"/>
                     </svg>
-                    <p className="text-xs text-ink-400">Tap to view PDF invoice</p>
+                    <p className="text-xs text-ink-400">{isImage ? "Loading preview…" : "Tap to view PDF invoice"}</p>
                   </div>
                 )}
                 <div className="absolute inset-0 bg-ink-900/0 group-hover:bg-ink-900/10 transition-colors" />
               </button>
-              <a href={product.invoice_url} rel="noopener noreferrer"
-                className="block text-center text-xs text-sand-500 hover:text-sand-400 mt-2">
-                Open in new tab →
-              </a>
+              {signedInvoiceUrl && (
+                <a href={signedInvoiceUrl} rel="noopener noreferrer"
+                  className="block text-center text-xs text-sand-500 hover:text-sand-400 mt-2">
+                  Open in new tab →
+                </a>
+              )}
             </div>
           )}
 
@@ -346,14 +366,19 @@ export default function ProductDetailClient({
                 <path d="M2 2l10 10M12 2L2 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
               </svg>
             </button>
-            {isImage ? (
+            {!signedInvoiceUrl ? (
+              <div className="card p-8 text-center">
+                <div className="w-8 h-8 rounded-full border-2 border-sand-200 border-t-sand-500 animate-spin mx-auto mb-3" />
+                <p className="text-sm text-ink-400">Loading invoice…</p>
+              </div>
+            ) : isImage ? (
               <div className="relative rounded-2xl overflow-hidden aspect-[3/4]">
-                <Image src={product.invoice_url} alt="Invoice" fill className="object-contain bg-white" />
+                <Image src={signedInvoiceUrl} alt="Invoice" fill className="object-contain bg-white" />
               </div>
             ) : (
               <div className="rounded-2xl overflow-hidden bg-white" style={{ height: "80vh" }}>
-  <iframe src={product.invoice_url} className="w-full h-full border-0" title="Invoice PDF" />
-</div>
+                <iframe src={signedInvoiceUrl} className="w-full h-full border-0" title="Invoice PDF" />
+              </div>
             )}
           </div>
         </div>
@@ -369,4 +394,4 @@ export default function ProductDetailClient({
       )}
     </div>
   );
-      }
+          }
