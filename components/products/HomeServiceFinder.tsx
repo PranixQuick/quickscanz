@@ -179,7 +179,6 @@ function ProviderCard({ provider }: { provider: ServiceProvider }) {
           {provider.booking_url && (
             <a
               href={provider.booking_url}
-              target="_blank" rel="noopener noreferrer"
               className="flex items-center gap-1 text-[11px] text-sand-600 bg-sand-50 hover:bg-sand-100 px-2.5 py-1.5 rounded-lg transition-colors font-medium"
             >
               Book
