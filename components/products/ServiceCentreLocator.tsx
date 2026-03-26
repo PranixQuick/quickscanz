@@ -153,7 +153,7 @@ export default function ServiceCentreLocator({ brand }: ServiceCentreLocatorProp
           <div className="flex flex-col gap-2 mt-3">
             <a
               href={`https://www.google.com/search?q=${encodeURIComponent(normalizedBrand + " authorized service centre " + (city || "near me"))}`}
-              target="_blank"
+             
               rel="noopener noreferrer"
               className="text-xs text-sand-500 hover:text-sand-400 inline-block"
             >
@@ -161,7 +161,7 @@ export default function ServiceCentreLocator({ brand }: ServiceCentreLocatorProp
             </a>
             <a
               href={`https://www.justdial.com/search?q=${encodeURIComponent(normalizedBrand + " service centre")}&city=${encodeURIComponent(city || "")}`}
-              target="_blank"
+             
               rel="noopener noreferrer"
               className="text-xs text-sand-500 hover:text-sand-400 inline-block"
             >
