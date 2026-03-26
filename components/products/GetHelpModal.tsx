@@ -179,7 +179,7 @@ export default function GetHelpModal({ product }: GetHelpModalProps) {
                         <path d="M5 3l4 4-4 4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
                       </svg>
                     </a>
-                    <a href={support.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-3.5 bg-white border border-cream-200 rounded-xl hover:border-sand-300 transition-colors">
+                    <a href={support.url} rel="noopener noreferrer" className="flex items-center gap-3 p-3.5 bg-white border border-cream-200 rounded-xl hover:border-sand-300 transition-colors">
                       <div className="w-9 h-9 rounded-xl bg-cream-200 flex items-center justify-center flex-shrink-0">
                         <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
                           <circle cx="7.5" cy="7.5" r="6" stroke="#786e62" strokeWidth="1.2"/>
