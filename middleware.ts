@@ -2,6 +2,14 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 export async function middleware(request: NextRequest) {
+  // www → canonical redirect
+  const host = request.headers.get("host") || "";
+  if (host.startsWith("www.")) {
+    const canonical = new URL(request.url);
+    canonical.host = host.replace(/^www\./, "");
+    return NextResponse.redirect(canonical, { status: 301 });
+  }
+
   let supabaseResponse = NextResponse.next({ request });
 
   const supabase = createServerClient(
@@ -23,20 +31,10 @@ export async function middleware(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser();
 
-  // All routes that require authentication
   const protectedPaths = [
-    "/dashboard",
-    "/products",
-    "/claim",
-    "/family",
-    "/smart-devices",
-    "/energy",
-    "/iot-hub",
-    "/account",
-    // Phase 2 + 3
-    "/compare",
-    "/buying-assistant",
-    "/pricing",
+    "/dashboard", "/products", "/claim", "/family",
+    "/smart-devices", "/energy", "/iot-hub", "/account",
+    "/compare", "/buying-assistant", "/pricing", "/payment",
   ];
 
   const isProtected = protectedPaths.some((path) =>
@@ -49,7 +47,6 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  // Redirect logged-in users away from auth pages
   const authPaths = ["/login", "/signup", "/forgot-password"];
   const isAuthPage = authPaths.some((path) =>
     request.nextUrl.pathname === path
