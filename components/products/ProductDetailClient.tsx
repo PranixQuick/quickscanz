@@ -194,7 +194,7 @@ export default function ProductDetailClient({
                 )}
                 <div className="absolute inset-0 bg-ink-900/0 group-hover:bg-ink-900/10 transition-colors" />
               </button>
-              <a href={product.invoice_url} target="_blank" rel="noopener noreferrer"
+              <a href={product.invoice_url} rel="noopener noreferrer"
                 className="block text-center text-xs text-sand-500 hover:text-sand-400 mt-2">
                 Open in new tab →
               </a>
@@ -302,7 +302,7 @@ export default function ProductDetailClient({
           <div className="flex flex-col gap-2">
             <a
               href={`https://www.google.com/search?q=${encodeURIComponent(product.brand + " " + product.name + " user manual PDF")}`}
-              target="_blank" rel="noopener noreferrer"
+              rel="noopener noreferrer"
               className="btn-primary text-sm px-6 py-2.5 inline-flex items-center justify-center gap-2"
             >
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
@@ -319,15 +319,15 @@ export default function ProductDetailClient({
               Try ManualsLib →
             </a>
             {(product as any).category?.toLowerCase().includes("samsung") || product.brand?.toLowerCase() === "samsung" ? (
-              <a href="https://www.samsung.com/in/support/" target="_blank" rel="noopener noreferrer" className="text-xs text-ink-400 hover:text-ink-600 transition-colors">
+              <a href="https://www.samsung.com/in/support/" rel="noopener noreferrer" className="text-xs text-ink-400 hover:text-ink-600 transition-colors">
                 Samsung India Support →
               </a>
             ) : product.brand?.toLowerCase() === "lg" ? (
-              <a href="https://www.lg.com/in/support/" target="_blank" rel="noopener noreferrer" className="text-xs text-ink-400 hover:text-ink-600 transition-colors">
+              <a href="https://www.lg.com/in/support/" rel="noopener noreferrer" className="text-xs text-ink-400 hover:text-ink-600 transition-colors">
                 LG India Support →
               </a>
             ) : product.brand?.toLowerCase().includes("apple") ? (
-              <a href="https://support.apple.com/en-in" target="_blank" rel="noopener noreferrer" className="text-xs text-ink-400 hover:text-ink-600 transition-colors">
+              <a href="https://support.apple.com/en-in" rel="noopener noreferrer" className="text-xs text-ink-400 hover:text-ink-600 transition-colors">
                 Apple India Support →
               </a>
             ) : null}
@@ -369,4 +369,4 @@ export default function ProductDetailClient({
       )}
     </div>
   );
-              }
+      }
