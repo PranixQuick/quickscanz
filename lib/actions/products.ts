@@ -94,8 +94,10 @@ export async function addProduct(
       .from("invoices")
       .upload(fileName, invoiceFile, { upsert: false });
     if (!uploadError) {
-      const { data: { publicUrl } } = supabase.storage.from("invoices").getPublicUrl(fileName);
-      invoice_url = publicUrl;
+      // Store the STORAGE PATH (not a public URL) — bucket is private.
+      // We generate signed URLs at display time via getInvoiceSignedUrl().
+      // Format: invoices/{user_id}/{timestamp}.{ext}
+      invoice_url = `invoices/${fileName}`;
     }
   }
 
@@ -191,8 +193,16 @@ export async function deleteProduct(
 
   const product = await getProduct(id);
   if (product?.invoice_url) {
-    const path = product.invoice_url.split("/invoices/")[1];
-    if (path) await supabase.storage.from("invoices").remove([path]);
+    // Support both legacy full-URL format and new storage path format
+    let storagePath: string | null = null;
+    if (product.invoice_url.startsWith("invoices/")) {
+      // New format: "invoices/{user_id}/{file}"
+      storagePath = product.invoice_url.replace(/^invoices\//, "");
+    } else if (product.invoice_url.includes("/invoices/")) {
+      // Legacy format: full Supabase storage URL
+      storagePath = product.invoice_url.split("/invoices/")[1]?.split("?")[0] || null;
+    }
+    if (storagePath) await supabase.storage.from("invoices").remove([storagePath]);
   }
 
   const { error } = await supabase
@@ -206,4 +216,39 @@ export async function deleteProduct(
   revalidatePath("/dashboard");
   revalidatePath("/products");
   return { success: true };
+}
+
+// ── Invoice URL resolution ────────────────────────────────────────────────────
+// The invoices bucket is PRIVATE. invoice_url stores the storage path.
+// This function generates a 1-hour signed URL for display.
+// Also handles legacy records that stored the full public URL (will fail gracefully).
+export async function getInvoiceSignedUrl(
+  invoicePath: string
+): Promise<string | null> {
+  if (!invoicePath) return null;
+
+  // Legacy: full Supabase storage URL — extract path component
+  let storagePath = invoicePath;
+  if (invoicePath.startsWith("http")) {
+    const match = invoicePath.match(/\/object\/(?:public|sign)\/invoices\/(.+?)(?:\?|$)/);
+    if (!match) return null;
+    storagePath = match[1].split("?")[0];
+  } else if (invoicePath.startsWith("invoices/")) {
+    // New format: "invoices/{user_id}/{file}" — strip the bucket prefix
+    storagePath = invoicePath.replace(/^invoices\//, "");
+  }
+
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return null;
+
+  // Security: ensure the path starts with the user's own folder
+  if (!storagePath.startsWith(`${user.id}/`)) return null;
+
+  const { data, error } = await supabase.storage
+    .from("invoices")
+    .createSignedUrl(storagePath, 3600); // 1 hour TTL
+
+  if (error || !data?.signedUrl) return null;
+  return data.signedUrl;
 }
