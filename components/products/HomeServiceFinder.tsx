@@ -142,7 +142,7 @@ export default function HomeServiceFinder({ category, productName, brand }: Home
             </p>
             <a
               href="https://www.google.com/search?q=cart2save+home+service+technician"
-              target="_blank" rel="noopener noreferrer"
+              rel="noopener noreferrer"
               className="text-[11px] text-sand-500 mt-1 inline-block"
             >
               Learn more →
