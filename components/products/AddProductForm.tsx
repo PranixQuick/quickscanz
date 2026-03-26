@@ -65,6 +65,7 @@ export default function AddProductForm() {
   }, []);
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop, accept: { "image/*": [], "application/pdf": [] },
+    useFsAccessApi: false,
     maxSize: 10485760, multiple: false,
   });
 
