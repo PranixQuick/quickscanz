@@ -98,7 +98,7 @@ export default function HomeServiceFinder({ category, productName, brand }: Home
           <p className="text-sm text-ink-400">No service providers found{filterCity ? ` in ${filterCity}` : ""}.</p>
           <a
             href={`https://www.google.com/search?q=${encodeURIComponent((brand || "") + " " + (productName || "") + " repair service " + (filterCity || "near me"))}`}
-            target="_blank" rel="noopener noreferrer"
+            rel="noopener noreferrer"
             className="text-xs text-sand-500 mt-2 inline-block"
           >
             Search Google →
