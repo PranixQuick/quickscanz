@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Cormorant_Garamond, DM_Sans, DM_Mono } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
 
@@ -64,6 +65,10 @@ export const viewport: Viewport = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  // OneSignal SDK only loads when the env var is set in Vercel.
+  // Safe: if var is absent, no SDK, no change to existing behaviour.
+  const oneSignalAppId = process.env.NEXT_PUBLIC_ONESIGNAL_APP_ID;
+
   return (
     <html lang="en" className={`scroll-smooth ${cormorant.variable} ${dmSans.variable} ${dmMono.variable}`}>
       <head />
@@ -84,6 +89,37 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             error: { iconTheme: { primary: "#d95f54", secondary: "#fdfcf8" } },
           }}
         />
+
+        {/*
+          OneSignal Web Push SDK
+          ─────────────────────
+          • Loaded ONLY when NEXT_PUBLIC_ONESIGNAL_APP_ID is set in Vercel env vars.
+          • strategy="lazyOnload" → non-blocking; loads after page is interactive.
+          • notifyButton disabled → we use our own UI toggle in NotificationSettings.tsx.
+          • The SDK registers the browser with OneSignal and sets external_user_id
+            to the Supabase user.id so send-push-notifications edge function can
+            target users by their Supabase UUID via include_external_user_ids.
+          • When NEXT_PUBLIC_ONESIGNAL_APP_ID is absent (current state without
+            OneSignal account), this block renders nothing → zero impact.
+        */}
+        {oneSignalAppId && (
+          <>
+            <Script
+              src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js"
+              strategy="lazyOnload"
+            />
+            <Script id="onesignal-init" strategy="lazyOnload">{`
+              window.OneSignalDeferred = window.OneSignalDeferred || [];
+              OneSignalDeferred.push(async function(OneSignal) {
+                await OneSignal.init({
+                  appId: "${oneSignalAppId}",
+                  notifyButton: { enable: false },
+                  allowLocalhostAsSecureOrigin: false,
+                });
+              });
+            `}</Script>
+          </>
+        )}
       </body>
     </html>
   );
