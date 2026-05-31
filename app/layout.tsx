@@ -3,6 +3,8 @@ import { Cormorant_Garamond, DM_Sans, DM_Mono } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
+import { I18nProvider } from "../lib/i18n/provider";
+import LocaleBar from "../components/LocaleBar";
 
 const cormorant = Cormorant_Garamond({
   subsets: ["latin"],
