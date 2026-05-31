@@ -52,8 +52,6 @@ export default async function ClaimPage({
     ? realProducts.find((p) => p.id === searchParams.product) || realProducts[0]
     : realProducts[0];
 
-  const sessionId = `${selected.id}_${Date.now()}`;
-
   return (
     <AppLayout>
       <div className="space-y-4 animate-fade-up">
