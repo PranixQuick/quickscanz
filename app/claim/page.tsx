@@ -52,8 +52,6 @@ export default async function ClaimPage({
     ? realProducts.find((p) => p.id === searchParams.product) || realProducts[0]
     : realProducts[0];
 
-  const sessionId = `${selected.id}_${Date.now()}`;
-
   return (
     <AppLayout>
       <div className="space-y-4 animate-fade-up">
@@ -88,7 +86,7 @@ export default async function ClaimPage({
         </div>
 
         <div className="card p-4">
-          <ClaimAssistant product={selected} sessionId={sessionId} initialMessages={[]} />
+          <ClaimAssistant product={selected} initialMessages={[]} />
         </div>
 
         <div className="flex items-start gap-2 px-3 py-2.5 bg-cream-100 rounded-xl">
