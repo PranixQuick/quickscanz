@@ -93,6 +93,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             error: { iconTheme: { primary: "#d95f54", secondary: "#fdfcf8" } },
           }}
         />
+        </I18nProvider>
 
         {/*
           OneSignal Web Push SDK
