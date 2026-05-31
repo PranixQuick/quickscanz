@@ -1,13 +1,15 @@
 "use client";
 
 import { useState, useRef, useEffect, useTransition } from "react";
-import { updateClaimSession, type ClaimMessage } from "@/lib/actions/claim";
+import { startClaimSession, updateClaimSession, type ClaimMessage } from "@/lib/actions/claim";
 import type { Product } from "@/lib/types";
 import { getWarrantyStatus, formatDate } from "@/lib/utils";
 
 interface Props {
   product: Product;
-  sessionId: string;
+  /** Optional existing session to resume. When omitted, a real session is
+   *  created in the DB the moment the user starts a claim. */
+  sessionId?: string;
   initialMessages?: ClaimMessage[];
 }
 
@@ -68,8 +70,9 @@ function Message({ msg }: { msg: ClaimMessage }) {
   );
 }
 
-export default function ClaimAssistant({ product, sessionId, initialMessages = [] }: Props) {
+export default function ClaimAssistant({ product, sessionId: initialSessionId, initialMessages = [] }: Props) {
   const [messages, setMessages] = useState<ClaimMessage[]>(initialMessages);
+  const [sessionId, setSessionId] = useState<string | null>(initialSessionId ?? null);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [started, setStarted] = useState(initialMessages.length > 0);
@@ -83,7 +86,20 @@ export default function ClaimAssistant({ product, sessionId, initialMessages = [
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
 
-  async function callAI(userMessages: ClaimMessage[]) {
+  // Create a real claim_sessions row on first interaction (idempotent: reuses
+  // the existing session id once created). Returns the concrete id to persist
+  // against, since setState is async and can't be read back synchronously.
+  async function ensureSession(issue: string): Promise<string | null> {
+    if (sessionId) return sessionId;
+    const res = await startClaimSession(product.id, issue);
+    if (res.success && res.sessionId) {
+      setSessionId(res.sessionId);
+      return res.sessionId;
+    }
+    return null;
+  }
+
+  async function callAI(userMessages: ClaimMessage[], sid: string | null) {
     setLoading(true);
     try {
       const systemPrompt = `You are QuickScanZ AI Claim Assistant — a knowledgeable, empathetic assistant helping Indian consumers navigate warranty claims.
@@ -132,7 +148,9 @@ RULES:
       const newMessages = [...userMessages, assistantMsg];
       setMessages(newMessages);
 
-      startTransition(async () => { await updateClaimSession(sessionId, newMessages); });
+      if (sid) {
+        startTransition(async () => { await updateClaimSession(sid, newMessages); });
+      }
     } catch {
       // Graceful fallback — never crash, never show technical errors
       const fallbackMsg: ClaimMessage = {
@@ -150,7 +168,8 @@ RULES:
     const userMsg: ClaimMessage = { role: "user", content: `I need help with my ${product.brand} ${product.name}. Issue: ${issue}` };
     const newMessages = [userMsg];
     setMessages(newMessages);
-    await callAI(newMessages);
+    const sid = await ensureSession(issue);
+    await callAI(newMessages, sid);
   }
 
   async function handleSend() {
@@ -158,8 +177,9 @@ RULES:
     const userMsg: ClaimMessage = { role: "user", content: input.trim() };
     const newMessages = [...messages, userMsg];
     setMessages(newMessages);
+    const sid = sessionId ?? (await ensureSession(input.trim()));
     setInput("");
-    await callAI(newMessages);
+    await callAI(newMessages, sid);
   }
 
   if (!started) {
