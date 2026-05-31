@@ -1,5 +1,6 @@
 import AppHeader from "@/components/layout/AppHeader";
 import BottomNav from "@/components/layout/BottomNav";
+import SupportLauncher from "@/components/support/SupportLauncher";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
@@ -14,6 +15,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         {children}
       </main>
       <BottomNav />
+      <SupportLauncher />
     </div>
   );
 }
