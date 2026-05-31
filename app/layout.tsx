@@ -75,7 +75,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={`scroll-smooth ${cormorant.variable} ${dmSans.variable} ${dmMono.variable}`}>
       <head />
       <body className="bg-cream-50 text-ink-900 font-body antialiased">
-        {children}
+        <I18nProvider>
+          <LocaleBar />
+          {children}
         <Toaster
           position="bottom-center"
           toastOptions={{
