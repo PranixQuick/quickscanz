@@ -1,0 +1,67 @@
+{
+  "_meta": {
+    "vendored_from": "@pranix/i18n (shared/i18n/messages.json in pranix-agent-engine)",
+    "note": "Git-vendored copy (npm publish deferred). Keep in sync with the canonical catalog. Indic locales are machine-draft pending native review.",
+    "locales": ["en", "hi", "te", "ta", "kn", "ml"]
+  },
+  "en": {
+    "common.save": "Save", "common.cancel": "Cancel", "common.next": "Next", "common.back": "Back",
+    "common.loading": "Loading…", "common.search": "Search", "common.submit": "Submit", "common.delete": "Delete",
+    "common.confirm": "Confirm", "common.retry": "Retry",
+    "form.required": "This field is required", "form.invalid_email": "Enter a valid email address",
+    "error.generic": "Something went wrong. Please try again.", "error.network": "Network error. Check your connection.",
+    "notification.saved": "Saved", "notification.deleted": "Deleted", "notification.sent": "Sent",
+    "help.contact_support": "Need help? Contact support.",
+    "app.tagline": "Your Warranty Wallet", "app.add_product": "Add Product"
+  },
+  "hi": {
+    "common.save": "सहेजें", "common.cancel": "रद्द करें", "common.next": "आगे", "common.back": "पीछे",
+    "common.loading": "लोड हो रहा है…", "common.search": "खोजें", "common.submit": "जमा करें", "common.delete": "हटाएं",
+    "common.confirm": "पुष्टि करें", "common.retry": "पुनः प्रयास करें",
+    "form.required": "यह फ़ील्ड आवश्यक है", "form.invalid_email": "मान्य ईमेल पता दर्ज करें",
+    "error.generic": "कुछ गलत हो गया। कृपया पुनः प्रयास करें।", "error.network": "नेटवर्क त्रुटि। अपना कनेक्शन जांचें।",
+    "notification.saved": "सहेजा गया", "notification.deleted": "हटा दिया गया", "notification.sent": "भेजा गया",
+    "help.contact_support": "मदद चाहिए? सहायता से संपर्क करें।",
+    "app.tagline": "आपका वारंटी वॉलेट", "app.add_product": "उत्पाद जोड़ें"
+  },
+  "te": {
+    "common.save": "సేవ్ చేయండి", "common.cancel": "రద్దు చేయండి", "common.next": "తదుపరి", "common.back": "వెనుకకు",
+    "common.loading": "లోడ్ అవుతోంది…", "common.search": "వెతకండి", "common.submit": "సమర్పించండి", "common.delete": "తొలగించండి",
+    "common.confirm": "నిర్ధారించండి", "common.retry": "మళ్లీ ప్రయత్నించండి",
+    "form.required": "ఈ ఫీల్డ్ అవసరం", "form.invalid_email": "సరైన ఇమెయిల్ చిరునామా నమోదు చేయండి",
+    "error.generic": "ఏదో తప్పు జరిగింది. దయచేసి మళ్లీ ప్రయత్నించండి.", "error.network": "నెట్‌వర్క్ లోపం. మీ కనెక్షన్‌ను తనిఖీ చేయండి.",
+    "notification.saved": "సేవ్ చేయబడింది", "notification.deleted": "తొలగించబడింది", "notification.sent": "పంపబడింది",
+    "help.contact_support": "సహాయం కావాలా? సపోర్ట్‌ను సంప్రదించండి.",
+    "app.tagline": "మీ వారంటీ వాలెట్", "app.add_product": "ఉత్పత్తిని జోడించండి"
+  },
+  "ta": {
+    "common.save": "சேமி", "common.cancel": "ரத்துசெய்", "common.next": "அடுத்து", "common.back": "பின்செல்",
+    "common.loading": "ஏற்றுகிறது…", "common.search": "தேடு", "common.submit": "சமர்ப்பி", "common.delete": "நீக்கு",
+    "common.confirm": "உறுதிப்படுத்து", "common.retry": "மீண்டும் முயற்சி செய்",
+    "form.required": "இந்தப் புலம் தேவை", "form.invalid_email": "சரியான மின்னஞ்சல் முகவரியை உள்ளிடவும்",
+    "error.generic": "ஏதோ தவறு நடந்தது. மீண்டும் முயற்சிக்கவும்.", "error.network": "நெட்வொர்க் பிழை. உங்கள் இணைப்பைச் சரிபார்க்கவும்.",
+    "notification.saved": "சேமிக்கப்பட்டது", "notification.deleted": "நீக்கப்பட்டது", "notification.sent": "அனுப்பப்பட்டது",
+    "help.contact_support": "உதவி வேண்டுமா? ஆதரவைத் தொடர்பு கொள்ளவும்.",
+    "app.tagline": "உங்கள் வாரண்டி வாலெட்", "app.add_product": "தயாரிப்பைச் சேர்"
+  },
+  "kn": {
+    "common.save": "ಉಳಿಸಿ", "common.cancel": "ರದ್ದುಮಾಡಿ", "common.next": "ಮುಂದೆ", "common.back": "ಹಿಂದೆ",
+    "common.loading": "ಲೋಡ್ ಆಗುತ್ತಿದೆ…", "common.search": "ಹುಡುಕಿ", "common.submit": "ಸಲ್ಲಿಸಿ", "common.delete": "ಅಳಿಸಿ",
+    "common.confirm": "ದೃಢೀಕರಿಸಿ", "common.retry": "ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ",
+    "form.required": "ಈ ಕ್ಷೇತ್ರ ಅಗತ್ಯವಿದೆ", "form.invalid_email": "ಮಾನ್ಯ ಇಮೇಲ್ ವಿಳಾಸ ನಮೂದಿಸಿ",
+    "error.generic": "ಏನೋ ತಪ್ಪಾಗಿದೆ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.", "error.network": "ನೆಟ್‌ವರ್ಕ್ ದೋಷ. ನಿಮ್ಮ ಸಂಪರ್ಕವನ್ನು ಪರಿಶೀಲಿಸಿ.",
+    "notification.saved": "ಉಳಿಸಲಾಗಿದೆ", "notification.deleted": "ಅಳಿಸಲಾಗಿದೆ", "notification.sent": "ಕಳುಹಿಸಲಾಗಿದೆ",
+    "help.contact_support": "ಸಹಾಯ ಬೇಕೇ? ಬೆಂಬಲವನ್ನು ಸಂಪರ್ಕಿಸಿ.",
+    "app.tagline": "ನಿಮ್ಮ ವಾರಂಟಿ ವಾಲೆಟ್", "app.add_product": "ಉತ್ಪನ್ನ ಸೇರಿಸಿ"
+  },
+  "ml": {
+    "common.save": "സംരക്ഷിക്കുക", "common.cancel": "റദ്ദാക്കുക", "common.next": "അടുത്തത്", "common.back": "പിന്നോട്ട്",
+    "common.loading": "ലോഡ് ചെയ്യുന്നു…", "common.search": "തിരയുക", "common.submit": "സമർപ്പിക്കുക", "common.delete": "ഇല്ലാതാക്കുക",
+    "common.confirm": "സ്ഥിരീകരിക്കുക", "common.retry": "വീണ്ടും ശ്രമിക്കുക",
+    "form.required": "ഈ ഫീൽഡ് ആവശ്യമാണ്", "form.invalid_email": "സാധുവായ ഇമെയിൽ വിലാസം നൽകുക",
+    "error.generic": "എന്തോ കുഴപ്പം സംഭവിച്ചു. വീണ്ടും ശ്രമിക്കുക.", "error.network": "നെറ്റ്‌വർക്ക് പിശക്. നിങ്ങളുടെ കണക്ഷൻ പരിശോധിക്കുക.",
+    "notification.saved": "സംരക്ഷിച്ചു", "notification.deleted": "ഇല്ലാതാക്കി", "notification.sent": "അയച്ചു",
+    "help.contact_support": "സഹായം വേണോ? സപ്പോർട്ടുമായി ബന്ധപ്പെടുക.",
+    "app.tagline": "നിങ്ങളുടെ വാറന്റി വാലറ്റ്", "app.add_product": "ഉൽപ്പന്നം ചേർക്കുക"
+  }
+}

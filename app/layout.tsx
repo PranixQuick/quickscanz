@@ -3,6 +3,8 @@ import { Cormorant_Garamond, DM_Sans, DM_Mono } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
+import { I18nProvider } from "../lib/i18n/provider";
+import LocaleBar from "../components/LocaleBar";
 
 const cormorant = Cormorant_Garamond({
   subsets: ["latin"],
@@ -73,7 +75,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={`scroll-smooth ${cormorant.variable} ${dmSans.variable} ${dmMono.variable}`}>
       <head />
       <body className="bg-cream-50 text-ink-900 font-body antialiased">
-        {children}
+        <I18nProvider>
+          <LocaleBar />
+          {children}
         <Toaster
           position="bottom-center"
           toastOptions={{
@@ -89,6 +93,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             error: { iconTheme: { primary: "#d95f54", secondary: "#fdfcf8" } },
           }}
         />
+        </I18nProvider>
 
         {/*
           OneSignal Web Push SDK
