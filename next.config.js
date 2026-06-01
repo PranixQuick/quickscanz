@@ -84,4 +84,14 @@ const nextConfig = {
   },
 };
 
-module.exports = withPWA(nextConfig);
+const { withSentryConfig } = require("@sentry/nextjs");
+
+// Source-map upload activates only when SENTRY_AUTH_TOKEN + org/project are set.
+// Without them this is a safe no-op wrapper around the existing build.
+module.exports = withSentryConfig(withPWA(nextConfig), {
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  silent: true,
+  widenClientFileUpload: true,
+  disableLogger: true,
+});
