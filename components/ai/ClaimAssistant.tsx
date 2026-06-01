@@ -252,7 +252,7 @@ RULES:
         <div className="pt-3 border-t border-cream-200 flex gap-2 mt-2">
           <textarea ref={inputRef} value={input} onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
-            placeholder="Type your response... (Enter to send)" rows={2} disabled={loading}
+            data-testid="claim-reply-input" placeholder="Type your response... (Enter to send)" rows={2} disabled={loading}
             className="flex-1 px-3 py-2.5 bg-cream-100 border border-cream-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sand-300 resize-none disabled:opacity-50" />
           <button data-testid="update-claim" onClick={handleSend} disabled={!input.trim() || loading}
             className="px-4 bg-ink-900 text-cream-50 rounded-xl hover:bg-ink-700 transition-colors disabled:opacity-40 self-end pb-2.5 pt-2.5">
