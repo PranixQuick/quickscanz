@@ -119,7 +119,7 @@ export default function ProductDetailClient({
               </div>
               <div className="flex items-center gap-2 flex-shrink-0">
                 {!product.is_demo && (
-                  <button onClick={() => setShowEdit(true)}
+                  <button data-testid="edit-product" onClick={() => setShowEdit(true)}
                     className="text-[11px] bg-cream-100 hover:bg-cream-200 text-ink-500 px-2.5 py-1.5 rounded-lg transition-colors border border-cream-200">
                     ✏️ Edit
                   </button>
