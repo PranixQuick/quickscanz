@@ -180,7 +180,7 @@ export default function ProductDetailClient({
       <div className="overflow-x-auto -mx-1 px-1">
         <div className="flex gap-1 bg-cream-100 p-1 rounded-2xl min-w-max">
           {TABS.map((t) => (
-            <button key={t.key} onClick={() => setTab(t.key)}
+            <button key={t.key} data-testid={t.key === "claim" ? "claim-tab" : undefined} onClick={() => setTab(t.key)}
               className={`flex items-center justify-center gap-1 py-2 px-3 rounded-xl text-[11px] font-medium transition-all whitespace-nowrap ${
                 tab === t.key ? "bg-white text-ink-900 shadow-sm" : "text-ink-400 hover:text-ink-600"
               }`}>
