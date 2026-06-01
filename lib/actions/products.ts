@@ -69,7 +69,10 @@ export async function addProduct(
   const name = (formData.get("name") as string)?.trim();
   const brand = (formData.get("brand") as string)?.trim();
   const purchase_date = formData.get("purchase_date") as string;
-  const warranty_months = parseInt(formData.get("warranty_months") as string);
+  const warranty_months_raw = parseInt(formData.get("warranty_months") as string);
+  const warranty_months = Number.isFinite(warranty_months_raw)
+    ? Math.min(Math.max(warranty_months_raw, 1), 600)
+    : 12;
   const price = formData.get("price") as string;
   const category = (formData.get("category") as string)?.trim();
   const subcategory = (formData.get("subcategory") as string)?.trim();
