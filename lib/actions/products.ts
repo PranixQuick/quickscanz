@@ -101,6 +101,15 @@ export async function addProduct(
     return { success: false, error: "Please enter a valid purchase date between 1990 and today." };
   }
 
+  let priceVal: number | null = null;
+  if (price) {
+    const p = parseFloat(price);
+    if (!Number.isFinite(p) || p < 0) {
+      return { success: false, error: "Price must be a non-negative number." };
+    }
+    priceVal = Math.min(p, 100000000);
+  }
+
   const expiry_date = calculateExpiryDate(purchase_date, warranty_months);
   let invoice_url: string | null = null;
 
