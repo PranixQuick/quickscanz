@@ -38,7 +38,7 @@ export default function PrivacyPolicyPage() {
       <main className="max-w-2xl mx-auto px-6 py-10 space-y-8 animate-fade-up">
         <div>
           <h1 className="font-display text-4xl font-light text-ink-900 mb-2">Privacy Policy</h1>
-          <p className="text-xs text-ink-400">Last updated: January 2025</p>
+          <p className="text-xs text-ink-400">Last updated: June 2026</p>
         </div>
         {sections.map(({ title, content }) => (
           <div key={title} className="card p-5">
