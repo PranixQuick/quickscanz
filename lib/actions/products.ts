@@ -177,6 +177,16 @@ export async function updateProduct(
   if (trimmed.store_name) trimmed.store_name = trimmed.store_name.trim();
   if (trimmed.notes) trimmed.notes = trimmed.notes.trim();
 
+  if (trimmed.purchase_date) {
+    const parsed = new Date(trimmed.purchase_date);
+    const maxP = new Date();
+    maxP.setHours(23, 59, 59, 999);
+    const minP = new Date("1990-01-01T00:00:00Z");
+    if (Number.isNaN(parsed.getTime()) || parsed < minP || parsed > maxP) {
+      return { success: false, error: "Please enter a valid purchase date between 1990 and today." };
+    }
+  }
+
   const updateData: Record<string, unknown> = { ...trimmed };
   if (trimmed.purchase_date || trimmed.warranty_months) {
     const existing = await getProduct(id);
