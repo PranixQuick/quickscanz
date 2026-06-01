@@ -225,7 +225,7 @@ export default function ProductDetailClient({
 
           <div className="pt-2">
             {!showDeleteConfirm ? (
-              <button onClick={() => setShowDeleteConfirm(true)}
+              <button data-testid="delete-product" onClick={() => setShowDeleteConfirm(true)}
                 className="w-full py-3 text-sm text-ink-300 hover:text-blush-500 transition-colors">
                 Remove product
               </button>
