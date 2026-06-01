@@ -84,6 +84,20 @@ export async function addProduct(
     return { success: false, error: "Required fields missing" };
   }
 
+  // Validate purchase_date is a real date within a sane range. Guards against
+  // malformed input that produced absurd years (e.g. 1215) or future dates.
+  const parsedPurchase = new Date(purchase_date);
+  const maxPurchase = new Date();
+  maxPurchase.setHours(23, 59, 59, 999);
+  const minPurchase = new Date("1990-01-01T00:00:00Z");
+  if (
+    Number.isNaN(parsedPurchase.getTime()) ||
+    parsedPurchase < minPurchase ||
+    parsedPurchase > maxPurchase
+  ) {
+    return { success: false, error: "Please enter a valid purchase date between 1990 and today." };
+  }
+
   const expiry_date = calculateExpiryDate(purchase_date, warranty_months);
   let invoice_url: string | null = null;
 
