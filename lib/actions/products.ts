@@ -130,7 +130,7 @@ export async function addProduct(
   const insertData: Record<string, unknown> = {
     user_id: user.id, name, brand, purchase_date,
     warranty_months, expiry_date,
-    price: price ? parseFloat(price) : null,
+    price: priceVal,
     invoice_url, is_demo: false,
   };
 
