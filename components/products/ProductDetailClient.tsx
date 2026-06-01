@@ -235,7 +235,7 @@ export default function ProductDetailClient({
                 <p className="text-xs text-ink-400 mb-3">This will permanently delete the product and any uploaded invoice.</p>
                 <div className="flex gap-2">
                   <button onClick={() => setShowDeleteConfirm(false)} className="btn-secondary flex-1 py-2.5 text-sm" disabled={isPending}>Cancel</button>
-                  <button onClick={handleDelete} disabled={isPending}
+                  <button data-testid="confirm-delete" onClick={handleDelete} disabled={isPending}
                     className="flex-1 py-2.5 px-4 bg-blush-500 text-white text-sm font-medium rounded-xl hover:bg-blush-600 transition-colors disabled:opacity-50">
                     {isPending ? "Removing..." : "Remove"}
                   </button>
