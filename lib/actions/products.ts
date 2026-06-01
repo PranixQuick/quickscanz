@@ -69,7 +69,10 @@ export async function addProduct(
   const name = (formData.get("name") as string)?.trim();
   const brand = (formData.get("brand") as string)?.trim();
   const purchase_date = formData.get("purchase_date") as string;
-  const warranty_months = parseInt(formData.get("warranty_months") as string);
+  const warranty_months_raw = parseInt(formData.get("warranty_months") as string);
+  const warranty_months = Number.isFinite(warranty_months_raw)
+    ? Math.min(Math.max(warranty_months_raw, 1), 600)
+    : 12;
   const price = formData.get("price") as string;
   const category = (formData.get("category") as string)?.trim();
   const subcategory = (formData.get("subcategory") as string)?.trim();
@@ -82,6 +85,20 @@ export async function addProduct(
 
   if (!name || !brand || !purchase_date) {
     return { success: false, error: "Required fields missing" };
+  }
+
+  // Validate purchase_date is a real date within a sane range. Guards against
+  // malformed input that produced absurd years (e.g. 1215) or future dates.
+  const parsedPurchase = new Date(purchase_date);
+  const maxPurchase = new Date();
+  maxPurchase.setHours(23, 59, 59, 999);
+  const minPurchase = new Date("1990-01-01T00:00:00Z");
+  if (
+    Number.isNaN(parsedPurchase.getTime()) ||
+    parsedPurchase < minPurchase ||
+    parsedPurchase > maxPurchase
+  ) {
+    return { success: false, error: "Please enter a valid purchase date between 1990 and today." };
   }
 
   const expiry_date = calculateExpiryDate(purchase_date, warranty_months);
@@ -159,6 +176,16 @@ export async function updateProduct(
   if (trimmed.serial_number) trimmed.serial_number = trimmed.serial_number.trim();
   if (trimmed.store_name) trimmed.store_name = trimmed.store_name.trim();
   if (trimmed.notes) trimmed.notes = trimmed.notes.trim();
+
+  if (trimmed.purchase_date) {
+    const parsed = new Date(trimmed.purchase_date);
+    const maxP = new Date();
+    maxP.setHours(23, 59, 59, 999);
+    const minP = new Date("1990-01-01T00:00:00Z");
+    if (Number.isNaN(parsed.getTime()) || parsed < minP || parsed > maxP) {
+      return { success: false, error: "Please enter a valid purchase date between 1990 and today." };
+    }
+  }
 
   const updateData: Record<string, unknown> = { ...trimmed };
   if (trimmed.purchase_date || trimmed.warranty_months) {
