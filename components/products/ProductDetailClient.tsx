@@ -119,7 +119,7 @@ export default function ProductDetailClient({
               </div>
               <div className="flex items-center gap-2 flex-shrink-0">
                 {!product.is_demo && (
-                  <button onClick={() => setShowEdit(true)}
+                  <button data-testid="edit-product" onClick={() => setShowEdit(true)}
                     className="text-[11px] bg-cream-100 hover:bg-cream-200 text-ink-500 px-2.5 py-1.5 rounded-lg transition-colors border border-cream-200">
                     ✏️ Edit
                   </button>
@@ -225,7 +225,7 @@ export default function ProductDetailClient({
 
           <div className="pt-2">
             {!showDeleteConfirm ? (
-              <button onClick={() => setShowDeleteConfirm(true)}
+              <button data-testid="delete-product" onClick={() => setShowDeleteConfirm(true)}
                 className="w-full py-3 text-sm text-ink-300 hover:text-blush-500 transition-colors">
                 Remove product
               </button>
@@ -235,7 +235,7 @@ export default function ProductDetailClient({
                 <p className="text-xs text-ink-400 mb-3">This will permanently delete the product and any uploaded invoice.</p>
                 <div className="flex gap-2">
                   <button onClick={() => setShowDeleteConfirm(false)} className="btn-secondary flex-1 py-2.5 text-sm" disabled={isPending}>Cancel</button>
-                  <button onClick={handleDelete} disabled={isPending}
+                  <button data-testid="confirm-delete" onClick={handleDelete} disabled={isPending}
                     className="flex-1 py-2.5 px-4 bg-blush-500 text-white text-sm font-medium rounded-xl hover:bg-blush-600 transition-colors disabled:opacity-50">
                     {isPending ? "Removing..." : "Remove"}
                   </button>
