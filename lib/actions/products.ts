@@ -101,6 +101,15 @@ export async function addProduct(
     return { success: false, error: "Please enter a valid purchase date between 1990 and today." };
   }
 
+  let priceVal: number | null = null;
+  if (price) {
+    const p = parseFloat(price);
+    if (!Number.isFinite(p) || p < 0) {
+      return { success: false, error: "Price must be a non-negative number." };
+    }
+    priceVal = Math.min(p, 100000000);
+  }
+
   const expiry_date = calculateExpiryDate(purchase_date, warranty_months);
   let invoice_url: string | null = null;
 
@@ -121,7 +130,7 @@ export async function addProduct(
   const insertData: Record<string, unknown> = {
     user_id: user.id, name, brand, purchase_date,
     warranty_months, expiry_date,
-    price: price ? parseFloat(price) : null,
+    price: priceVal,
     invoice_url, is_demo: false,
   };
 
@@ -176,6 +185,19 @@ export async function updateProduct(
   if (trimmed.serial_number) trimmed.serial_number = trimmed.serial_number.trim();
   if (trimmed.store_name) trimmed.store_name = trimmed.store_name.trim();
   if (trimmed.notes) trimmed.notes = trimmed.notes.trim();
+
+  if (trimmed.warranty_months !== undefined && trimmed.warranty_months !== null) {
+    const wm = Number(trimmed.warranty_months);
+    trimmed.warranty_months = Number.isFinite(wm) ? Math.min(Math.max(Math.trunc(wm), 1), 600) : 12;
+  }
+
+  if (trimmed.price !== undefined && trimmed.price !== null) {
+    const p = Number(trimmed.price);
+    if (!Number.isFinite(p) || p < 0) {
+      return { success: false, error: "Price must be a non-negative number." };
+    }
+    trimmed.price = Math.min(p, 100000000);
+  }
 
   if (trimmed.purchase_date) {
     const parsed = new Date(trimmed.purchase_date);
