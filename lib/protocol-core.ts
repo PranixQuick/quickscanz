@@ -1,22 +1,46 @@
-// Thin shared layer over @pranix/protocol-core (server-side only).
-// Connects to the Pranix control plane (NOT this product's database) using
-// PROTOCOL_CORE_URL / PROTOCOL_CORE_KEY. Stays inert (no-op) until both are set,
-// so builds and runtime are unaffected when the control-plane credentials are absent.
-import { createClient } from "@supabase/supabase-js";
-import { credentials, evidence, governance } from "@pranix/protocol-core";
+// Thin shared layer — talks to the Pranix Agent Engine gateway, NOT the control plane directly.
+// Requires only PRANIX_PROTOCOL_ENDPOINT + PRANIX_PROTOCOL_TOKEN. Inert (no-op) until both set.
+// No control-plane credential ever lives in this product.
 
-const url = process.env.PROTOCOL_CORE_URL;
-const key = process.env.PROTOCOL_CORE_KEY;
+const endpoint = process.env.PRANIX_PROTOCOL_ENDPOINT; // e.g. https://pranix-agent-engine.vercel.app/api/protocol
+const token = process.env.PRANIX_PROTOCOL_TOKEN;
 
-const cp = url && key ? createClient(url, key, { auth: { persistSession: false } }) : null;
+export const protocolEnabled = Boolean(endpoint && token);
 
-export const protocolEnabled = Boolean(cp);
+type GatewayResult = { ok: boolean; [k: string]: unknown };
 
-// `protocol` is null until control-plane credentials are configured.
-export const protocol = cp
+async function call(op: string, payload: Record<string, unknown> = {}): Promise<GatewayResult> {
+  if (!endpoint || !token) return { ok: false, error: "protocol disabled" };
+  try {
+    const r = await fetch(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ op, ...payload }),
+    });
+    return (await r.json()) as GatewayResult;
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : String(e) };
+  }
+}
+
+type EvidenceInput = {
+  proves: string;
+  artifactRef?: string;
+  type?: string;
+  sourceTable?: string;
+  sourceId?: string;
+  success?: boolean;
+};
+
+export const protocol = protocolEnabled
   ? {
-      credentials: credentials(cp),
-      evidence: evidence(cp),
-      governance: governance(cp),
+      evidence: { emit: (input: EvidenceInput) => call("evidence.emit", input) },
+      governance: {
+        preflight: (action: string, input?: Record<string, unknown>) =>
+          call("governance.preflight", { action, input }),
+      },
+      credentials: {
+        health: (names?: string[]) => call("credentials.health", names ? { names } : {}),
+      },
     }
   : null;
