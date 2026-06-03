@@ -183,7 +183,8 @@ export async function createRazorpayRedirectUrl(
 
   const amountPaise = plan.price_inr * 100;
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://quickscanz.com";
-  const callbackUrl = `${appUrl}/payment/callback?plan_id=${planId}`;
+  // Razorpay embedded checkout POSTs the result here; must be the POST route (not the GET page).
+  const callbackUrl = `${appUrl}/api/payment/callback?plan_id=${planId}`;
   const credentials = Buffer.from(`${RAZORPAY_KEY_ID}:${RAZORPAY_KEY_SECRET}`).toString("base64");
 
   let orderRes: Response;
