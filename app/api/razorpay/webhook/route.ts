@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { protocol } from "@/lib/protocol-core";
 
 export async function POST(req: NextRequest) {
   // Create supabase client INSIDE the handler — not at module level.
@@ -82,6 +83,17 @@ export async function POST(req: NextRequest) {
       }, { onConflict: "user_id" });
 
       console.log(`[razorpay-webhook] Activated ${planId} for user ${userId}`);
+
+      // Protocol Core — fire-and-forget evidence for a confirmed subscription payment.
+      // Best-effort only: never awaited, never throws into the webhook path; no retries, no queues.
+      // protocol is null unless PRANIX_PROTOCOL_ENDPOINT + PRANIX_PROTOCOL_TOKEN are set (inert otherwise).
+      protocol?.evidence.emit({
+        proves: `subscription_payment_confirmed razorpay payment:${payment.id} plan:${planId} user:${userId}`,
+        sourceTable: "user_subscriptions",
+        sourceId: payment.id,
+        success: true,
+      }).catch(() => {});
+
       break;
     }
 
