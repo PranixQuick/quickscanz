@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { protocol } from "@/lib/protocol-core";
 import { revalidatePath } from "next/cache";
 
 export async function POST(req: NextRequest) {
@@ -49,6 +50,16 @@ export async function POST(req: NextRequest) {
   }).eq("user_id", user.id);
 
   if (error) return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+
+  // Protocol Core — fire-and-forget evidence for a verified payment / activated subscription.
+  // Best-effort only: never awaited, never throws into the request path; no retries, no queues.
+  // protocol is null unless PRANIX_PROTOCOL_ENDPOINT + PRANIX_PROTOCOL_TOKEN are set (inert otherwise).
+  protocol?.evidence.emit({
+    proves: `payment_verified razorpay order:${orderId} payment:${paymentId} plan:${planId}`,
+    sourceTable: "user_subscriptions",
+    sourceId: paymentId,
+    success: true,
+  }).catch(() => {});
 
   revalidatePath("/account");
   revalidatePath("/pricing");
