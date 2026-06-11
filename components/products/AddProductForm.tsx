@@ -140,6 +140,7 @@ export default function AddProductForm() {
   const [form, setForm] = useState<FormState>(DEFAULT);
   const [customWarranty, setCustomWarranty] = useState(false);
   const [invoiceFile, setInvoiceFile] = useState<File | null>(null);
+  const [showScanner, setShowScanner] = useState(false);
 
   const set = (k: keyof FormState, v: string | number | null) =>
     setForm((p) => ({ ...p, [k]: v }));
