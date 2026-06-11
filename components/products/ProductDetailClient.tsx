@@ -11,6 +11,8 @@ import type { Product } from "@/lib/types";
 import type { PriceEntry, MaintenanceTask } from "@/lib/actions/phase2";
 import StatusBadge from "@/components/ui/StatusBadge";
 import CountdownRing from "@/components/ui/CountdownRing";
+import ServiceCentreCard from "@/components/ServiceCentreCard";
+import ExtendedWarrantyUpsell from "@/components/ExtendedWarrantyUpsell";
 import toast from "react-hot-toast";
 
 const GetHelpModal = dynamic(() => import("@/components/products/GetHelpModal"));
@@ -249,6 +251,14 @@ export default function ProductDetailClient({
             </div>
           )}
 
+          {/* Extended warranty upsell — only within 30 days of purchase (competitive-edge-v2) */}
+          <ExtendedWarrantyUpsell
+            brand={product.brand}
+            productName={product.name}
+            purchaseDateIso={product.purchase_date}
+            category={(product as any).category}
+          />
+
           {!product.is_demo && <ProductReviewCard brand={product.brand} productName={product.name} />}
 
           <div className="pt-2">
@@ -306,6 +316,8 @@ export default function ProductDetailClient({
       {/* Tab: Service Centres */}
       {tab === "centres" && (
         <div className="space-y-4">
+          {/* One-tap toll-free call (competitive-edge-v2) */}
+          <ServiceCentreCard brand={product.brand} />
           <div className="card p-4">
             <p className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-3">Authorized Service Centres — {product.brand}</p>
             <ServiceCentreLocator brand={product.brand} />

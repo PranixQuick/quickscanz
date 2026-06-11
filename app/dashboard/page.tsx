@@ -11,6 +11,7 @@ import ProductCard from "@/components/products/ProductCard";
 import EmptyState from "@/components/ui/EmptyState";
 import PWAInstallBanner from "@/components/ui/PWAInstallBanner";
 import Link from "next/link";
+import DashboardNudge from "@/components/DashboardNudge";
 import type { Metadata } from "next";
 import type { DashboardStats } from "@/lib/types";
 
@@ -100,6 +101,9 @@ export default async function DashboardPage() {
         </div>
 
         <StatsGrid stats={stats} />
+
+        {/* AI-personalised next-action nudge (competitive-edge-v2) */}
+        <DashboardNudge />
 
         {/* Demo banner — shown only when ALL products are demo, so new users know the stats aren't real */}
         {products.length > 0 && products.every((p) => p.is_demo) && (
