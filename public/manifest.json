@@ -1,14 +1,18 @@
 {
+  "id": "/?source=pwa",
   "name": "QuickScanZ",
   "short_name": "QuickScanZ",
   "description": "Your Warranty Wallet — never lose a warranty or invoice again",
   "start_url": "/?source=pwa",
+  "scope": "/",
   "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
   "background_color": "#fdfcf8",
   "theme_color": "#fdfcf8",
   "orientation": "portrait",
-  "scope": "/",
   "lang": "en",
+  "dir": "ltr",
+  "prefer_related_applications": false,
   "icons": [
     {
       "src": "/icons/icon-192.png",
@@ -35,17 +39,35 @@
       "purpose": "maskable"
     }
   ],
+  "screenshots": [
+    {
+      "src": "/icons/screenshot-mobile.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "QuickScanZ dashboard on mobile"
+    },
+    {
+      "src": "/icons/screenshot-desktop.png",
+      "sizes": "1280x800",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "QuickScanZ dashboard on desktop"
+    }
+  ],
   "categories": ["productivity", "utilities"],
   "shortcuts": [
     {
       "name": "Dashboard",
       "url": "/dashboard",
-      "description": "View your warranty dashboard"
+      "description": "View your warranty dashboard",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
     },
     {
       "name": "Add Product",
       "url": "/products/add",
-      "description": "Add a new product"
+      "description": "Add a new product",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
     }
   ]
 }
