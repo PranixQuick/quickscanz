@@ -88,12 +88,37 @@ export async function joinFamilyGroup(inviteCode: string): Promise<{ success: bo
 
 export async function getFamilyMembers(groupId: string): Promise<FamilyMember[]> {
   const supabase = await createClient();
+
+  // Join profiles to get human-readable names.
+  // profiles.id is a FK to auth.users.id — same UUID as family_members.user_id.
   const { data } = await supabase
     .from("family_members")
-    .select("*")
+    .select(`
+      id,
+      group_id,
+      user_id,
+      role,
+      joined_at,
+      profiles (
+        display_name,
+        email
+      )
+    `)
     .eq("group_id", groupId)
     .order("joined_at");
-  return (data as FamilyMember[]) || [];
+
+  if (!data) return [];
+
+  // Flatten the nested profiles object into the top-level FamilyMember shape
+  return data.map((row: any) => ({
+    id:           row.id,
+    group_id:     row.group_id,
+    user_id:      row.user_id,
+    role:         row.role,
+    joined_at:    row.joined_at,
+    display_name: row.profiles?.display_name ?? null,
+    email:        row.profiles?.email ?? null,
+  })) as FamilyMember[];
 }
 
 export async function leaveFamilyGroup(groupId: string): Promise<{ success: boolean; error?: string }> {
