@@ -289,7 +289,32 @@ export default function AddProductForm() {
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs text-ink-500 mb-1.5">Purchase Date *</label>
+              <label className="block text-xs text-ink-500 mb-1.5">When did you buy it? *</label>
+              {/* Friendly date presets — Ramu Uncle doesn't remember exact dates */}
+              <div className="flex flex-wrap gap-1.5 mb-2">
+                {([
+                  { label: "This week", days: 3 },
+                  { label: "Last month", days: 30 },
+                  { label: "Last Diwali", days: 210 },
+                  { label: "~1 year ago", days: 365 },
+                  { label: "~2 years ago", days: 730 },
+                ] as { label: string; days: number }[]).map(({ label, days }) => {
+                  const d = new Date();
+                  d.setDate(d.getDate() - days);
+                  const val = d.toISOString().split("T")[0];
+                  return (
+                    <button key={label} type="button"
+                      onClick={() => set("purchase_date", val)}
+                      className={`text-[11px] px-2.5 py-1.5 rounded-full border transition-all ${
+                        form.purchase_date === val
+                          ? "bg-ink-900 border-ink-900 text-cream-50"
+                          : "bg-cream-100 border-cream-200 text-ink-500 hover:border-sand-300"
+                      }`}>
+                      {label}
+                    </button>
+                  );
+                })}
+              </div>
               <input type="date" value={form.purchase_date} onChange={(e) => set("purchase_date", e.target.value)}
                 max={new Date().toISOString().split("T")[0]} required
                 className="w-full px-3 py-2.5 bg-cream-100 border border-cream-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sand-300" />
