@@ -12,6 +12,7 @@ import EmptyState from "@/components/ui/EmptyState";
 import PWAInstallBanner from "@/components/ui/PWAInstallBanner";
 import Link from "next/link";
 import DashboardNudge from "@/components/DashboardNudge";
+import OnboardingFlow from "@/components/onboarding/OnboardingFlow";
 import type { Metadata } from "next";
 import type { DashboardStats } from "@/lib/types";
 
