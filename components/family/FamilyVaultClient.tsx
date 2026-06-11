@@ -152,14 +152,23 @@ export default function FamilyVaultPage() {
           <div className="card p-5">
             <p className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-3">Members</p>
             <div className="space-y-2">
-              {members.map((m, i) => (
+              {members.map((m) => {
+                // Resolve display label: display_name > email prefix > last-4 of user_id
+                const nameLabel =
+                  m.display_name ||
+                  (m.email ? m.email.split("@")[0] : null) ||
+                  `User …${m.user_id.slice(-4)}`;
+                // Avatar initial from the resolved name
+                const initial = nameLabel.charAt(0).toUpperCase();
+
+                return (
                 <div key={m.id} className="flex items-center gap-3 py-2">
                   <div className="w-8 h-8 rounded-full bg-cream-200 flex items-center justify-center text-sm font-medium text-ink-600">
-                    {i + 1}
+                    {initial}
                   </div>
-                  <div className="flex-1">
-                    <p className="text-sm text-ink-700">Member {i + 1}</p>
-                    <p className="text-xs text-ink-400">{m.role}</p>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-ink-700 truncate">{nameLabel}</p>
+                    {m.email && <p className="text-xs text-ink-400 truncate">{m.email}</p>}
                   </div>
                   {m.role !== "owner" && (
                     <span className="text-[10px] bg-cream-100 text-ink-400 px-2 py-0.5 rounded-full">Member</span>
