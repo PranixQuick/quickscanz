@@ -248,8 +248,18 @@ export default function AddProductForm() {
             </div>
             <div>
               <label className="block text-xs text-ink-500 mb-1.5">Serial / IMEI</label>
-              <input value={form.serial_number} onChange={(e) => set("serial_number", e.target.value)} placeholder="Optional"
-                className="w-full px-3 py-2.5 bg-cream-100 border border-cream-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sand-300" />
+              <div className="relative">
+                <input value={form.serial_number} onChange={(e) => set("serial_number", e.target.value)} placeholder="Optional or scan 📷"
+                  className="w-full px-3 py-2.5 pr-10 bg-cream-100 border border-cream-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sand-300" />
+                <button type="button" onClick={() => setShowScanner(true)}
+                  aria-label="Scan barcode"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 flex items-center justify-center rounded-lg bg-cream-200 hover:bg-sand-100 text-ink-400 hover:text-ink-700 transition-colors">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/>
+                    <line x1="7" y1="12" x2="7" y2="12.01"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="17" y1="12" x2="17" y2="12.01"/>
+                  </svg>
+                </button>
+              </div>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
