@@ -192,6 +192,30 @@ export default function AddProductForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
 
+      {/* ★ SCAN FIRST — Big scan CTA is the entry point for Ramu Uncle */}
+      <div
+        onClick={() => setShowScanner(true)}
+        className="flex flex-col items-center justify-center gap-3 p-6 rounded-2xl border-2 border-dashed border-sand-300 bg-sand-50/50 cursor-pointer active:bg-sand-100 hover:border-sand-400 transition-all"
+      >
+        <div className="w-16 h-16 rounded-2xl bg-ink-900 flex items-center justify-center shadow-md">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#fdfcf8" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/>
+            <line x1="7" y1="12" x2="7" y2="12.01"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="17" y1="12" x2="17" y2="12.01"/>
+          </svg>
+        </div>
+        <div className="text-center">
+          <p className="font-semibold text-ink-900 text-base">📸 Scan Box / Bill</p>
+          <p className="text-xs text-ink-400 mt-0.5">बॉक्स या बिल का बारकोड स्कैन करें • Auto-fills all details</p>
+        </div>
+      </div>
+
+      {/* Divider with manual fallback label */}
+      <div className="flex items-center gap-3">
+        <div className="flex-1 h-px bg-cream-200" />
+        <span className="text-xs text-ink-300 font-medium">or fill manually ↓</span>
+        <div className="flex-1 h-px bg-cream-200" />
+      </div>
+
       {/* Search */}
       <div>
         <label className="block text-xs font-semibold text-ink-400 uppercase tracking-wider mb-2">Find Product</label>
@@ -265,7 +289,32 @@ export default function AddProductForm() {
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs text-ink-500 mb-1.5">Purchase Date *</label>
+              <label className="block text-xs text-ink-500 mb-1.5">When did you buy it? *</label>
+              {/* Friendly date presets — Ramu Uncle doesn't remember exact dates */}
+              <div className="flex flex-wrap gap-1.5 mb-2">
+                {([
+                  { label: "This week", days: 3 },
+                  { label: "Last month", days: 30 },
+                  { label: "Last Diwali", days: 210 },
+                  { label: "~1 year ago", days: 365 },
+                  { label: "~2 years ago", days: 730 },
+                ] as { label: string; days: number }[]).map(({ label, days }) => {
+                  const d = new Date();
+                  d.setDate(d.getDate() - days);
+                  const val = d.toISOString().split("T")[0];
+                  return (
+                    <button key={label} type="button"
+                      onClick={() => set("purchase_date", val)}
+                      className={`text-[11px] px-2.5 py-1.5 rounded-full border transition-all ${
+                        form.purchase_date === val
+                          ? "bg-ink-900 border-ink-900 text-cream-50"
+                          : "bg-cream-100 border-cream-200 text-ink-500 hover:border-sand-300"
+                      }`}>
+                      {label}
+                    </button>
+                  );
+                })}
+              </div>
               <input type="date" value={form.purchase_date} onChange={(e) => set("purchase_date", e.target.value)}
                 max={new Date().toISOString().split("T")[0]} required
                 className="w-full px-3 py-2.5 bg-cream-100 border border-cream-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sand-300" />
