@@ -531,6 +531,21 @@ export default function AddProductForm() {
           onClose={() => setShowScanner(false)}
         />
       )}
+
+      {/* Bill OCR Modal */}
+      {showBillScan && (
+        <ScanBillModal
+          onResult={(fields) => {
+            setForm((prev) => ({ ...prev, ...fields }));
+            const filled = Object.keys(fields).length;
+            toast.success(filled > 2
+              ? `✨ Auto-filled ${filled} fields from your bill!`
+              : "Bill scanned — please review the details."
+            );
+          }}
+          onClose={() => setShowBillScan(false)}
+        />
+      )}
     </form>
   );
 }
