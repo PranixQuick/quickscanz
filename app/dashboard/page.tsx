@@ -150,6 +150,33 @@ export default async function DashboardPage() {
           </Link>
         )}
 
+        {/* RETENTION: Weekly check-in card — picks the oldest-opened product and nudges a quick health check */}
+        {realProducts.length > 0 && (() => {
+          const oldest = [...realProducts].sort((a, b) =>
+            new Date(a.purchase_date ?? a.created_at).getTime() - new Date(b.purchase_date ?? b.created_at).getTime()
+          )[0];
+          const daysSincePurchase = oldest
+            ? Math.floor((Date.now() - new Date(oldest.purchase_date ?? oldest.created_at).getTime()) / 86_400_000)
+            : 0;
+          const showCheckin = daysSincePurchase > 0 && daysSincePurchase % 7 < 2; // show on day 7, 8, 14, 15 etc.
+          return showCheckin ? (
+            <Link href={`/products/${oldest.id}`} className="block card p-4 border-sage-200 bg-sage-50/40 hover:border-sage-300 transition-colors group">
+              <div className="flex items-start gap-3">
+                <span className="text-lg mt-0.5">✅</span>
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-ink-800">Weekly check-in: {oldest.name}</p>
+                  <p className="text-xs text-ink-400 mt-0.5">
+                    You&apos;ve owned this for {daysSincePurchase} days — still running well? Tap to log a note or start a claim.
+                  </p>
+                </div>
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="text-sage-400 group-hover:translate-x-0.5 transition-transform flex-shrink-0 mt-1">
+                  <path d="M3 7h8M8 4l3 3-3 3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </div>
+            </Link>
+          ) : null;
+        })()}
+
         {realProducts.length > 0 && (
           <Link href="/claim" className="block card p-4 bg-gradient-to-r from-ink-900 to-ink-800 border-ink-800 group hover:from-ink-800 hover:to-ink-700 transition-all">
             <div className="flex items-center gap-3">
