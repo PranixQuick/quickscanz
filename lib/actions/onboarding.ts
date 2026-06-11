@@ -2,7 +2,7 @@
 // Server action: mark a user's onboarding as complete so OnboardingFlow is never shown again.
 // Writes onboarded_at timestamp to the profiles table.
 // If the profiles table does not yet have an onboarded_at column, run:
---   alter table profiles add column if not exists onboarded_at timestamptz;
+//   alter table profiles add column if not exists onboarded_at timestamptz;
 
 import { createClient } from "@/lib/supabase/server";
 
