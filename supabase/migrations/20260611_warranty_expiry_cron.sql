@@ -61,7 +61,7 @@ begin
     -- Call the Next.js push API route via pg_net (Supabase's HTTP extension)
     -- pg_net is enabled by default on all Supabase projects
     perform net.http_post(
-      url     := current_setting('app.push_api_url', true) || '/api/push',
+      url     := current_setting('app.push_api_url', true) || '/api/push/send',
       headers := jsonb_build_object(
         'Content-Type',       'application/json',
         'x-cron-secret',      current_setting('app.cron_secret', true)
