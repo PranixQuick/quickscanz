@@ -101,6 +101,25 @@ export default async function DashboardPage() {
 
         <StatsGrid stats={stats} />
 
+        {/* Demo banner — shown only when ALL products are demo, so new users know the stats aren't real */}
+        {products.length > 0 && products.every((p) => p.is_demo) && (
+          <div className="card p-4 border-sand-200 bg-sand-50/50">
+            <div className="flex items-start gap-3">
+              <span className="text-lg mt-0.5">📝</span>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-ink-800">These are sample products</p>
+                <p className="text-xs text-ink-400 mt-0.5 leading-relaxed">
+                  The stats above show demo data so you can explore the app.
+                  Add your first real product to start tracking your actual warranties.
+                </p>
+                <a href="/products/add" className="mt-2.5 inline-flex items-center gap-1.5 text-xs btn-primary px-3 py-1.5">
+                  + Add my first product
+                </a>
+              </div>
+            </div>
+          </div>
+        )}
+
         {expiringProducts.length > 0 && (
           <Link href="/products?status=expiring_soon" className="block card p-4 border-amber-200 bg-amber-50/50 hover:border-amber-300 transition-colors">
             <div className="flex items-start gap-3">
