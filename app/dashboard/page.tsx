@@ -37,6 +37,14 @@ export default async function DashboardPage() {
     void seedDemoProducts().catch(() => undefined);
   }
 
+  // Check if user has completed onboarding (profiles.onboarded_at is set)
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("onboarded_at")
+    .eq("id", user.id)
+    .single();
+  const needsOnboarding = !profile?.onboarded_at;
+
   const [products, dueMaintenance, subscription] = await Promise.all([
     getProducts(),
     getAllDueMaintenance(),
