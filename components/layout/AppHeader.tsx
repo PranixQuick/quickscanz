@@ -4,8 +4,15 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { useT } from "@/lib/i18n/provider";
+import { useI18n, LOCALES, type Locale } from "@/lib/i18n/provider";
 import toast from "react-hot-toast";
+
+const LOCALE_LABELS: Record<Locale, string> = {
+  en: "EN", hi: "हि", te: "తె", ta: "த", kn: "ಕ", ml: "മ",
+};
+const LOCALE_NAMES: Record<Locale, string> = {
+  en: "English", hi: "हिन्दी", te: "తెలుగు", ta: "தமிழ்", kn: "ಕನ್ನಡ", ml: "മലയാളം",
+};
 
 interface AppHeaderProps {
   userName?: string;
