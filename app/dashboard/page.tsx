@@ -207,7 +207,8 @@ export default async function DashboardPage() {
           </Link>
         )}
 
-        {!isPro && realProducts.length >= 4 && (
+        {/* Show upgrade nudge when approaching the new free limit of 8 */}
+        {!isPro && realProducts.length >= 6 && (
           <Link href="/pricing" className="block card p-4 border-sand-200 bg-gradient-to-r from-sand-50 to-cream-50 hover:border-sand-300 transition-all group">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-2xl bg-sand-100 flex items-center justify-center flex-shrink-0 text-xl">⭐</div>
