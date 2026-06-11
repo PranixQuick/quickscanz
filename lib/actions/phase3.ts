@@ -70,11 +70,22 @@ export async function getBuyingRecommendations(
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { recommendations: [], summary: "", disclaimer: "", error: "Not authenticated" };
 
-  const { data: catalog } = await supabase
+  // Build query — apply optional brand/feature filter from user's query string
+  let dbQuery = supabase
     .from("product_catalog")
     .select("*")
     .ilike("category", `%${input.category}%`)
-    .eq("is_active", true)
+    .eq("is_active", true);
+
+  // If user typed a specific brand or keyword, filter by brand name first
+  const trimmedQ = (input.query || "").trim();
+  if (trimmedQ.length >= 2) {
+    dbQuery = dbQuery.or(
+      `brand.ilike.%${trimmedQ}%,name.ilike.%${trimmedQ}%`
+    );
+  }
+
+  const { data: catalog } = await dbQuery
     .order("avg_lifespan_years", { ascending: false, nullsFirst: false })
     .limit(5);
 
