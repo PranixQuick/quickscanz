@@ -36,7 +36,7 @@ export default function PricingClient({ plans, currentPlanId, userEmail }: Props
     <div className="space-y-6 animate-fade-up">
       <div>
         <h1 className="font-display text-2xl font-light text-ink-900">Upgrade Your Plan</h1>
-        <p className="text-sm text-ink-400 mt-1">Unlock unlimited products, smart tracking, and AI-powered insights</p>
+        <p className="text-sm text-ink-400 mt-1">Three things free users can&apos;t do: track more than 5 products, run more than 3 AI claims/month, or share warranties on WhatsApp.</p>
       </div>
 
       <div className="card p-3 bg-cream-50 border-cream-200">
