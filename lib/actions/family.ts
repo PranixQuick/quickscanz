@@ -17,6 +17,9 @@ export interface FamilyMember {
   user_id: string;
   role: "owner" | "member";
   joined_at: string;
+  // Resolved from profiles join — may be null if profile not yet created
+  display_name: string | null;
+  email: string | null;
 }
 
 export async function createFamilyGroup(name: string): Promise<{ success: boolean; group?: FamilyGroup; error?: string }> {
@@ -85,12 +88,15 @@ export async function joinFamilyGroup(inviteCode: string): Promise<{ success: bo
 
 export async function getFamilyMembers(groupId: string): Promise<FamilyMember[]> {
   const supabase = await createClient();
-  const { data } = await supabase
-    .from("family_members")
-    .select("*")
-    .eq("group_id", groupId)
-    .order("joined_at");
-  return (data as FamilyMember[]) || [];
+
+  // Use SECURITY DEFINER RPC that safely joins auth.users for real emails.
+  // The function enforces that the caller is a member of the group.
+  const { data, error } = await supabase
+    .rpc("get_family_members_with_email", { p_group_id: groupId });
+
+  if (error || !data) return [];
+
+  return data as FamilyMember[];
 }
 
 export async function leaveFamilyGroup(groupId: string): Promise<{ success: boolean; error?: string }> {

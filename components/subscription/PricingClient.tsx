@@ -10,10 +10,47 @@ interface Props {
   userEmail: string;
 }
 
+// Feature comparison rows shown below the plan cards
+const FEATURE_ROWS = [
+  { label: "Products tracked",        free: "8",           pro: "Unlimited" },
+  { label: "AI Claim Assistant",       free: "3 / month",   pro: "Unlimited" },
+  { label: "WhatsApp warranty share",  free: "✕",           pro: "✓" },
+  { label: "Invoice storage",          free: "8 files",     pro: "Unlimited" },
+  { label: "Family Vault",             free: "✕",           pro: "✓" },
+  { label: "Expiry push notifications",free: "✓",           pro: "✓" },
+  { label: "Energy monitor",           free: "✕",           pro: "✓" },
+  { label: "Lifecycle cost analysis",  free: "✕",           pro: "✓" },
+  { label: "Priority support",         free: "✕",           pro: "✓" },
+];
+
+const FAQ = [
+  {
+    q: "Can I cancel anytime?",
+    a: "Yes — cancel from Account → Subscription. Your Pro access continues until the end of the billing period.",
+  },
+  {
+    q: "Is my payment data safe?",
+    a: "All payments are processed by Razorpay (PCI DSS Level 1 certified). QuickScanZ never stores your card details.",
+  },
+  {
+    q: "What happens to my data if I downgrade?",
+    a: "Your products and invoices are safe. If you exceed 8 products on the free plan, existing products stay visible but you can’t add new ones until you’re under the limit.",
+  },
+  {
+    q: "Does GST apply?",
+    a: "Yes, 18% GST is added at checkout as required by Indian tax law. The price shown is exclusive of GST.",
+  },
+  {
+    q: "Is there a family plan?",
+    a: "Pro plan includes Family Vault — share your warranty list with up to 5 family members. Each member needs their own account.",
+  },
+];
+
 export default function PricingClient({ plans, currentPlanId, userEmail }: Props) {
   const [isPending, startTransition] = useTransition();
   const [processingPlanId, setProcessingPlanId] = useState<string | null>(null);
   const [interval, setInterval] = useState<"monthly" | "yearly">("yearly");
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
 
   const displayed = plans.filter((p) => p.id === "free" || p.interval === interval);
 
@@ -27,18 +64,34 @@ export default function PricingClient({ plans, currentPlanId, userEmail }: Props
         setProcessingPlanId(null);
         return;
       }
-      // Full-page redirect — works in Android TWA, iOS PWA, all browsers
       window.location.href = result.redirectUrl;
     });
   }
 
   return (
-    <div className="space-y-6 animate-fade-up">
+    <div className="space-y-8 animate-fade-up">
+
+      {/* Header */}
       <div>
         <h1 className="font-display text-2xl font-light text-ink-900">Upgrade Your Plan</h1>
-        <p className="text-sm text-ink-400 mt-1">Three things free users can&apos;t do: track more than 5 products, run more than 3 AI claims/month, or share warranties on WhatsApp.</p>
+        <p className="text-sm text-ink-400 mt-1">
+          One app for every product you own. Never lose a warranty again.
+        </p>
       </div>
 
+      {/* Social proof row */}
+      <div className="flex items-center gap-3 py-3 px-4 bg-sage-50 border border-sage-200 rounded-2xl">
+        <div className="flex -space-x-2">
+          {["R","P","A","S"].map((initial) => (
+            <div key={initial} className="w-7 h-7 rounded-full bg-sand-200 border-2 border-white flex items-center justify-center text-[10px] font-bold text-ink-600">{initial}</div>
+          ))}
+        </div>
+        <p className="text-xs text-sage-700 leading-snug">
+          <span className="font-semibold">4,200+ families</span> across India track warranties with QuickScanZ
+        </p>
+      </div>
+
+      {/* Billing toggle */}
       <div className="card p-3 bg-cream-50 border-cream-200">
         <p className="text-[10px] text-ink-400 uppercase tracking-wider mb-2 font-medium">Billing cycle</p>
         <div className="flex items-center gap-2">
@@ -54,22 +107,25 @@ export default function PricingClient({ plans, currentPlanId, userEmail }: Props
               interval === "yearly" ? "bg-ink-900 text-cream-100 shadow-sm" : "bg-sage-50 text-sage-700 border border-sage-200 hover:bg-sage-100"
             }`}>
             <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 text-[9px] bg-sage-500 text-white px-2 py-0.5 rounded-full font-bold uppercase tracking-wide whitespace-nowrap">
-              Best value
+              Save &#8377;789
             </span>
             Yearly
-            <p className="text-[10px] font-normal mt-0.5 opacity-80">&#8377;999 / year &middot; save &#8377;789</p>
+            <p className="text-[10px] font-normal mt-0.5 opacity-80">&#8377;999 / year</p>
           </button>
         </div>
       </div>
 
+      {/* Plan cards */}
       <div className="space-y-4">
         {displayed.map((plan) => {
-          const isCurrent = plan.id === currentPlanId;
-          const isFree = plan.price_inr === 0;
+          const isCurrent    = plan.id === currentPlanId;
+          const isFree       = plan.price_inr === 0;
           const isProcessing = processingPlanId === plan.id;
-          const isPro = !isFree;
+          const isPro        = !isFree;
           return (
-            <div key={plan.id} className={`card p-5 ${isPro ? "border-sand-300 bg-gradient-to-br from-cream-50 to-sand-50" : ""}`}>
+            <div key={plan.id} className={`card p-5 ${
+              isPro ? "border-sand-300 bg-gradient-to-br from-cream-50 to-sand-50" : ""
+            }`}>
               <div className="flex items-start justify-between mb-4">
                 <div>
                   <div className="flex items-center gap-2 mb-1">
@@ -83,7 +139,7 @@ export default function PricingClient({ plans, currentPlanId, userEmail }: Props
                   {isFree ? <p className="text-2xl font-light text-ink-900">&#8377;0</p> : (
                     <>
                       <p className="text-2xl font-light text-ink-900">&#8377;{plan.price_inr.toLocaleString("en-IN")}</p>
-                      <p className="text-[10px] text-ink-400">per {plan.interval === "yearly" ? "year" : "month"}</p>
+                      <p className="text-[10px] text-ink-400">per {plan.interval === "yearly" ? "year" : "month"} +GST</p>
                     </>
                   )}
                 </div>
@@ -121,7 +177,82 @@ export default function PricingClient({ plans, currentPlanId, userEmail }: Props
           );
         })}
       </div>
-      <p className="text-center text-xs text-ink-300">Payments processed securely via Razorpay &middot; Cancel anytime &middot; GST applicable</p>
+
+      {/* Feature comparison table */}
+      <div className="card overflow-hidden">
+        <div className="px-4 py-3 bg-cream-50 border-b border-cream-200">
+          <p className="text-xs font-semibold text-ink-500 uppercase tracking-wider">What&apos;s included</p>
+        </div>
+        <table className="w-full">
+          <thead>
+            <tr className="border-b border-cream-100">
+              <th className="text-left px-4 py-2.5 text-xs text-ink-400 font-medium w-1/2">Feature</th>
+              <th className="text-center px-3 py-2.5 text-xs text-ink-400 font-medium">Free</th>
+              <th className="text-center px-3 py-2.5 text-xs text-ink-900 font-semibold">Pro</th>
+            </tr>
+          </thead>
+          <tbody>
+            {FEATURE_ROWS.map((row, i) => (
+              <tr key={row.label} className={i % 2 === 0 ? "bg-white" : "bg-cream-50/50"}>
+                <td className="px-4 py-2.5 text-xs text-ink-700">{row.label}</td>
+                <td className="text-center px-3 py-2.5 text-xs text-ink-400">{row.free}</td>
+                <td className="text-center px-3 py-2.5 text-xs font-medium text-sage-700">{row.pro}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Testimonial */}
+      <div className="card p-5 bg-sand-50 border-sand-200">
+        <p className="text-sm text-ink-700 leading-relaxed italic">
+          &ldquo;Mera fridge ka warranty expire ho gaya tha, tab pata nahi chala. Ab QuickScanZ se 30 din pehle hi notification aata hai.&rdquo;
+        </p>
+        <div className="flex items-center gap-2 mt-3">
+          <div className="w-7 h-7 rounded-full bg-sand-200 flex items-center justify-center text-xs font-bold text-ink-600">R</div>
+          <div>
+            <p className="text-xs font-medium text-ink-700">Ramesh K.</p>
+            <p className="text-[10px] text-ink-400">Hyderabad &middot; Pro user since 2025</p>
+          </div>
+          <div className="ml-auto flex gap-0.5">
+            {[...Array(5)].map((_,i) => (
+              <svg key={i} width="12" height="12" viewBox="0 0 12 12" fill="#c4956f"><path d="M6 1l1.4 2.8L10.5 4l-2.25 2.2.53 3.1L6 7.77 3.22 9.3l.53-3.1L1.5 4l3.1-.2L6 1z"/></svg>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* FAQ */}
+      <div className="space-y-2">
+        <p className="text-xs font-semibold text-ink-400 uppercase tracking-wider px-1 mb-3">FAQ</p>
+        {FAQ.map((item, i) => (
+          <div key={i} className="card overflow-hidden">
+            <button
+              onClick={() => setOpenFaq(openFaq === i ? null : i)}
+              className="w-full flex items-center justify-between px-4 py-3.5 text-left"
+            >
+              <span className="text-sm font-medium text-ink-800 pr-4">{item.q}</span>
+              <svg
+                width="16" height="16" viewBox="0 0 16 16" fill="none"
+                className={`flex-shrink-0 transition-transform duration-200 ${
+                  openFaq === i ? "rotate-180" : ""
+                }`}
+              >
+                <path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </button>
+            {openFaq === i && (
+              <div className="px-4 pb-4">
+                <p className="text-xs text-ink-500 leading-relaxed">{item.a}</p>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      <p className="text-center text-xs text-ink-300 pb-4">
+        Payments processed securely via Razorpay &middot; Cancel anytime &middot; 18% GST applicable
+      </p>
     </div>
   );
 }

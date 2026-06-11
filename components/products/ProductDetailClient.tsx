@@ -201,7 +201,12 @@ export default function ProductDetailClient({
           )}
         </div>
 
-        <div className="mt-4">
+        {/* Toll-free quick-call chip — always visible, never buried in a tab */}
+        <div className="mt-3">
+          <ServiceCentreCard brand={product.brand} compact />
+        </div>
+
+        <div className="mt-3">
           <GetHelpModal product={product} />
         </div>
       </div>

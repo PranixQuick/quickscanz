@@ -12,6 +12,7 @@ import EmptyState from "@/components/ui/EmptyState";
 import PWAInstallBanner from "@/components/ui/PWAInstallBanner";
 import Link from "next/link";
 import DashboardNudge from "@/components/DashboardNudge";
+import OnboardingFlow from "@/components/onboarding/OnboardingFlow";
 import type { Metadata } from "next";
 import type { DashboardStats } from "@/lib/types";
 
@@ -35,6 +36,14 @@ export default async function DashboardPage() {
     // New user — seed demo products in background, don't block page render
     void seedDemoProducts().catch(() => undefined);
   }
+
+  // Check if user has completed onboarding (profiles.onboarded_at is set)
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("onboarded_at")
+    .eq("id", user.id)
+    .single();
+  const needsOnboarding = !profile?.onboarded_at;
 
   const [products, dueMaintenance, subscription] = await Promise.all([
     getProducts(),
@@ -198,7 +207,8 @@ export default async function DashboardPage() {
           </Link>
         )}
 
-        {!isPro && realProducts.length >= 4 && (
+        {/* Show upgrade nudge when approaching the new free limit of 8 */}
+        {!isPro && realProducts.length >= 6 && (
           <Link href="/pricing" className="block card p-4 border-sand-200 bg-gradient-to-r from-sand-50 to-cream-50 hover:border-sand-300 transition-all group">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-2xl bg-sand-100 flex items-center justify-center flex-shrink-0 text-xl">⭐</div>

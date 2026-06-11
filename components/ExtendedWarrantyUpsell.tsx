@@ -36,8 +36,13 @@ export default function ExtendedWarrantyUpsell({ brand, productName, purchaseDat
   if (!isEligible(purchaseDateIso)) return null;
 
   const q = encodeURIComponent(`${brand} ${productName}`);
-  // GoWarranty affiliate deeplink (replace utm_content with real affiliate ID when set up)
-  const url = `https://gowarranty.in/extended-warranty?q=${q}&utm_source=quickscanz&utm_medium=app&utm_content=product_add`;
+  // GoWarranty affiliate deeplink.
+  // TODO: Set NEXT_PUBLIC_GOWARRANTY_AFFILIATE_ID in Vercel env vars once your
+  //       affiliate account is approved at https://gowarranty.in/partners
+  //       The param name may be 'ref', 'aff_id', or 'partner' — confirm with GoWarranty.
+  const affiliateId = process.env.NEXT_PUBLIC_GOWARRANTY_AFFILIATE_ID || "";
+  const affiliateParam = affiliateId ? `&ref=${encodeURIComponent(affiliateId)}` : "";
+  const url = `https://gowarranty.in/extended-warranty?q=${q}&utm_source=quickscanz&utm_medium=app&utm_content=product_detail${affiliateParam}`;
 
   return (
     <a
