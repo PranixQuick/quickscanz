@@ -105,7 +105,7 @@ export function useBiometric() {
       const credential = await navigator.credentials.get({
         publicKey: {
           challenge,
-          allowCredentials: [{ type: "public-key", id: b64toBuf(storedId) }],
+          allowCredentials: [{ type: "public-key", id: b64toBuf(storedId).buffer as ArrayBuffer }],
           userVerification: "required",
           timeout: 60000,
         },
