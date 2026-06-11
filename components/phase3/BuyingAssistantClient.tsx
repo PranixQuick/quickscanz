@@ -307,7 +307,7 @@ export default function BuyingAssistantClient({ categories }: Props) {
               <div className="card p-3 bg-amber-50/50 border-amber-200">
                 <p className="text-xs text-amber-700">
                   ⚠️ <strong>Prices not available.</strong> Results are ranked by warranty &amp; lifespan only.
-                  The cost/day figure shows what you'd pay per day <em>if</em> you spend your stated budget.
+                  The cost/day figure shows what you&apos;d pay per day <em>if</em> you spend your stated budget.
                   Always check Amazon or Flipkart for current pricing before buying.
                 </p>
               </div>
