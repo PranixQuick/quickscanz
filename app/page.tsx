@@ -115,6 +115,12 @@ export default function LandingPage() {
             <Link href="/signup" className="inline-flex items-center gap-2 bg-cream-50 text-ink-900 text-sm font-medium px-8 py-3 rounded-xl hover:bg-white transition-colors">
               Create free account →
             </Link>
+            <p className="text-xs text-cream-500 mt-4">
+              Already have an account?{" "}
+              <Link href="/login" className="text-cream-300 underline underline-offset-2 hover:text-cream-100 transition-colors font-medium">
+                Sign in →
+              </Link>
+            </p>
           </div>
         </section>
       </main>
