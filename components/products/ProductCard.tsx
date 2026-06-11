@@ -1,3 +1,4 @@
+"use client";
 import Link from "next/link";
 import { getWarrantyStatus, getStatusConfig, formatDate, formatWarrantyCountdown, formatCurrency } from "@/lib/utils";
 import { getProductIntelligence } from "@/lib/intelligence";
@@ -6,6 +7,20 @@ import StatusBadge from "@/components/ui/StatusBadge";
 
 interface ProductCardProps {
   product: Product;
+}
+
+// VIRAL: WhatsApp deeplink share — India's primary distribution channel.
+// Sends a pre-written message with product name, warranty expiry, and app URL.
+function whatsappShare(product: Product, e: React.MouseEvent) {
+  e.preventDefault();
+  e.stopPropagation();
+  const expiry = product.expiry_date
+    ? new Date(product.expiry_date).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })
+    : "unknown";
+  const text = encodeURIComponent(
+    `Hey! I just logged our *${product.name}* (${product.brand}) warranty on QuickScanZ — it expires on ${expiry}. You can track it here: https://quickscanz.app`
+  );
+  window.open(`https://wa.me/?text=${text}`, "_blank", "noopener,noreferrer");
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
