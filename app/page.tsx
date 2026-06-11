@@ -20,7 +20,7 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-cream-50">
       {/* Nav */}
-      <nav className="max-w-2xl mx-auto px-5 py-5 flex items-center justify-between">
+      <nav className="max-w-2xl mx-auto px-5 py-5 flex items-center justify-between sticky top-0 z-40 bg-cream-50/95 backdrop-blur-sm border-b border-cream-200/60">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-xl bg-ink-900 flex items-center justify-center">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
