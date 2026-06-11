@@ -308,6 +308,8 @@ export default function ProductDetailClient({
       {/* Tab: Service Centres */}
       {tab === "centres" && (
         <div className="space-y-4">
+          {/* One-tap toll-free call (competitive-edge-v2) */}
+          <ServiceCentreCard brand={product.brand} />
           <div className="card p-4">
             <p className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-3">Authorized Service Centres — {product.brand}</p>
             <ServiceCentreLocator brand={product.brand} />
