@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { findCatalogEntry } from "@/lib/actions/catalog-india";
 
 export interface CatalogProduct {
   id: string;
@@ -21,8 +22,27 @@ export async function searchCatalog(query: string): Promise<CatalogProduct[]> {
     search_term: query.trim(),
     result_limit: 8,
   });
-  if (error) return [];
-  return (data as CatalogProduct[]) || [];
+
+  // If Supabase RPC returns results, use them directly
+  if (!error && data && (data as CatalogProduct[]).length > 0) {
+    return data as CatalogProduct[];
+  }
+
+  // FALLBACK: search the local India catalog (top-50 bestsellers)
+  // Converts CatalogEntry to CatalogProduct shape so callers stay unchanged
+  const local = findCatalogEntry(query);
+  if (!local) return [];
+  return [{
+    id: `local_${local.brand}_${local.name}`.replace(/\s+/g, "_").toLowerCase(),
+    name: local.name,
+    brand: local.brand,
+    category: local.category,
+    subcategory: null,
+    model_number: null,
+    standard_warranty_months: local.warranty_years * 12,
+    support_phone: null,
+    support_url: null,
+  }];
 }
 
 export async function getServiceCentres(brand: string, city?: string) {
