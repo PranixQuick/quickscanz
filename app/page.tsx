@@ -62,6 +62,12 @@ export default function LandingPage() {
             <Link href="/how-it-works" className="btn-secondary text-base px-8 py-3.5">How it works</Link>
           </div>
           <p className="text-xs text-ink-300 mt-4">No credit card · No app store · Works on any phone</p>
+          <p className="text-xs text-ink-400 mt-3">
+            Already have an account?{" "}
+            <Link href="/login" className="font-medium text-ink-600 underline underline-offset-2 hover:text-ink-900 transition-colors">
+              Sign in →
+            </Link>
+          </p>
         </section>
 
         {/* Stats — numbers match live DB: 53 service centres, 12 brands, 100+ catalog products */}
@@ -109,6 +115,12 @@ export default function LandingPage() {
             <Link href="/signup" className="inline-flex items-center gap-2 bg-cream-50 text-ink-900 text-sm font-medium px-8 py-3 rounded-xl hover:bg-white transition-colors">
               Create free account →
             </Link>
+            <p className="text-xs text-cream-500 mt-4">
+              Already have an account?{" "}
+              <Link href="/login" className="text-cream-300 underline underline-offset-2 hover:text-cream-100 transition-colors font-medium">
+                Sign in →
+              </Link>
+            </p>
           </div>
         </section>
       </main>
