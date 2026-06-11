@@ -362,6 +362,18 @@ export default function AddProductForm() {
           </span>
         ) : "Add to Warranty Wallet"}
       </button>
+
+      {/* Barcode Scanner Modal */}
+      {showScanner && (
+        <BarcodeScannerModal
+          onResult={(code) => {
+            set("serial_number", code);
+            setShowScanner(false);
+            toast.success(`Scanned: ${code}`);
+          }}
+          onClose={() => setShowScanner(false)}
+        />
+      )}
     </form>
   );
 }
