@@ -177,7 +177,8 @@ export default function FamilyVaultPage() {
                     <span className="text-[10px] bg-sand-100 text-sand-700 px-2 py-0.5 rounded-full">Owner</span>
                   )}
                 </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 
