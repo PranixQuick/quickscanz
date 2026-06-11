@@ -20,8 +20,9 @@ interface AppHeaderProps {
 
 export default function AppHeader({ userName }: AppHeaderProps) {
   const router = useRouter();
-  const t = useT();
+  const { t, locale, setLocale } = useI18n();
   const [signingOut, setSigningOut] = useState(false);
+  const [langOpen, setLangOpen] = useState(false);
 
   const handleSignOut = async () => {
     setSigningOut(true);
@@ -30,6 +31,12 @@ export default function AppHeader({ userName }: AppHeaderProps) {
     toast.success("Signed out");
     router.push("/login");
     router.refresh();
+  };
+
+  const handleLocale = (l: Locale) => {
+    setLocale(l);
+    setLangOpen(false);
+    toast.success(LOCALE_NAMES[l], { duration: 1500 });
   };
 
   return (
@@ -50,6 +57,52 @@ export default function AppHeader({ userName }: AppHeaderProps) {
         </Link>
 
         <div className="flex items-center gap-1">
+
+          {/* Language Switcher */}
+          <div className="relative">
+            <button
+              onClick={() => setLangOpen(!langOpen)}
+              aria-label="Change language"
+              aria-expanded={langOpen}
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium text-ink-600 hover:bg-cream-200 hover:text-ink-900 transition-colors"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+              </svg>
+              <span>{LOCALE_LABELS[locale]}</span>
+              <svg width="8" height="8" viewBox="0 0 8 8" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
+                <path d="M1.5 3l2.5 2.5L6.5 3"/>
+              </svg>
+            </button>
+
+            {langOpen && (
+              <>
+                {/* Backdrop to close */}
+                <div className="fixed inset-0 z-40" onClick={() => setLangOpen(false)} aria-hidden="true" />
+                <div className="absolute right-0 top-full mt-1 z-50 w-44 bg-cream-50 border border-cream-200 rounded-xl shadow-lg overflow-hidden">
+                  {LOCALES.map((l) => (
+                    <button
+                      key={l}
+                      onClick={() => handleLocale(l)}
+                      className={`w-full flex items-center gap-3 px-3.5 py-2.5 text-sm transition-colors hover:bg-cream-100 ${
+                        l === locale ? "bg-cream-100 font-medium text-ink-900" : "text-ink-600"
+                      }`}
+                    >
+                      <span className="w-6 text-center font-medium text-xs text-ink-400">{LOCALE_LABELS[l]}</span>
+                      <span>{LOCALE_NAMES[l]}</span>
+                      {l === locale && (
+                        <svg className="ml-auto" width="12" height="12" viewBox="0 0 12 12" fill="none">
+                          <path d="M2 6l3 3 5-5" stroke="#1a1612" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+
           <Link href="/products/add" className="btn-primary text-xs px-4 py-2 rounded-lg">
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
               <path d="M7 2v10M2 7h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
