@@ -102,6 +102,9 @@ export default async function DashboardPage() {
 
         <StatsGrid stats={stats} />
 
+        {/* AI-personalised next-action nudge (competitive-edge-v2) */}
+        <DashboardNudge />
+
         {/* Demo banner — shown only when ALL products are demo, so new users know the stats aren't real */}
         {products.length > 0 && products.every((p) => p.is_demo) && (
           <div className="card p-4 border-sand-200 bg-sand-50/50">
