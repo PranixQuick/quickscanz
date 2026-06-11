@@ -44,7 +44,7 @@ export default function SupportLauncher() {
       <button
         onClick={() => setOpen(true)}
         aria-label="Get help or report an issue"
-        className="fixed bottom-24 right-4 z-40 w-12 h-12 rounded-full bg-ink-900 text-cream-50 shadow-lg flex items-center justify-center hover:bg-ink-700 transition-colors"
+        className="fixed bottom-28 right-4 z-50 w-12 h-12 rounded-full bg-ink-900 text-cream-50 shadow-lg flex items-center justify-center hover:bg-ink-700 transition-colors"
       >
         <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
           <path d="M10 2a8 8 0 0 0-8 8c0 1.4.36 2.7 1 3.86L2 18l4.14-1A8 8 0 1 0 10 2z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
