@@ -47,6 +47,7 @@ function BarcodeScannerModal({ onResult, onClose }: { onResult: (code: string) =
     } catch (e: any) {
       setError("Camera access denied. Please allow camera permission and try again.");
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [onResult]);
 
   const stopScan = useCallback(() => {
