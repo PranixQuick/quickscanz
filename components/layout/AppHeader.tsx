@@ -103,7 +103,7 @@ export default function AppHeader({ userName }: AppHeaderProps) {
             )}
           </div>
 
-          <Link href="/products/add" className="btn-primary text-xs px-4 py-2 rounded-lg">
+          <Link href="/products/add" className="btn-primary text-xs px-3 py-2 rounded-lg whitespace-nowrap shrink-0">
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
               <path d="M7 2v10M2 7h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
             </svg>
