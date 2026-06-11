@@ -8,6 +8,112 @@ import { addProduct } from "@/lib/actions/products";
 import ProductSearchInput from "./ProductSearchInput";
 import type { CatalogProduct } from "@/lib/actions/catalog";
 
+// ---------- Bill OCR Modal ----------
+function ScanBillModal({ onResult, onClose }: {
+  onResult: (fields: Partial<FormState>) => void;
+  onClose: () => void;
+}) {
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [stage, setStage] = useState<"idle" | "scanning" | "done" | "error">("idle");
+  const [errMsg, setErrMsg] = useState("");
+
+  async function processFile(file: File) {
+    setStage("scanning");
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch("/api/ai/ocr", { method: "POST", body: fd });
+      if (!res.ok) throw new Error(await res.text());
+      const json = await res.json();
+      const fields: Partial<FormState> = {};
+      if (json.brand)         fields.brand         = json.brand;
+      if (json.product_name)  fields.name          = json.product_name;
+      if (json.model_number)  fields.model_number  = json.model_number;
+      if (json.serial_number) fields.serial_number = json.serial_number;
+      if (json.store_name)    fields.store_name    = json.store_name;
+      if (json.price)         fields.price         = String(json.price);
+      if (json.purchase_date) fields.purchase_date = json.purchase_date;
+      setStage("done");
+      setTimeout(() => { onResult(fields); onClose(); }, 800);
+    } catch (e: any) {
+      setErrMsg("Couldn't read the bill — please fill manually.");
+      setStage("error");
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 bg-ink-900/90 backdrop-blur-sm flex items-end justify-center" onClick={onClose}>
+      <div className="relative w-full max-w-md rounded-t-3xl bg-white p-6 space-y-4" onClick={(e) => e.stopPropagation()}>
+        <div className="w-10 h-1 rounded-full bg-cream-300 mx-auto" />
+        <div className="flex items-center justify-between">
+          <p className="text-sm font-semibold text-ink-900">📸 Scan Bill / Invoice</p>
+          <button onClick={onClose} className="text-ink-300 hover:text-ink-600 transition-colors">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 2l12 12M14 2L2 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+          </button>
+        </div>
+
+        {stage === "idle" && (
+          <>
+            <p className="text-xs text-ink-400 leading-relaxed">
+              Take a photo of your paper bill, Amazon/Flipkart invoice, or any receipt.
+              The app will auto-fill brand, product, serial number, price and date.
+            </p>
+            <div className="grid grid-cols-2 gap-3">
+              {/* Camera capture */}
+              <button
+                onClick={() => fileRef.current && (fileRef.current.accept = "image/*", fileRef.current.capture = "environment", fileRef.current.click())}
+                className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-ink-900 text-cream-100 active:bg-ink-700 transition-colors">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                  <circle cx="12" cy="13" r="4"/>
+                </svg>
+                <span className="text-xs font-medium">Take Photo</span>
+              </button>
+              {/* Gallery / file pick */}
+              <button
+                onClick={() => fileRef.current && (fileRef.current.accept = "image/*,application/pdf", fileRef.current.removeAttribute("capture"), fileRef.current.click())}
+                className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-cream-100 text-ink-700 border border-cream-200 active:bg-cream-200 transition-colors">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="3" width="18" height="18" rx="2"/>
+                  <circle cx="8.5" cy="8.5" r="1.5"/>
+                  <polyline points="21 15 16 10 5 21"/>
+                </svg>
+                <span className="text-xs font-medium">Choose File</span>
+              </button>
+            </div>
+            <input ref={fileRef} type="file" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) processFile(f); }} />
+          </>
+        )}
+
+        {stage === "scanning" && (
+          <div className="flex flex-col items-center gap-4 py-6">
+            <div className="w-12 h-12 rounded-full border-4 border-cream-200 border-t-sand-500 animate-spin" />
+            <p className="text-sm text-ink-500">Reading your bill…</p>
+            <p className="text-xs text-ink-300">AI is extracting product details</p>
+          </div>
+        )}
+
+        {stage === "done" && (
+          <div className="flex flex-col items-center gap-3 py-6">
+            <div className="w-12 h-12 rounded-full bg-sage-100 flex items-center justify-center">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#7aa67a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            </div>
+            <p className="text-sm font-medium text-ink-800">Details extracted!</p>
+            <p className="text-xs text-ink-400">Form has been auto-filled</p>
+          </div>
+        )}
+
+        {stage === "error" && (
+          <div className="space-y-3">
+            <p className="text-xs text-blush-600 bg-blush-50 rounded-xl p-3 text-center">{errMsg}</p>
+            <button onClick={() => setStage("idle")} className="w-full py-2.5 text-sm btn-primary">Try Again</button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ---------- Barcode Scanner Modal ----------
 function BarcodeScannerModal({ onResult, onClose }: { onResult: (code: string) => void; onClose: () => void }) {
   const videoRef = useRef<HTMLVideoElement>(null);
