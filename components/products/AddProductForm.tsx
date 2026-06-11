@@ -299,9 +299,9 @@ export default function AddProductForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
 
-      {/* ★ SCAN FIRST — Big scan CTA is the entry point for Ramu Uncle */}
+      {/* ★ SCAN FIRST — Big scan CTA opens Bill OCR, not barcode */}
       <div
-        onClick={() => setShowScanner(true)}
+        onClick={() => setShowBillScan(true)}
         className="flex flex-col items-center justify-center gap-3 p-6 rounded-2xl border-2 border-dashed border-sand-300 bg-sand-50/50 cursor-pointer active:bg-sand-100 hover:border-sand-400 transition-all"
       >
         <div className="w-16 h-16 rounded-2xl bg-ink-900 flex items-center justify-center shadow-md">
