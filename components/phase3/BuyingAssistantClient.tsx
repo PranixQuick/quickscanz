@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useCallback } from "react";
 import { getBuyingRecommendations, type BuyingRecommendation } from "@/lib/actions/phase3";
+import { useVoiceSearch } from "@/hooks/useVoiceSearch";
 
 const BUDGET_PRESETS = [
   { label: "Under 15K", value: 15000 },
@@ -11,10 +12,8 @@ const BUDGET_PRESETS = [
   { label: "1L+",    value: 200000 },
 ];
 
-// Rank labels for result cards
 const RANK_LABELS = ["🥇 Best pick", "🥈 Runner up", "🥉 Also good", "4th", "5th"];
 
-// Format raw DB category string → display label
 function formatCategory(c: string): string {
   return c
     .replace(/_/g, " ")
@@ -45,8 +44,7 @@ function Skeleton() {
 }
 
 // ─── Result card ──────────────────────────────────────────────────────────────
-function RecCard({ rec, rank }: { rec: BuyingRecommendation; rank: number }) {
-  // Format cost/day clearly so ₹0.08 shows as "< ₹1"
+function RecCard({ rec, rank, budget }: { rec: BuyingRecommendation; rank: number; budget: number }) {
   const cpd = rec.costPerDayAtBudget;
   const cpdDisplay = cpd < 1 ? "< ₹1" : `₹${cpd.toLocaleString("en-IN")}`;
 
@@ -63,9 +61,10 @@ function RecCard({ rec, rank }: { rec: BuyingRecommendation; rank: number }) {
           <p className="text-xs text-ink-400 mt-0.5 leading-relaxed">{rec.whyRecommended}</p>
         </div>
         <div className="text-right flex-shrink-0">
-          <p className="text-xs text-ink-400">{rec.budgetContext}</p>
+          {/* Transparent cost/day: clearly labelled as 'if you spend ₹X' */}
+          <p className="text-[10px] text-ink-300 leading-tight">if you spend</p>
+          <p className="text-[10px] text-ink-400">₹{budget.toLocaleString("en-IN")}</p>
           <p className="text-sm font-medium text-ink-800">{cpdDisplay}/day</p>
-          <p className="text-[10px] text-ink-300">at your budget</p>
         </div>
       </div>
 
@@ -118,6 +117,19 @@ export default function BuyingAssistantClient({ categories }: Props) {
     error?: string;
   } | null>(null);
 
+  // ── Voice search ────────────────────────────────────────────────────────────
+  const handleVoiceResult = useCallback((text: string) => {
+    setQuery(text);
+  }, []);
+
+  const {
+    isListening,
+    isSupported: voiceSupported,
+    startListening,
+    stopListening,
+    error: voiceError,
+  } = useVoiceSearch(handleVoiceResult);
+
   function handleSearch() {
     if (!category) return;
     if (!budget || budget < 1000) {
@@ -136,22 +148,25 @@ export default function BuyingAssistantClient({ categories }: Props) {
 
       {/* Header */}
       <div>
-        <h1 className="font-display text-2xl font-light text-ink-900">Buying Assistant</h1>
+        <h1 className="font-display text-2xl font-light text-ink-900">Warranty Advisor</h1>
         <p className="text-sm text-ink-400 mt-1">
-          Recommendations based on warranty data and expected lifespan
+          Find products with the best warranty &amp; lifespan for your needs
         </p>
         <div className="mt-2 inline-flex items-center gap-1.5 text-xs bg-amber-50 border border-amber-200 text-amber-700 px-2.5 py-1 rounded-full">
           <span>ℹ️</span>
-          <span>Catalog-based · No real-time prices · Check retailer links for latest pricing</span>
+          <span>Ranked by warranty &amp; lifespan · No real-time prices · Verify pricing on retailer links</span>
         </div>
       </div>
 
       {/* Input card */}
       <div className="card p-5 space-y-4">
 
-        {/* Budget */}
+        {/* Budget — clearly labelled as cost/day calculator, not a price filter */}
         <div>
-          <label className="block text-xs font-medium text-ink-500 mb-2">Your budget</label>
+          <label className="block text-xs font-medium text-ink-500 mb-1">
+            Your budget
+            <span className="ml-1 font-normal text-ink-300">(used to calculate cost per day)</span>
+          </label>
           <div className="flex flex-wrap gap-2 mb-2">
             {BUDGET_PRESETS.map((p) => (
               <button
@@ -205,19 +220,60 @@ export default function BuyingAssistantClient({ categories }: Props) {
           </select>
         </div>
 
-        {/* Specific requirements */}
+        {/* Specific requirements — with voice input */}
         <div>
           <label className="block text-xs font-medium text-ink-500 mb-1.5">
-            Specific requirements{" "}
+            Brand or requirements{" "}
             <span className="text-ink-300">(optional)</span>
           </label>
-          <input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-            placeholder="e.g. 5-star energy rating, inverter, Samsung"
-            className="w-full px-3.5 py-2.5 bg-cream-100 border border-cream-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sand-300"
-          />
+          <div className="relative">
+            <input
+              value={isListening ? "🎙 Listening…" : query}
+              onChange={(e) => !isListening && setQuery(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+              placeholder="e.g. Samsung, 5-star energy, inverter"
+              readOnly={isListening}
+              className={`w-full pl-3.5 pr-12 py-2.5 bg-cream-100 border border-cream-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sand-300 transition-colors ${
+                isListening ? "border-red-300 bg-red-50/30" : ""
+              }`}
+            />
+
+            {/* Mic button — only shown if browser supports voice */}
+            {voiceSupported && (
+              <button
+                type="button"
+                onClick={isListening ? stopListening : startListening}
+                aria-label={isListening ? "Stop listening" : "Start voice input"}
+                className={`absolute right-2.5 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-lg transition-all ${
+                  isListening
+                    ? "bg-red-100 text-red-500 animate-pulse"
+                    : "bg-cream-200 text-ink-400 hover:bg-sand-100 hover:text-ink-600"
+                }`}
+              >
+                {isListening ? (
+                  // Stop icon
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor">
+                    <rect x="2" y="2" width="10" height="10" rx="2"/>
+                  </svg>
+                ) : (
+                  // Mic icon
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                    <line x1="12" y1="19" x2="12" y2="23"/>
+                    <line x1="8" y1="23" x2="16" y2="23"/>
+                  </svg>
+                )}
+              </button>
+            )}
+          </div>
+
+          {/* Voice error */}
+          {voiceError && (
+            <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
+              <span>⚠️</span> {voiceError}
+            </p>
+          )}
         </div>
 
         <button
@@ -247,11 +303,14 @@ export default function BuyingAssistantClient({ categories }: Props) {
                 </div>
               )}
 
-              {result.disclaimer && (
-                <div className="card p-3 bg-amber-50/50 border-amber-200">
-                  <p className="text-xs text-amber-700">⚠️ {result.disclaimer}</p>
-                </div>
-              )}
+              {/* Prominent disclaimer — moved above cards so users see it before results */}
+              <div className="card p-3 bg-amber-50/50 border-amber-200">
+                <p className="text-xs text-amber-700">
+                  ⚠️ <strong>Prices not available.</strong> Results are ranked by warranty &amp; lifespan only.
+                  The cost/day figure shows what you&apos;d pay per day <em>if</em> you spend your stated budget.
+                  Always check Amazon or Flipkart for current pricing before buying.
+                </p>
+              </div>
 
               {result.recommendations.length === 0 ? (
                 <div className="card p-8 text-center">
@@ -264,7 +323,7 @@ export default function BuyingAssistantClient({ categories }: Props) {
               ) : (
                 <div className="space-y-3">
                   {result.recommendations.map((rec, i) => (
-                    <RecCard key={i} rec={rec} rank={i} />
+                    <RecCard key={i} rec={rec} rank={i} budget={budget} />
                   ))}
                 </div>
               )}

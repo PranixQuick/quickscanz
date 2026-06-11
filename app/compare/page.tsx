@@ -8,7 +8,11 @@ export const metadata: Metadata = {
   title: "Compare Products | QuickScanZ",
 };
 
-export default async function ComparePage() {
+interface PageProps {
+  searchParams: { a?: string };
+}
+
+export default async function ComparePage({ searchParams }: PageProps) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
@@ -22,7 +26,10 @@ export default async function ComparePage() {
 
   return (
     <AppLayout>
-      <ProductCompareClient products={(products as any[]) || []} />
+      <ProductCompareClient
+        products={(products as any[]) || []}
+        preSelectedId={searchParams.a}
+      />
     </AppLayout>
   );
 }

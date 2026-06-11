@@ -47,6 +47,18 @@ export default function ProductCard({ product }: ProductCardProps) {
             {product.price && (
               <p className="text-[11px] text-ink-300 mt-1.5">Purchased at {formatCurrency(product.price)}</p>
             )}
+            {product.price && product.resale_estimate_pct != null && (
+              <div className="mt-2 inline-flex items-center gap-1.5 text-[10px] bg-sage-50 border border-sage-200 text-sage-700 px-2 py-0.5 rounded-full">
+                <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+                  <polyline points="17 6 23 6 23 12"/>
+                </svg>
+                <span>
+                  Est. value ~{formatCurrency(Math.round(product.price * product.resale_estimate_pct / 100))}
+                  {" "}({product.resale_estimate_pct}%)
+                </span>
+              </div>
+            )}
           </div>
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="text-ink-300 group-hover:text-ink-500 group-hover:translate-x-0.5 transition-all flex-shrink-0 mt-1">
             <path d="M5 3l4 4-4 4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>

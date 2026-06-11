@@ -152,10 +152,26 @@ RULES:
         startTransition(async () => { await updateClaimSession(sid, newMessages); });
       }
     } catch {
-      // Graceful fallback — never crash, never show technical errors
+      // Graceful fallback — structured guide so the feature stays useful even if AI is down
+      const isExpired = status === "expired";
+      const hasInvoice = !!product.invoice_url;
       const fallbackMsg: ClaimMessage = {
         role: "assistant",
-        content: "I'm here to help with your warranty claim. Please describe the issue with your product and I'll guide you through the process.",
+        content: [
+          isExpired
+            ? `⚠️ Your warranty expired on ${formatDate(product.expiry_date)}, but you still have options.`
+            : `✅ Your ${product.brand} ${product.name} is under warranty until ${formatDate(product.expiry_date)}.`,
+          "",
+          "Here's how to file your claim:",
+          "",
+          `1. Gather your documents — ${hasInvoice ? "your invoice is already saved here ✓" : "find your purchase invoice or payment receipt"}, plus the product's serial number if available.`,
+          `2. Call ${product.brand} customer care — search "${product.brand} India toll free" on Google for the latest number.`,
+          "3. Describe the issue clearly — stick to the defect (how it started, when it started). Don't mention accidental damage even if it occurred.",
+          "4. Ask for a job sheet or complaint reference number — this is your proof the claim was registered.",
+          "5. If the service centre refuses a valid in-warranty repair, escalate to the National Consumer Helpline: 1800-11-4000 (free call).",
+          "",
+          "Tip: Under the Consumer Protection Act 2019, manufacturers must honour warranty commitments. If they don't, you can file a complaint at consumerhelpline.gov.in.",
+        ].join("\n"),
       };
       setMessages((prev) => [...prev, fallbackMsg]);
     } finally {

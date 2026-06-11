@@ -139,10 +139,18 @@ export default function ProductDetailClient({
                   </svg>
                 </button>
                 {!product.is_demo && (
-                  <button data-testid="edit-product" onClick={() => setShowEdit(true)}
-                    className="text-[11px] bg-cream-100 hover:bg-cream-200 text-ink-500 px-2.5 py-1.5 rounded-lg transition-colors border border-cream-200">
-                    ✏️ Edit
-                  </button>
+                  <>
+                    <Link
+                      href={`/compare?a=${product.id}`}
+                      className="text-[11px] bg-cream-100 hover:bg-cream-200 text-ink-500 px-2.5 py-1.5 rounded-lg transition-colors border border-cream-200"
+                    >
+                      ⚖️ Compare
+                    </Link>
+                    <button data-testid="edit-product" onClick={() => setShowEdit(true)}
+                      className="text-[11px] bg-cream-100 hover:bg-cream-200 text-ink-500 px-2.5 py-1.5 rounded-lg transition-colors border border-cream-200">
+                      ✏️ Edit
+                    </button>
+                  </>
                 )}
                 {product.is_demo && (
                   <span className="text-[10px] font-medium text-ink-300 bg-cream-200 px-2 py-1 rounded-full">Sample</span>
