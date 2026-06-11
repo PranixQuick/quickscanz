@@ -33,7 +33,7 @@ export default function LandingPage() {
           <span className="font-display text-base font-medium text-ink-900">QuickScanZ</span>
         </div>
         <div className="flex items-center gap-3">
-          <Link href="/login" className="text-sm font-medium text-ink-600 border border-ink-200 hover:border-ink-400 hover:text-ink-900 transition-colors px-4 py-2 rounded-xl">Sign in</Link>
+          <Link href="/login" className="text-sm font-medium text-ink-800 border border-ink-400 hover:border-ink-700 hover:bg-ink-50 hover:text-ink-900 transition-colors px-4 py-2 rounded-xl">Sign in</Link>
           <Link href="/signup" className="btn-primary text-sm px-4 py-2">Get started free</Link>
         </div>
       </nav>
