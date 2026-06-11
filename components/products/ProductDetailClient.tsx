@@ -11,6 +11,8 @@ import type { Product } from "@/lib/types";
 import type { PriceEntry, MaintenanceTask } from "@/lib/actions/phase2";
 import StatusBadge from "@/components/ui/StatusBadge";
 import CountdownRing from "@/components/ui/CountdownRing";
+import ServiceCentreCard from "@/components/ServiceCentreCard";
+import ExtendedWarrantyUpsell from "@/components/ExtendedWarrantyUpsell";
 import toast from "react-hot-toast";
 
 const GetHelpModal = dynamic(() => import("@/components/products/GetHelpModal"));
