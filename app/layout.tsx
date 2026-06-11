@@ -41,12 +41,35 @@ export const metadata: Metadata = {
   authors: [{ name: "QuickScanZ" }],
   creator: "QuickScanZ",
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://quickscanz.com"),
+  alternates: {
+    canonical: "https://quickscanz.com",
+  },
   openGraph: {
     type: "website",
     locale: "en_IN",
     siteName: "QuickScanZ",
+    url: "https://quickscanz.com",
     title: "QuickScanZ — Your Warranty Wallet",
-    description: "Never lose a warranty or invoice again.",
+    description: "Never lose a warranty or invoice again. Track warranties, store invoices, get AI-guided claims.",
+    images: [
+      {
+        url: "/icons/icon-512.png",
+        width: 512,
+        height: 512,
+        alt: "QuickScanZ — Your Warranty Wallet",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary",
+    title: "QuickScanZ — Your Warranty Wallet",
+    description: "Never lose a warranty or invoice again. Track warranties, store invoices, get AI-guided claims.",
+    images: ["/icons/icon-512.png"],
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "QuickScanZ",
   },
   robots: { index: true, follow: true },
   manifest: "/manifest.json",
