@@ -199,6 +199,20 @@ export default function AddProductForm() {
             <span className="text-sm text-ink-400">months</span>
           </div>
         )}
+        {form.purchase_date && form.warranty_months > 0 && (() => {
+          const expiry = new Date(form.purchase_date);
+          expiry.setMonth(expiry.getMonth() + Number(form.warranty_months));
+          const isExpired = expiry < new Date();
+          return (
+            <p className={`text-xs mt-2 px-1 ${
+              isExpired ? "text-blush-500" : "text-sage-600"
+            }`}>
+              {isExpired ? "⚠️" : "✓"} Warranty expires{" "}
+              {expiry.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+              {isExpired ? " (already expired)" : ""}
+            </p>
+          );
+        })()}
       </div>
 
       <div className="h-px bg-cream-200" />
