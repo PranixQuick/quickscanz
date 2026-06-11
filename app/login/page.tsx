@@ -11,6 +11,7 @@ function LoginForm() {
   const urlError = searchParams.get("error");
 
   const [isPending, startTransition] = useTransition();
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState(
     urlError === "auth_callback_failed"
       ? "Verification link expired. Please sign in and request a new one."
