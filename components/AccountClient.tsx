@@ -154,6 +154,24 @@ export default function AccountClient({
       <button onClick={handleSignOut} disabled={isPending} className="w-full py-3.5 text-sm font-medium text-blush-500 hover:text-blush-600 hover:bg-blush-50/50 rounded-xl transition-colors disabled:opacity-40 border border-transparent hover:border-blush-200">
         {isPending ? "Signing out..." : "Sign out"}
       </button>
+
+      {/* Delete account — required by Google Play Data Safety & DPDP Act */}
+      <div className="pt-2 border-t border-cream-200">
+        <p className="text-[10px] text-ink-300 text-center mb-3">Danger zone</p>
+        <a
+          href={`mailto:privacy@quickscanz.com?subject=Account%20Deletion%20Request&body=Please%20delete%20my%20account%20and%20all%20data.%20Registered%20email%3A%20${encodeURIComponent(email)}`}
+          className="w-full flex items-center justify-center gap-2 py-3 text-xs font-medium text-ink-300 hover:text-blush-500 hover:bg-blush-50/30 rounded-xl transition-colors border border-transparent hover:border-blush-100"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="3 6 5 6 21 6"/>
+            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+            <path d="M10 11v6M14 11v6"/>
+            <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+          </svg>
+          Request account deletion
+        </a>
+      </div>
+
       <p className="text-center text-[10px] text-ink-200 pb-2">QuickScanZ · v2.0</p>
     </div>
   );
