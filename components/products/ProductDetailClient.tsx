@@ -251,6 +251,14 @@ export default function ProductDetailClient({
             </div>
           )}
 
+          {/* Extended warranty upsell — only within 30 days of purchase (competitive-edge-v2) */}
+          <ExtendedWarrantyUpsell
+            brand={product.brand}
+            productName={product.name}
+            purchaseDateIso={product.purchase_date}
+            category={(product as any).category}
+          />
+
           {!product.is_demo && <ProductReviewCard brand={product.brand} productName={product.name} />}
 
           <div className="pt-2">
