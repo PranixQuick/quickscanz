@@ -1,12 +1,109 @@
 "use client";
 
-import { useState, useTransition, useCallback } from "react";
+import { useState, useTransition, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useDropzone } from "react-dropzone";
 import toast from "react-hot-toast";
 import { addProduct } from "@/lib/actions/products";
 import ProductSearchInput from "./ProductSearchInput";
 import type { CatalogProduct } from "@/lib/actions/catalog";
+
+// ---------- Barcode Scanner Modal ----------
+function BarcodeScannerModal({ onResult, onClose }: { onResult: (code: string) => void; onClose: () => void }) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const rafRef = useRef<number>(0);
+  const [error, setError] = useState("");
+
+  const startScan = useCallback(async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+      streamRef.current = stream;
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        await videoRef.current.play();
+      }
+      // Use native BarcodeDetector if available, else show fallback message
+      if (!('BarcodeDetector' in window)) {
+        setError("Barcode scanning not supported in this browser. Please type the serial/model number manually.");
+        return;
+      }
+      // @ts-ignore — BarcodeDetector is not yet in TS lib
+      const detector = new BarcodeDetector({ formats: ['qr_code','ean_13','ean_8','upc_a','upc_e','code_128','code_39','itf','data_matrix'] });
+      const scan = async () => {
+        if (!videoRef.current) return;
+        try {
+          const codes = await detector.detect(videoRef.current);
+          if (codes.length > 0) {
+            const code = codes[0].rawValue;
+            stopScan();
+            onResult(code);
+          } else {
+            rafRef.current = requestAnimationFrame(scan);
+          }
+        } catch { rafRef.current = requestAnimationFrame(scan); }
+      };
+      rafRef.current = requestAnimationFrame(scan);
+    } catch (e: any) {
+      setError("Camera access denied. Please allow camera permission and try again.");
+    }
+  }, [onResult]);
+
+  const stopScan = useCallback(() => {
+    cancelAnimationFrame(rafRef.current);
+    streamRef.current?.getTracks().forEach((t) => t.stop());
+    streamRef.current = null;
+  }, []);
+
+  // Start on mount
+  useCallback(() => { startScan(); return () => stopScan(); }, [startScan, stopScan]);
+
+  // useEffect equivalent via ref trick — safe for SSR
+  const hasStarted = useRef(false);
+  if (typeof window !== 'undefined' && !hasStarted.current) {
+    hasStarted.current = true;
+    setTimeout(() => startScan(), 100);
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 bg-ink-900/90 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
+      <div className="relative w-full max-w-xs" onClick={(e) => e.stopPropagation()}>
+        <div className="card overflow-hidden">
+          <div className="flex items-center justify-between px-4 pt-4 pb-2">
+            <p className="text-sm font-medium text-ink-900">📷 Scan Barcode / QR</p>
+            <button onClick={() => { stopScan(); onClose(); }} className="text-ink-300 hover:text-ink-600 transition-colors">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 2l12 12M14 2L2 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+            </button>
+          </div>
+          {error ? (
+            <div className="px-4 pb-4">
+              <p className="text-xs text-blush-500 bg-blush-50 rounded-xl p-3">{error}</p>
+            </div>
+          ) : (
+            <div className="relative bg-ink-900 aspect-square">
+              <video ref={videoRef} muted playsInline className="w-full h-full object-cover" />
+              {/* Scanning frame overlay */}
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div className="w-48 h-48 relative">
+                  {['tl','tr','bl','br'].map((c) => (
+                    <div key={c} className={`absolute w-8 h-8 border-cream-100 ${
+                      c==='tl'?'top-0 left-0 border-t-2 border-l-2 rounded-tl-lg':
+                      c==='tr'?'top-0 right-0 border-t-2 border-r-2 rounded-tr-lg':
+                      c==='bl'?'bottom-0 left-0 border-b-2 border-l-2 rounded-bl-lg':
+                      'bottom-0 right-0 border-b-2 border-r-2 rounded-br-lg'
+                    }`} />
+                  ))}
+                  <div className="absolute top-1/2 left-0 right-0 h-px bg-sand-400/60 animate-pulse" />
+                </div>
+              </div>
+            </div>
+          )}
+          <p className="text-[11px] text-ink-300 text-center px-4 py-3">Point at barcode or QR code — auto-detects</p>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 const CATEGORIES = [
   { value: "Electronics",    label: "Electronics",    icon: "💻", subs: ["Smartphone","Laptop","Television","Camera","Audio","Wearable","Printer","Networking","Other"] },
