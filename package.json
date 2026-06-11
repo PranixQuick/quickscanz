@@ -20,7 +20,8 @@
     "lucide-react": "^0.408.0",
     "react-hot-toast": "^2.4.1",
     "react-dropzone": "^14.2.3",
-    "@sentry/nextjs": "^8.42.0"
+    "@sentry/nextjs": "^8.42.0",
+    "web-push": "^3.6.7"
   },
   "devDependencies": {
     "@types/node": "^20",
