@@ -38,10 +38,8 @@ export default function DashboardNudge() {
         .eq("is_demo", false)
         .order("created_at", { ascending: false });
 
-      if (!products || products.length === 0) {
-        setNudge({ type: "no_products", title: "Add your first product", sub: "Scan a barcode or bill to get started.", href: "/products/add", icon: "star" });
-        return;
-      }
+      // No real products yet — hide nudge entirely; the demo banner on the dashboard handles this state
+      if (!products || products.length === 0) return;
 
       const now = new Date();
 
