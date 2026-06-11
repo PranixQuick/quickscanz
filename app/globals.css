@@ -143,6 +143,27 @@ body {
 /* =============================================================
    SERVICE CENTRE CARD (competitive-edge-v2)
    ============================================================= */
+/* ===== SERVICE CENTRE CHIP (compact header mode) ===== */
+.service-centre-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: #f0ece6;
+  border: 1px solid #e0d9d0;
+  color: #3d3730;
+  font-size: 12px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background 150ms ease, border-color 150ms ease;
+  -webkit-tap-highlight-color: transparent;
+  white-space: nowrap;
+}
+.service-centre-chip svg { flex-shrink: 0; color: #8a7a6a; }
+.service-centre-chip:active,
+.service-centre-chip:hover { background: #e8e0d4; border-color: #c9bfb0; }
+
 .service-centre-card {
   background: #fff;
   border: 1px solid #ede0cc;
