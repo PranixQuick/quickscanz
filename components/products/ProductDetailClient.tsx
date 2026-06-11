@@ -118,6 +118,26 @@ export default function ProductDetailClient({
                 </p>
               </div>
               <div className="flex items-center gap-2 flex-shrink-0">
+                {/* Share button — Web Share API with clipboard fallback */}
+                <button
+                  onClick={async () => {
+                    const text = `${product.name} by ${product.brand} — warranty tracked on QuickScanZ`;
+                    if (navigator.share) {
+                      try { await navigator.share({ title: product.name, text, url: window.location.href }); }
+                      catch (_) { /* user cancelled */ }
+                    } else {
+                      await navigator.clipboard.writeText(window.location.href);
+                      toast.success("Link copied!");
+                    }
+                  }}
+                  aria-label="Share product"
+                  className="w-8 h-8 flex items-center justify-center rounded-lg bg-cream-100 hover:bg-cream-200 text-ink-400 hover:text-ink-700 transition-colors border border-cream-200"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+                  </svg>
+                </button>
                 {!product.is_demo && (
                   <button data-testid="edit-product" onClick={() => setShowEdit(true)}
                     className="text-[11px] bg-cream-100 hover:bg-cream-200 text-ink-500 px-2.5 py-1.5 rounded-lg transition-colors border border-cream-200">
