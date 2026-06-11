@@ -84,3 +84,59 @@ body {
 @supports (padding: max(0px)) {
   .safe-bottom { padding-bottom: max(1.5rem, env(safe-area-inset-bottom)); }
 }
+
+/* =============================================================
+   BUG-005: Indic script font cascade
+   When the user switches to an Indic locale, the I18nProvider
+   sets data-locale on <html>. These rules override --font-body
+   and --font-display for the entire document so every component
+   inherits the correct Noto script font via the CSS cascade.
+   Noto fonts are loaded dynamically by the provider (no bundle
+   bloat when the user stays on English).
+   ============================================================= */
+
+/* Hindi / Devanagari */
+[data-locale="hi"] body,
+[data-locale="hi"] .font-body,
+[data-locale="hi"] .font-display {
+  font-family: 'Noto Sans Devanagari', 'DM Sans', sans-serif;
+}
+
+/* Telugu */
+[data-locale="te"] body,
+[data-locale="te"] .font-body,
+[data-locale="te"] .font-display {
+  font-family: 'Noto Sans Telugu', 'DM Sans', sans-serif;
+}
+
+/* Tamil */
+[data-locale="ta"] body,
+[data-locale="ta"] .font-body,
+[data-locale="ta"] .font-display {
+  font-family: 'Noto Sans Tamil', 'DM Sans', sans-serif;
+}
+
+/* Kannada */
+[data-locale="kn"] body,
+[data-locale="kn"] .font-body,
+[data-locale="kn"] .font-display {
+  font-family: 'Noto Sans Kannada', 'DM Sans', sans-serif;
+}
+
+/* Malayalam */
+[data-locale="ml"] body,
+[data-locale="ml"] .font-body,
+[data-locale="ml"] .font-display {
+  font-family: 'Noto Sans Malayalam', 'DM Sans', sans-serif;
+}
+
+/* Apply to all raw text elements too so inline-styled or unstyled
+   tags (p, span, h1-h6, button, input, label) also get the font */
+[data-locale="hi"] *,
+[data-locale="te"] *,
+[data-locale="ta"] *,
+[data-locale="kn"] *,
+[data-locale="ml"] * {
+  font-family: inherit;
+}
+
