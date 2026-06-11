@@ -192,6 +192,30 @@ export default function AddProductForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
 
+      {/* ★ SCAN FIRST — Big scan CTA is the entry point for Ramu Uncle */}
+      <div
+        onClick={() => setShowScanner(true)}
+        className="flex flex-col items-center justify-center gap-3 p-6 rounded-2xl border-2 border-dashed border-sand-300 bg-sand-50/50 cursor-pointer active:bg-sand-100 hover:border-sand-400 transition-all"
+      >
+        <div className="w-16 h-16 rounded-2xl bg-ink-900 flex items-center justify-center shadow-md">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#fdfcf8" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/>
+            <line x1="7" y1="12" x2="7" y2="12.01"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="17" y1="12" x2="17" y2="12.01"/>
+          </svg>
+        </div>
+        <div className="text-center">
+          <p className="font-semibold text-ink-900 text-base">📸 Scan Box / Bill</p>
+          <p className="text-xs text-ink-400 mt-0.5">बॉक्स या बिल का बारकोड स्कैन करें • Auto-fills all details</p>
+        </div>
+      </div>
+
+      {/* Divider with manual fallback label */}
+      <div className="flex items-center gap-3">
+        <div className="flex-1 h-px bg-cream-200" />
+        <span className="text-xs text-ink-300 font-medium">or fill manually ↓</span>
+        <div className="flex-1 h-px bg-cream-200" />
+      </div>
+
       {/* Search */}
       <div>
         <label className="block text-xs font-semibold text-ink-400 uppercase tracking-wider mb-2">Find Product</label>
