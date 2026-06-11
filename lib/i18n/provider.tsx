@@ -28,6 +28,16 @@ function translate(locale: Locale, key: string): string {
   return TABLES[locale]?.[key] ?? TABLES.en?.[key] ?? key;
 }
 
+// BUG-005: Indic font cascade — defined at module scope so it is never a
+// reactive dependency and never triggers the exhaustive-deps lint warning.
+const INDIC_FONTS: Partial<Record<Locale, string>> = {
+  hi: 'Noto+Sans+Devanagari:wght@400;500;600',
+  te: 'Noto+Sans+Telugu:wght@400;500;600',
+  ta: 'Noto+Sans+Tamil:wght@400;500;600',
+  kn: 'Noto+Sans+Kannada:wght@400;500;600',
+  ml: 'Noto+Sans+Malayalam:wght@400;500;600',
+};
+
 export function I18nProvider({ children }: { children: ReactNode }) {
   const [locale, setLocaleState] = useState<Locale>('en'); // SSR-safe default
 
@@ -39,17 +49,6 @@ export function I18nProvider({ children }: { children: ReactNode }) {
       /* localStorage unavailable — stay on 'en' */
     }
   }, []);
-
-  // BUG-005: Indic font cascade
-  // Map each Indic locale to the Google Fonts family name. 'en' and 'hi'
-  // share Noto Sans Devanagari; others get their own Noto Sans variant.
-  const INDIC_FONTS: Partial<Record<Locale, string>> = {
-    hi: 'Noto+Sans+Devanagari:wght@400;500;600',
-    te: 'Noto+Sans+Telugu:wght@400;500;600',
-    ta: 'Noto+Sans+Tamil:wght@400;500;600',
-    kn: 'Noto+Sans+Kannada:wght@400;500;600',
-    ml: 'Noto+Sans+Malayalam:wght@400;500;600',
-  };
 
   useEffect(() => {
     try {
