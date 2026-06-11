@@ -15,8 +15,11 @@ const sections = [
   { title: "6. Data Deletion", content: "You can delete any product or invoice from within the app at any time. To request full account deletion, email privacy@quickscanz.com or support@pranixailabs.com from your registered address; deletion is permanent." },
   { title: "7. Your Rights", content: "You may request access to, correction of, export of, or deletion of your data, and you can disable notifications at any time. Contact privacy@quickscanz.com to exercise any of these rights." },
   { title: "8. Security", content: "All data is encrypted in transit using TLS. Invoices are stored in private buckets with access controlled to your account. Each user can access only their own records." },
-  { title: "9. Children", content: "QuickScanZ is not directed at children under 13 and we do not knowingly collect their data." },
-  { title: "10. Contact", content: "For any privacy concerns, email privacy@quickscanz.com or support@pranixailabs.com. Operated by Pranix AI Labs Pvt Ltd, Hyderabad, India. We respond within a reasonable period." },
+  { title: "9. AI Features & Third-Party Models", content: "The AI Claim Assistant feature uses third-party large language model APIs to generate guidance text. Your product descriptions and claim context may be sent to these APIs to produce responses. No invoice images or personal identity information are included in AI requests. AI-generated responses are suggestions only and do not constitute legal or warranty advice." },
+  { title: "10. App Permissions", content: "QuickScanZ may request: Camera — to photograph invoices and product labels (only captured images are uploaded, no continuous recording); Notifications — to send warranty expiry alerts (you may revoke this permission from your device settings at any time). No other device permissions are required." },
+  { title: "11. Indian Users — DPDP Act 2023", content: "For users in India, QuickScanZ processes personal data in accordance with the Digital Personal Data Protection Act, 2023. You have the right to access, correct, and erase your personal data and to withdraw consent at any time by contacting privacy@quickscanz.com. Grievance Officer: Pranix AI Labs Pvt Ltd, Hyderabad, India (privacy@quickscanz.com)." },
+  { title: "12. Children", content: "QuickScanZ is not directed at children under 13 and we do not knowingly collect their data. If you believe a child has provided us personal data, contact privacy@quickscanz.com and we will delete it promptly." },
+  { title: "13. Contact", content: "For any privacy concerns, email privacy@quickscanz.com or support@pranixailabs.com. Operated by Pranix AI Labs Pvt Ltd, Hyderabad, India. We respond within 72 hours." },
 ];
 
 export default function PrivacyPolicyPage() {
