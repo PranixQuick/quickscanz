@@ -9,8 +9,30 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        display: ["var(--font-cormorant)", "serif"],
-        body: ["var(--font-dm-sans)", "sans-serif"],
+        // BUG-005: Noto Sans families are included in the fallback chain so that
+        // when data-locale is set on <html> and the dynamic font <link> has loaded,
+        // Indic script glyphs are resolved before the generic sans-serif fallback.
+        // The CSS cascade rules in globals.css take precedence and swap the
+        // primary family; these entries act as a safety net for any elements
+        // that receive font-body/font-display as inline Tailwind utility classes.
+        display: [
+          "var(--font-cormorant)",
+          "Noto Sans Devanagari",
+          "Noto Sans Telugu",
+          "Noto Sans Tamil",
+          "Noto Sans Kannada",
+          "Noto Sans Malayalam",
+          "serif",
+        ],
+        body: [
+          "var(--font-dm-sans)",
+          "Noto Sans Devanagari",
+          "Noto Sans Telugu",
+          "Noto Sans Tamil",
+          "Noto Sans Kannada",
+          "Noto Sans Malayalam",
+          "sans-serif",
+        ],
         mono: ["var(--font-dm-mono)", "monospace"],
       },
       colors: {
