@@ -12,7 +12,7 @@ const RP_NAME = "QuickScanZ";
 const STORAGE_KEY = "qsz_bio_cred"; // stores base64url credential id only
 
 function buf2b64(buf: ArrayBuffer): string {
-  return btoa(String.fromCharCode(...new Uint8Array(buf)))
+  return btoa(Array.from(new Uint8Array(buf), (b) => String.fromCharCode(b)).join(""))
     .replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "");
 }
 
