@@ -8,10 +8,15 @@ import Link from "next/link";
 
 interface Props {
   products: ComparisonItem[];
+  preSelectedId?: string;
 }
 
-export default function ProductCompareClient({ products }: Props) {
-  const [selected, setSelected] = useState<string[]>([]);
+export default function ProductCompareClient({ products, preSelectedId }: Props) {
+  const [selected, setSelected] = useState<string[]>(
+    preSelectedId && products.some((p) => p.id === preSelectedId)
+      ? [preSelectedId]
+      : []
+  );
 
   function toggle(id: string) {
     setSelected((prev) =>
