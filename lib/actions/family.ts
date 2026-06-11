@@ -17,6 +17,9 @@ export interface FamilyMember {
   user_id: string;
   role: "owner" | "member";
   joined_at: string;
+  // Resolved from profiles join — may be null if profile not yet created
+  display_name: string | null;
+  email: string | null;
 }
 
 export async function createFamilyGroup(name: string): Promise<{ success: boolean; group?: FamilyGroup; error?: string }> {
