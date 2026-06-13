@@ -86,58 +86,86 @@ body {
 }
 
 /* =============================================================
-   BUG-005: Indic script font cascade
-   When the user switches to an Indic locale, the I18nProvider
-   sets data-locale on <html>. These rules override --font-body
-   and --font-display for the entire document so every component
-   inherits the correct Noto script font via the CSS cascade.
-   Noto fonts are loaded dynamically by the provider (no bundle
-   bloat when the user stays on English).
+   BUG-005 FIX v2: Indic script font cascade — full override
+
+   ROOT CAUSE (found Jun 13 2026):
+   The previous approach used `font-family: inherit !important` on
+   the `*` wildcard, but the inherited value from <body> still
+   resolved to DM Sans because:
+     1. body has `font-body` Tailwind utility class → compiled to
+        `font-family: var(--font-dm-sans), ...` which always resolves
+        to the Next.js-injected DM Sans variable.
+     2. `inherit` on children just pulled that same resolved value.
+
+   THE FIX (two-layer approach):
+     Layer A — Override the CSS custom properties at the [data-locale]
+               root so that var(--font-dm-sans) and var(--font-cormorant)
+               themselves resolve to the correct Noto family. This fixes
+               every component using var(--font-*) directly.
+     Layer B — Explicitly set font-family (not `inherit`) on the `*`
+               wildcard so elements with hardcoded or utility-class fonts
+               are also overridden.
+
+   Noto fonts are loaded dynamically by provider.tsx on locale change
+   (no bundle bloat for English users).
    ============================================================= */
 
-/* Hindi / Devanagari */
-[data-locale="hi"] body,
-[data-locale="hi"] .font-body,
-[data-locale="hi"] .font-display {
-  font-family: 'Noto Sans Devanagari', 'DM Sans', sans-serif;
+/* ── Layer A: override the CSS font variables at the root ───── */
+[data-locale="hi"] {
+  --font-dm-sans: 'Noto Sans Devanagari', sans-serif;
+  --font-cormorant: 'Noto Sans Devanagari', sans-serif;
+}
+[data-locale="te"] {
+  --font-dm-sans: 'Noto Sans Telugu', sans-serif;
+  --font-cormorant: 'Noto Sans Telugu', sans-serif;
+}
+[data-locale="ta"] {
+  --font-dm-sans: 'Noto Sans Tamil', sans-serif;
+  --font-cormorant: 'Noto Sans Tamil', sans-serif;
+}
+[data-locale="kn"] {
+  --font-dm-sans: 'Noto Sans Kannada', sans-serif;
+  --font-cormorant: 'Noto Sans Kannada', sans-serif;
+}
+[data-locale="ml"] {
+  --font-dm-sans: 'Noto Sans Malayalam', sans-serif;
+  --font-cormorant: 'Noto Sans Malayalam', sans-serif;
 }
 
-/* Telugu */
-[data-locale="te"] body,
-[data-locale="te"] .font-body,
-[data-locale="te"] .font-display {
-  font-family: 'Noto Sans Telugu', 'DM Sans', sans-serif;
+/* ── Layer B: explicit font override on every element ────────── */
+/* Uses explicit Noto family names (NOT `inherit`) so elements with */
+/* hardcoded font-family or Tailwind utility classes are also fixed. */
+[data-locale="hi"] * {
+  font-family: 'Noto Sans Devanagari', sans-serif !important;
 }
-
-/* Tamil */
-[data-locale="ta"] body,
-[data-locale="ta"] .font-body,
-[data-locale="ta"] .font-display {
-  font-family: 'Noto Sans Tamil', 'DM Sans', sans-serif;
+[data-locale="te"] * {
+  font-family: 'Noto Sans Telugu', sans-serif !important;
 }
-
-/* Kannada */
-[data-locale="kn"] body,
-[data-locale="kn"] .font-body,
-[data-locale="kn"] .font-display {
-  font-family: 'Noto Sans Kannada', 'DM Sans', sans-serif;
+[data-locale="ta"] * {
+  font-family: 'Noto Sans Tamil', sans-serif !important;
 }
-
-/* Malayalam */
-[data-locale="ml"] body,
-[data-locale="ml"] .font-body,
-[data-locale="ml"] .font-display {
-  font-family: 'Noto Sans Malayalam', 'DM Sans', sans-serif;
+[data-locale="kn"] * {
+  font-family: 'Noto Sans Kannada', sans-serif !important;
 }
-
-/* Apply to all raw text elements too so inline-styled or unstyled
-   tags (p, span, h1-h6, button, input, label) also get the font */
-[data-locale="hi"] *,
-[data-locale="te"] *,
-[data-locale="ta"] *,
-[data-locale="kn"] *,
 [data-locale="ml"] * {
-  font-family: inherit !important;
+  font-family: 'Noto Sans Malayalam', sans-serif !important;
+}
+
+/* ── Legacy selectors kept for specificity safety ───────────── */
+[data-locale="hi"] body, [data-locale="hi"] .font-body, [data-locale="hi"] .font-display {
+  font-family: 'Noto Sans Devanagari', sans-serif;
+}
+[data-locale="te"] body, [data-locale="te"] .font-body, [data-locale="te"] .font-display {
+  font-family: 'Noto Sans Telugu', sans-serif;
+}
+[data-locale="ta"] body, [data-locale="ta"] .font-body, [data-locale="ta"] .font-display {
+  font-family: 'Noto Sans Tamil', sans-serif;
+}
+[data-locale="kn"] body, [data-locale="kn"] .font-body, [data-locale="kn"] .font-display {
+  font-family: 'Noto Sans Kannada', sans-serif;
+}
+[data-locale="ml"] body, [data-locale="ml"] .font-body, [data-locale="ml"] .font-display {
+  font-family: 'Noto Sans Malayalam', sans-serif;
 }
 
 /* =============================================================

@@ -1,7 +1,20 @@
 -- ============================================================
--- QuickScanZ — Supabase Schema
+-- ⚠️  DEPRECATED — DO NOT RUN THIS FILE ⚠️
+-- QuickScanZ — Supabase Schema v1 (Phase 1 only)
 -- Project: yqfwvnrnpydcrzomzdvr
--- Run this in: Supabase Dashboard → SQL Editor → New Query
+--
+-- THIS FILE IS OUTDATED. It defines the products table WITHOUT
+-- Phase 2+ columns (category, subcategory, model_number,
+-- serial_number, store_name, installation_date,
+-- extended_warranty_months, manual_url, notes,
+-- catalog_product_id, resale_estimate_pct, is_demo, etc.)
+-- that the app code in lib/actions/products.ts now expects.
+--
+-- Running this file on a fresh DB will cause runtime errors.
+--
+-- ✅ USE THIS INSTEAD:
+--   supabase/migrations/20260612_bootstrap_quickscanz_schema.sql
+--   (the current canonical bootstrap migration)
 -- ============================================================
 
 -- ─── ENABLE UUID EXTENSION ──────────────────────────────────
