@@ -96,7 +96,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
   return (
     <html lang="en" className={`scroll-smooth ${cormorant.variable} ${dmSans.variable} ${dmMono.variable}`}>
-      <head />
       <body className="bg-cream-50 text-ink-900 font-body antialiased">
         <I18nProvider>
           <LocaleBar />
