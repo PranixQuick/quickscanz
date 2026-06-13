@@ -67,8 +67,8 @@ export async function POST(req: NextRequest) {
     body: days_left <= 7
       ? "Tap to file a claim or extend your warranty now."
       : "Tap to review your warranty details.",
-    icon: "/icons/icon-192x192.png",
-    badge: "/icons/badge-72x72.png",
+    icon: "/icons/icon-192.png",
+    badge: "/icons/icon-192.png",
     tag: `warranty-${body.product_id}`,       // replaces previous notif for same product
     renotify: days_left <= 7,                 // re-alert even if same tag
     data: { url: `/products/${body.product_id}` },
