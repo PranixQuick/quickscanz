@@ -108,7 +108,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               background: "#1a1612",
               color: "#fdfcf8",
               borderRadius: "12px",
-              fontFamily: "'DM Sans', sans-serif",
+              fontFamily: "inherit",
               fontSize: "14px",
               padding: "12px 16px",
             },
