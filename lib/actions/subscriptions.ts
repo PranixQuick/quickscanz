@@ -45,7 +45,7 @@ export async function getUserSubscription(): Promise<UserSubscription | null> {
     .eq("status", "active")
     .order("created_at", { ascending: false })
     .limit(1)
-    .single();
+    .maybeSingle(); // BUG-006 fix: .single() throws on no row; .maybeSingle() returns null safely
 
   return data as UserSubscription | null;
 }
