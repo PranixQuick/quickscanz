@@ -319,6 +319,9 @@ export default function LoginPage() {
           </Suspense>
         )}
 
+        {/* Google Sign-In */}
+        <GoogleSignInButton />
+
         {/* Toggle between phone and email */}
         <div className="text-center mt-5 space-y-3">
           <button onClick={() => setShowEmail((v) => !v)}
