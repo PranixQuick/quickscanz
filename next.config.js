@@ -14,7 +14,7 @@ const withPWA = require("@ducanh2912/next-pwa").default({
     runtimeCaching: [
       // API calls to Supabase — cache with network-first, 24hr fallback
       {
-        urlPattern: /^https:\/\/yqfwvnrnpydcrzomzdvr\.supabase\.co\/rest\/v1\/products/,
+        urlPattern: /^https:\/\/[a-zA-Z0-9-]+\.supabase\.co\/rest\/v1\/products/,
         handler: "NetworkFirst",
         options: {
           cacheName: "supabase-products",
@@ -24,7 +24,7 @@ const withPWA = require("@ducanh2912/next-pwa").default({
       },
       // Supabase auth
       {
-        urlPattern: /^https:\/\/yqfwvnrnpydcrzomzdvr\.supabase\.co\/auth/,
+        urlPattern: /^https:\/\/[a-zA-Z0-9-]+\.supabase\.co\/auth/,
         handler: "NetworkFirst",
         options: {
           cacheName: "supabase-auth",
@@ -34,7 +34,7 @@ const withPWA = require("@ducanh2912/next-pwa").default({
       },
       // Invoice images from Supabase Storage
       {
-        urlPattern: /^https:\/\/yqfwvnrnpydcrzomzdvr\.supabase\.co\/storage/,
+        urlPattern: /^https:\/\/[a-zA-Z0-9-]+\.supabase\.co\/storage/,
         handler: "CacheFirst",
         options: {
           cacheName: "invoice-images",
@@ -78,7 +78,7 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "yqfwvnrnpydcrzomzdvr.supabase.co",
+        hostname: "*.supabase.co",
       },
     ],
   },
