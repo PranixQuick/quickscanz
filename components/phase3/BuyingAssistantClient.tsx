@@ -132,7 +132,10 @@ export default function BuyingAssistantClient({ categories }: Props) {
   } = useVoiceSearch(handleVoiceResult);
 
   function handleSearch() {
-    if (!category) return;
+    if (!category) {
+      toast.error("Please select a category first");
+      return;
+    }
     if (!budget || budget < 1000) {
       setBudgetError("Please enter a budget of at least ₹1,000");
       return;
