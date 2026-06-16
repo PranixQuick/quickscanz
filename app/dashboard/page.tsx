@@ -13,6 +13,7 @@ import PWAInstallBanner from "@/components/ui/PWAInstallBanner";
 import Link from "next/link";
 import DashboardNudge from "@/components/DashboardNudge";
 import OnboardingFlow from "@/components/onboarding/OnboardingFlow";
+import PhoneBindingOverlay from "@/components/auth/PhoneBindingOverlay";
 import type { Metadata } from "next";
 import type { DashboardStats } from "@/lib/types";
 
@@ -24,7 +25,7 @@ export default async function DashboardPage() {
   if (!user) redirect("/login");
 
   // Seed demo products ONLY if user has no products at all (first login).
-  // The seed RPC is idempotent — it uses FOR UPDATE SKIP LOCKED to prevent
+  // The seed RPC is idempotent - it uses FOR UPDATE SKIP LOCKED to prevent
   // race conditions and will no-op if products already exist.
   // We check product count first to avoid running the RPC on every page load.
   const { count: existingCount } = await supabase
@@ -33,16 +34,24 @@ export default async function DashboardPage() {
     .eq("user_id", user.id);
 
   if ((existingCount ?? 0) === 0) {
-    // New user — seed demo products in background, don't block page render
+    // New user - seed demo products in background, don't block page render
     void seedDemoProducts().catch(() => undefined);
   }
 
-  // Check if user has completed onboarding (profiles.onboarded_at is set)
+  // Check if user has completed onboarding and has linked a phone number
   const { data: profile } = await supabase
     .from("profiles")
-    .select("onboarded_at")
+    .select("onboarded_at, phone")
     .eq("id", user.id)
     .single();
+
+  const otpEnabled = process.env.NEXT_PUBLIC_OTP_ENABLED !== "false";
+  const needsPhoneBinding = otpEnabled && !profile?.phone;
+
+  if (needsPhoneBinding) {
+    return <PhoneBindingOverlay userId={user.id} />;
+  }
+
   const needsOnboarding = !profile?.onboarded_at;
 
   const [products, dueMaintenance, subscription] = await Promise.all([
@@ -74,16 +83,16 @@ export default async function DashboardPage() {
   const userName = user?.email?.split("@")[0] || "there";
 
   const exploreTiles = [
-    { href: "/products/lifecycle", icon: "📊", title: "Lifecycle",        sub: "Cost & lifespan" },
-    { href: "/compare",            icon: "⚖️",  title: "Compare",          sub: "Side-by-side products" },
-    { href: "/buying-assistant",   icon: "🛒", title: "Buying Assistant", sub: "Budget recommendations" },
-    { href: "/smart-devices",      icon: "🏠", title: "Smart Devices",    sub: "IoT service alerts" },
-    { href: "/energy",             icon: "⚡", title: "Energy Monitor",   sub: "Power & cost" },
-    { href: "/family",             icon: "👨‍👩‍👧", title: "Family Vault",    sub: "Share with family" },
+    { href: "/products/lifecycle", icon: "??", title: "Lifecycle",        sub: "Cost & lifespan" },
+    { href: "/compare",            icon: "??",  title: "Compare",          sub: "Side-by-side products" },
+    { href: "/buying-assistant",   icon: "??", title: "Buying Assistant", sub: "Budget recommendations" },
+    { href: "/smart-devices",      icon: "??", title: "Smart Devices",    sub: "IoT service alerts" },
+    { href: "/energy",             icon: "?", title: "Energy Monitor",   sub: "Power & cost" },
+    { href: "/family",             icon: "????????", title: "Family Vault",    sub: "Share with family" },
     isPro
-      ? { href: "/account",  icon: "⭐", title: "Pro Plan",        sub: "Manage subscription" }
-      : { href: "/pricing",  icon: "⭐", title: "Upgrade to Pro",  sub: "Unlimited · ₹149/mo" },
-    { href: "/products/add", icon: "➕", title: "Add Product",      sub: "30 seconds" },
+      ? { href: "/account",  icon: "?", title: "Pro Plan",        sub: "Manage subscription" }
+      : { href: "/pricing",  icon: "?", title: "Upgrade to Pro",  sub: "Unlimited � ?149/mo" },
+    { href: "/products/add", icon: "?", title: "Add Product",      sub: "30 seconds" },
   ];
 
   return (
@@ -94,11 +103,11 @@ export default async function DashboardPage() {
         <div className="flex items-start justify-between">
           <div>
             <h1 className="font-display text-2xl font-light text-ink-900">
-              Hello, {userName.charAt(0).toUpperCase() + userName.slice(1)} 👋
+              Hello, {userName.charAt(0).toUpperCase() + userName.slice(1)} ??
             </h1>
             <p className="text-sm text-ink-400 mt-0.5">
               {stats.total} product{stats.total !== 1 ? "s" : ""} tracked
-              {stats.expiringSoon > 0 ? ` · ${stats.expiringSoon} expiring soon` : " · all looking good"}
+              {stats.expiringSoon > 0 ? ` � ${stats.expiringSoon} expiring soon` : " � all looking good"}
             </p>
           </div>
           <Link href="/products/add" className="btn-primary text-xs px-4 py-2 flex items-center gap-1.5">
@@ -114,11 +123,11 @@ export default async function DashboardPage() {
         {/* AI-personalised next-action nudge (competitive-edge-v2) */}
         <DashboardNudge />
 
-        {/* Demo banner — shown only when ALL products are demo, so new users know the stats aren't real */}
+        {/* Demo banner - shown only when ALL products are demo, so new users know the stats aren't real */}
         {products.length > 0 && products.every((p) => p.is_demo) && (
           <div className="card p-4 border-sand-200 bg-sand-50/50">
             <div className="flex items-start gap-3">
-              <span className="text-lg mt-0.5">📝</span>
+              <span className="text-lg mt-0.5">??</span>
               <div className="flex-1">
                 <p className="text-sm font-medium text-ink-800">These are sample products</p>
                 <p className="text-xs text-ink-400 mt-0.5 leading-relaxed">
@@ -136,7 +145,7 @@ export default async function DashboardPage() {
         {expiringProducts.length > 0 && (
           <Link href="/products?status=expiring_soon" className="block card p-4 border-amber-200 bg-amber-50/50 hover:border-amber-300 transition-colors">
             <div className="flex items-start gap-3">
-              <span className="text-lg mt-0.5">⏰</span>
+              <span className="text-lg mt-0.5">?</span>
               <div>
                 <p className="text-sm font-medium text-amber-800">
                   {expiringProducts.length} warrant{expiringProducts.length === 1 ? "y expires" : "ies expire"} within 30 days
@@ -150,20 +159,20 @@ export default async function DashboardPage() {
         {overdueMaintenance.length > 0 && (
           <Link href="/products" className="block card p-4 border-blush-200 bg-blush-50/40 hover:border-blush-300 transition-colors">
             <div className="flex items-start gap-3">
-              <span className="text-lg mt-0.5">🔧</span>
+              <span className="text-lg mt-0.5">??</span>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-blush-700">
                   {overdueMaintenance.length} maintenance task{overdueMaintenance.length !== 1 ? "s" : ""} overdue
                 </p>
                 <p className="text-xs text-blush-500 mt-0.5 truncate">
-                  {overdueMaintenance.map((t) => `${t.product_name} — ${t.task_name}`).join(" · ")}
+                  {overdueMaintenance.map((t) => `${t.product_name} - ${t.task_name}`).join(" � ")}
                 </p>
               </div>
             </div>
           </Link>
         )}
 
-        {/* RETENTION: Weekly check-in card — picks the oldest-opened product and nudges a quick health check */}
+        {/* RETENTION: Weekly check-in card - picks the oldest-opened product and nudges a quick health check */}
         {realProducts.length > 0 && (() => {
           const oldest = [...realProducts].sort((a, b) =>
             new Date(a.purchase_date ?? a.created_at).getTime() - new Date(b.purchase_date ?? b.created_at).getTime()
@@ -175,11 +184,11 @@ export default async function DashboardPage() {
           return showCheckin ? (
             <Link href={`/products/${oldest.id}`} className="block card p-4 border-sage-200 bg-sage-50/40 hover:border-sage-300 transition-colors group">
               <div className="flex items-start gap-3">
-                <span className="text-lg mt-0.5">✅</span>
+                <span className="text-lg mt-0.5">?</span>
                 <div className="flex-1">
                   <p className="text-sm font-medium text-ink-800">Weekly check-in: {oldest.name}</p>
                   <p className="text-xs text-ink-400 mt-0.5">
-                    You&apos;ve owned this for {daysSincePurchase} days — still running well? Tap to log a note or start a claim.
+                    You&apos;ve owned this for {daysSincePurchase} days - still running well? Tap to log a note or start a claim.
                   </p>
                 </div>
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="text-sage-400 group-hover:translate-x-0.5 transition-transform flex-shrink-0 mt-1">
@@ -194,7 +203,7 @@ export default async function DashboardPage() {
           <Link href="/claim" className="block card p-4 bg-gradient-to-r from-ink-900 to-ink-800 border-ink-800 group hover:from-ink-800 hover:to-ink-700 transition-all">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-2xl bg-white/10 flex items-center justify-center flex-shrink-0">
-                <span className="text-xl">🤖</span>
+                <span className="text-xl">??</span>
               </div>
               <div className="flex-1">
                 <p className="text-sm font-medium text-cream-100">Something broke? Try AI Claim Assistant</p>
@@ -211,10 +220,10 @@ export default async function DashboardPage() {
         {!isPro && realProducts.length >= 6 && (
           <Link href="/pricing" className="block card p-4 border-sand-200 bg-gradient-to-r from-sand-50 to-cream-50 hover:border-sand-300 transition-all group">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-sand-100 flex items-center justify-center flex-shrink-0 text-xl">⭐</div>
+              <div className="w-10 h-10 rounded-2xl bg-sand-100 flex items-center justify-center flex-shrink-0 text-xl">?</div>
               <div className="flex-1">
                 <p className="text-sm font-medium text-ink-900">You&apos;re nearing the free limit</p>
-                <p className="text-xs text-ink-500 mt-0.5">Upgrade to Pro for unlimited products · ₹149/mo</p>
+                <p className="text-xs text-ink-500 mt-0.5">Upgrade to Pro for unlimited products � ?149/mo</p>
               </div>
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="text-sand-400 group-hover:translate-x-0.5 transition-transform flex-shrink-0">
                 <path d="M3 7h8M8 4l3 3-3 3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
@@ -234,7 +243,7 @@ export default async function DashboardPage() {
           <div>
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-xs font-semibold text-ink-400 uppercase tracking-wider">Products</h2>
-              <Link href="/products" className="text-xs text-sand-500 hover:text-sand-400 transition-colors">View all →</Link>
+              <Link href="/products" className="text-xs text-sand-500 hover:text-sand-400 transition-colors">View all ?</Link>
             </div>
             <div className="space-y-3">
               {sortedProducts.slice(0, 4).map((p, i) => (
