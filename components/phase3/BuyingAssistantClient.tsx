@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition, useCallback } from "react";
+import { toast } from "react-hot-toast";
 import { getBuyingRecommendations, type BuyingRecommendation } from "@/lib/actions/phase3";
 import { useVoiceSearch } from "@/hooks/useVoiceSearch";
 
@@ -131,7 +132,10 @@ export default function BuyingAssistantClient({ categories }: Props) {
   } = useVoiceSearch(handleVoiceResult);
 
   function handleSearch() {
-    if (!category) return;
+    if (!category) {
+      toast.error("Please select a category first");
+      return;
+    }
     if (!budget || budget < 1000) {
       setBudgetError("Please enter a budget of at least ₹1,000");
       return;

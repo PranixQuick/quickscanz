@@ -93,6 +93,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   // OneSignal SDK only loads when the env var is set in Vercel.
   // Safe: if var is absent, no SDK, no change to existing behaviour.
   const oneSignalAppId = process.env.NEXT_PUBLIC_ONESIGNAL_APP_ID;
+  const gaId = process.env.NEXT_PUBLIC_GA_ID;
 
   return (
     <html lang="en" className={`scroll-smooth ${cormorant.variable} ${dmSans.variable} ${dmMono.variable}`}>
@@ -129,6 +130,21 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           • When NEXT_PUBLIC_ONESIGNAL_APP_ID is absent (current state without
             OneSignal account), this block renders nothing → zero impact.
         */}
+        {gaId && (
+          <>
+            <Script
+              src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
+              strategy="lazyOnload"
+            />
+            <Script id="ga-init" strategy="lazyOnload">{`
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', '${gaId}');
+            `}</Script>
+          </>
+        )}
+
         {oneSignalAppId && (
           <>
             <Script
