@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition, useCallback } from "react";
+import { toast } from "react-hot-toast";
 import { getBuyingRecommendations, type BuyingRecommendation } from "@/lib/actions/phase3";
 import { useVoiceSearch } from "@/hooks/useVoiceSearch";
 
