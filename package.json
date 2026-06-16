@@ -22,7 +22,7 @@
     "react-dropzone": "^14.2.3",
     "@sentry/nextjs": "^8.42.0",
     "web-push": "^3.6.7",
-    "standard-webhooks": "^1.0.0"
+    "standardwebhooks": "^1.0.0"
   },
   "devDependencies": {
     "@types/node": "^20",
