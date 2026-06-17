@@ -2,8 +2,9 @@
 
 // QuickScanZ i18n runtime — zero new dependencies.
 // Reads the vendored @pranix/i18n catalog and provides a locale + t() to any
-// client component. SSR-safe: server renders 'en' (matches <html lang="en">),
-// then the stored locale is applied on mount (no hydration mismatch).
+// client component. The active locale lives in a cookie (qsz_locale) so the
+// server can render the correct language on first paint; this provider is
+// seeded with that same value via initialLocale to avoid a hydration mismatch.
 
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import messages from './messages.json';
@@ -11,6 +12,8 @@ import messages from './messages.json';
 export type Locale = 'en' | 'hi' | 'te' | 'ta' | 'kn' | 'ml';
 export const LOCALES: Locale[] = ['en', 'hi', 'te', 'ta', 'kn', 'ml'];
 const STORAGE_KEY = 'qsz_locale';
+const COOKIE_KEY = 'qsz_locale';
+const ONE_YEAR = 60 * 60 * 24 * 365;
 
 type Tables = Record<string, Record<string, string>>;
 const TABLES = messages as unknown as Tables;
@@ -28,6 +31,11 @@ function translate(locale: Locale, key: string): string {
   return TABLES[locale]?.[key] ?? TABLES.en?.[key] ?? key;
 }
 
+function persistLocale(l: Locale) {
+  try { localStorage.setItem(STORAGE_KEY, l); } catch { /* noop */ }
+  try { document.cookie = `${COOKIE_KEY}=${l};path=/;max-age=${ONE_YEAR};samesite=lax`; } catch { /* noop */ }
+}
+
 // BUG-005: Indic font cascade — defined at module scope so it is never a
 // reactive dependency and never triggers the exhaustive-deps lint warning.
 const INDIC_FONTS: Partial<Record<Locale, string>> = {
@@ -38,17 +46,30 @@ const INDIC_FONTS: Partial<Record<Locale, string>> = {
   ml: 'Noto+Sans+Malayalam:wght@400;500;600',
 };
 
-export function I18nProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>('en'); // SSR-safe default
+export function I18nProvider({
+  children,
+  initialLocale = 'en',
+}: {
+  children: ReactNode;
+  initialLocale?: Locale;
+}) {
+  // Seed from the server-provided cookie locale so SSR and first client render match.
+  const [locale, setLocaleState] = useState<Locale>(initialLocale);
 
+  // Migration / fallback: older clients stored their choice only in localStorage.
+  // If that differs from what the server sent, honour it and persist to the cookie
+  // so future server renders are correct too.
   useEffect(() => {
     try {
       const stored = localStorage.getItem(STORAGE_KEY) as Locale | null;
-      if (stored && LOCALES.includes(stored)) setLocaleState(stored);
+      if (stored && LOCALES.includes(stored) && stored !== initialLocale) {
+        setLocaleState(stored);
+        persistLocale(stored);
+      }
     } catch {
-      /* localStorage unavailable — stay on 'en' */
+      /* localStorage unavailable — stay on initialLocale */
     }
-  }, []);
+  }, [initialLocale]);
 
   useEffect(() => {
     try {
@@ -87,7 +108,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
 
   const setLocale = (l: Locale) => {
     setLocaleState(l);
-    try { localStorage.setItem(STORAGE_KEY, l); } catch { /* noop */ }
+    persistLocale(l);
   };
 
   const t = (key: string) => translate(locale, key);
