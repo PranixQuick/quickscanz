@@ -96,6 +96,7 @@
   "ml": {
     "tile.smart_devices_sub": "IoT സേവന അലേർട്ടുകൾ",
     "login.otp_sent": "OTP അയച്ചു",
+    "nav.claim": "ക്ലെയിം AI",
     "login.otp_send_btn": "OTP അയയ്ക്കുക",
     "login.otp_sending": "OTP അയയ്ക്കുന്നു...",
     "login.otp_enter": "6 അക്ക OTP നൽകുക",
