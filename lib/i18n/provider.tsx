@@ -8,6 +8,7 @@
 
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import messages from './messages.json';
+import overrides from './overrides.json';
 
 export type Locale = 'en' | 'hi' | 'te' | 'ta' | 'kn' | 'ml';
 export const LOCALES: Locale[] = ['en', 'hi', 'te', 'ta', 'kn', 'ml'];
@@ -17,6 +18,8 @@ const ONE_YEAR = 60 * 60 * 24 * 365;
 
 type Tables = Record<string, Record<string, string>>;
 const TABLES = messages as unknown as Tables;
+// Human-approved corrections applied on top of the machine catalog.
+const OVERRIDES = overrides as unknown as Tables;
 
 type Ctx = {
   locale: Locale;
@@ -28,7 +31,7 @@ type Ctx = {
 const I18nContext = createContext<Ctx | null>(null);
 
 function translate(locale: Locale, key: string): string {
-  return TABLES[locale]?.[key] ?? TABLES.en?.[key] ?? key;
+  return OVERRIDES[locale]?.[key] ?? TABLES[locale]?.[key] ?? TABLES.en?.[key] ?? key;
 }
 
 function persistLocale(l: Locale) {
