@@ -3,7 +3,7 @@
   "common.cancel": "Cancel",
   "common.next": "Next",
   "common.back": "Back",
-  "common.loading": "Loadingâ¦",
+  "common.loading": "Loading...",
   "common.search": "Search",
   "common.submit": "Submit",
   "common.delete": "Delete",
@@ -58,7 +58,7 @@
   "product.purchased_at": "Purchased at",
 
   "login.google_button": "Sign in with Google",
-  "login.google_connecting": "Connecting to Googleâ¦",
+  "login.google_connecting": "Connecting to Google...",
   "login.phone_label": "Mobile number",
   "login.phone_invalid": "Please enter a valid 10-digit mobile number",
   "login.otp_sent": "OTP Sent",
