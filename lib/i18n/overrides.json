@@ -60,6 +60,7 @@
   "ta": {
     "tile.smart_devices_sub": "IoT சேவை எச்சரிக்கைகள்",
     "login.otp_sent": "OTP அனுப்பப்பட்டது",
+    "nav.claim": "க்ளைம் AI",
     "login.otp_send_btn": "OTP அனுப்பு",
     "login.otp_sending": "OTP அனுப்புகிறது...",
     "login.otp_enter": "6 இலக்க OTP ஐ உள்ளிடவும்",
