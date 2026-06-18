@@ -1,7 +1,12 @@
 {
   "_meta": {
-    "purpose": "Human-approved corrections applied ON TOP of machine-translated messages.json at lookup time. Never overwritten by translate_catalog.py regeneration. Fixes objective defects (corrupted output, hallucinated foreign words), normalises acronyms (OTP/IoT/SMS kept in Latin as Indian users read them), and improves high-visibility strings.",
-    "maintained_by": "reviewed corrections; safe to extend"
+    "purpose": "Human-approved corrections applied ON TOP of machine-translated messages.json at lookup time. Never overwritten by translate_catalog.py regeneration. Fixes objective defects, normalises acronyms (OTP/IoT/SMS in Latin), improves high-visibility strings, and holds whole-sentence templates (with {product}/{date} slots) that replace fragment-glued sentences so word order is natural in every language.",
+    "maintained_by": "reviewed corrections; safe to extend",
+    "placeholder_note": "Keys ending in _active/_expired contain literal {product} and {date} tokens. The component replaces them at render time; translators MUST keep the tokens intact and place them in natural word order."
+  },
+  "en": {
+    "claim.greeting_active": "Your {product} is under warranty until {date}. Tell me what's wrong and I'll guide you through the claim process.",
+    "claim.greeting_expired": "Your {product}'s warranty expired on {date}, but I can still help you understand your out-of-warranty options."
   },
   "hi": {
     "nav.home": "होम",
@@ -18,7 +23,9 @@
     "login.otp_enter": "6 अंकों का OTP डालें",
     "login.otp_wrong": "गलत OTP। कृपया फिर से प्रयास करें।",
     "login.otp_hint": "हमने आपके फ़ोन पर 6 अंकों का कोड भेजा है। अपने SMS संदेश देखें।",
-    "login.otp_check_sms": "अपने SMS संदेश देखें।"
+    "login.otp_check_sms": "अपने SMS संदेश देखें।",
+    "claim.greeting_active": "आपका {product} {date} तक वारंटी में है। बताइए क्या समस्या है, मैं क्लेम प्रक्रिया में आपकी मदद करूँगा।",
+    "claim.greeting_expired": "आपके {product} की वारंटी {date} को समाप्त हो गई, लेकिन वारंटी के बाहर के विकल्प समझने में मैं अब भी आपकी मदद कर सकता हूँ।"
   },
   "te": {
     "dashboard.hello": "నమస్కారం",
@@ -28,7 +35,9 @@
     "login.otp_sending": "OTP పంపుతోంది...",
     "login.otp_enter": "6 అంకెల OTP ఎంటర్ చేయండి",
     "login.otp_hint": "మేము మీ ఫోన్‌కు 6 అంకెల కోడ్ పంపాము. మీ SMS సందేశాలను తనిఖీ చేయండి.",
-    "login.otp_check_sms": "మీ SMS సందేశాలను తనిఖీ చేయండి."
+    "login.otp_check_sms": "మీ SMS సందేశాలను తనిఖీ చేయండి.",
+    "claim.greeting_active": "మీ {product} {date} వరకు వారంటీలో ఉంది. ఏమి సమస్య ఉందో చెప్పండి, క్లెయిమ్ ప్రక్రియలో నేను మీకు సహాయం చేస్తాను.",
+    "claim.greeting_expired": "మీ {product} వారంటీ {date} న ముగిసింది, కానీ వారంటీ లేని ఎంపికలను అర్థం చేసుకోవడంలో నేను ఇంకా మీకు సహాయం చేయగలను."
   },
   "ta": {
     "tile.smart_devices_sub": "IoT சேவை எச்சரிக்கைகள்",
@@ -37,7 +46,9 @@
     "login.otp_sending": "OTP அனுப்புகிறது...",
     "login.otp_enter": "6 இலக்க OTP ஐ உள்ளிடவும்",
     "login.otp_check_sms": "உங்கள் SMS செய்திகளை சரிபார்க்கவும்.",
-    "claim.limit_reached_desc": "மேலும் AI செய்திகளுக்கு Pro க்கு மேம்படுத்தவும், அல்லது அங்கீகரிக்கப்பட்ட சேவை மையத்தை நேரடியாகப் பார்வையிடவும்."
+    "claim.limit_reached_desc": "மேலும் AI செய்திகளுக்கு Pro க்கு மேம்படுத்தவும், அல்லது அங்கீகரிக்கப்பட்ட சேவை மையத்தை நேரடியாகப் பார்வையிடவும்.",
+    "claim.greeting_active": "உங்கள் {product} {date} வரை உத்தரவாதத்தில் உள்ளது. என்ன பிரச்சனை என்று சொல்லுங்கள், க்ளைம் செயல்முறையில் நான் உங்களுக்கு வழிகாட்டுகிறேன்.",
+    "claim.greeting_expired": "உங்கள் {product} உத்தரவாதம் {date} அன்று காலாவதியானது, ஆனால் உத்தரவாதம் இல்லாத விருப்பங்களைப் புரிந்துகொள்ள நான் இன்னும் உதவ முடியும்."
   },
   "kn": {
     "tile.smart_devices_sub": "IoT ಸೇವಾ ಎಚ್ಚರಿಕೆಗಳು",
@@ -46,7 +57,9 @@
     "login.otp_sending": "OTP ಕಳುಹಿಸಲಾಗುತ್ತಿದೆ...",
     "login.otp_enter": "6 ಅಂಕಿಯ OTP ನಮೂದಿಸಿ",
     "login.otp_check_sms": "ನಿಮ್ಮ SMS ಸಂದೇಶಗಳನ್ನು ಪರಿಶೀಲಿಸಿ.",
-    "claim.issue_prompt": "ಸಮಸ್ಯೆ ಏನು?"
+    "claim.issue_prompt": "ಸಮಸ್ಯೆ ಏನು?",
+    "claim.greeting_active": "ನಿಮ್ಮ {product} {date} ವರೆಗೆ ಖಾತರಿಯಲ್ಲಿದೆ. ಏನು ಸಮಸ್ಯೆ ಎಂದು ಹೇಳಿ, ಕ್ಲೈಮ್ ಪ್ರಕ್ರಿಯೆಯಲ್ಲಿ ನಾನು ನಿಮಗೆ ಮಾರ್ಗದರ್ಶನ ನೀಡುತ್ತೇನೆ.",
+    "claim.greeting_expired": "ನಿಮ್ಮ {product} ಖಾತರಿ {date} ರಂದು ಮುಗಿದಿದೆ, ಆದರೆ ಖಾತರಿಯಿಲ್ಲದ ಆಯ್ಕೆಗಳನ್ನು ಅರ್ಥಮಾಡಿಕೊಳ್ಳಲು ನಾನು ಇನ್ನೂ ಸಹಾಯ ಮಾಡಬಲ್ಲೆ."
   },
   "ml": {
     "tile.smart_devices_sub": "IoT സേവന അലേർട്ടുകൾ",
@@ -54,6 +67,8 @@
     "login.otp_send_btn": "OTP അയയ്ക്കുക",
     "login.otp_sending": "OTP അയയ്ക്കുന്നു...",
     "login.otp_enter": "6 അക്ക OTP നൽകുക",
-    "login.otp_check_sms": "നിങ്ങളുടെ SMS സന്ദേശങ്ങൾ പരിശോധിക്കുക."
+    "login.otp_check_sms": "നിങ്ങളുടെ SMS സന്ദേശങ്ങൾ പരിശോധിക്കുക.",
+    "claim.greeting_active": "നിങ്ങളുടെ {product} {date} വരെ വാറന്റിയിലാണ്. എന്താണ് പ്രശ്നം എന്ന് പറയൂ, ക്ലെയിം പ്രക്രിയയിലൂടെ ഞാൻ നിങ്ങളെ സഹായിക്കാം.",
+    "claim.greeting_expired": "നിങ്ങളുടെ {product} വാറന്റി {date}-ന് അവസാനിച്ചു, പക്ഷേ വാറന്റിക്ക് പുറത്തുള്ള ഓപ്ഷനുകൾ മനസ്സിലാക്കാൻ എനിക്ക് ഇപ്പോഴും നിങ്ങളെ സഹായിക്കാനാകും."
   }
 }
