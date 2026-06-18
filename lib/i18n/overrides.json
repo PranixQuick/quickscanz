@@ -78,6 +78,7 @@
   "kn": {
     "tile.smart_devices_sub": "IoT ಸೇವಾ ಎಚ್ಚರಿಕೆಗಳು",
     "login.otp_sent": "OTP ಕಳುಹಿಸಲಾಗಿದೆ",
+    "nav.claim": "ಕ್ಲೈಮ್ AI",
     "login.otp_send_btn": "OTP ಕಳುಹಿಸಿ",
     "login.otp_sending": "OTP ಕಳುಹಿಸಲಾಗುತ್ತಿದೆ...",
     "login.otp_enter": "6 ಅಂಕಿಯ OTP ನಮೂದಿಸಿ",
