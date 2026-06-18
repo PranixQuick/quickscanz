@@ -83,6 +83,8 @@ export default function ClaimAssistant({ product, sessionId: initialSessionId, i
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const status = getWarrantyStatus(product.expiry_date);
+  const { brand, name } = product;
+  const date = formatDate(product.expiry_date);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -161,16 +163,18 @@ RULES:
         role: "assistant",
         content: [
           isExpired
-            ? "⚠️ " + t("claim.fallback_expired_prefix") + " " + formatDate(product.expiry_date) + t("claim.fallback_expired_suffix")
-            : "✅ " + t("claim.fallback_active_prefix") + " " + product.brand + " " + product.name + " " + t("claim.fallback_active_mid") + " " + formatDate(product.expiry_date) + ".",
+            ? t("claim.fallback_intro_expired").replace("{date}", date)
+            : t("claim.fallback_intro_active").replace("{product}", `${brand} ${name}`).replace("{date}", date),
           "",
           t("claim.fallback_how_to"),
           "",
-          "1. " + t("claim.fallback_step1_prefix") + " " + (hasInvoice ? t("claim.fallback_step1_invoice") : t("claim.fallback_step1_no_invoice")) + t("claim.fallback_step1_suffix"),
-          "2. " + t("claim.fallback_step2_prefix") + " " + product.brand + " " + t("claim.fallback_step2_mid") + " \"" + product.brand + " " + t("claim.fallback_step2_suffix") + "\"",
-          "3. " + t("claim.fallback_step3"),
-          "4. " + t("claim.fallback_step4"),
-          "5. " + t("claim.fallback_step5"),
+          hasInvoice
+            ? t("claim.fallback_step1_have_invoice").replace("{product}", `${brand} ${name}`)
+            : t("claim.fallback_step1_no_invoice").replace("{product}", `${brand} ${name}`),
+          t("claim.fallback_step2").replace(/\{brand\}/g, brand),
+          t("claim.fallback_step3"),
+          t("claim.fallback_step4"),
+          t("claim.fallback_step5"),
           "",
           t("claim.fallback_tip"),
         ].join("\n"),
@@ -183,7 +187,7 @@ RULES:
 
   async function handleStart(issue: string) {
     setStarted(true);
-    const userMsg: ClaimMessage = { role: "user", content: t("claim.initial_user_msg_prefix") + " " + product.brand + " " + product.name + ". " + t("claim.initial_user_msg_mid") + ": " + issue };
+    const userMsg: ClaimMessage = { role: "user", content: t("claim.initial_user_msg").replace("{product}", `${brand} ${name}`).replace("{issue}", issue) };
     const newMessages = [userMsg];
     setMessages(newMessages);
     const sid = await ensureSession(issue);
@@ -216,8 +220,8 @@ RULES:
             <p className="text-sm font-medium text-ink-800 mb-0.5">{t("claim.assistant_name")}</p>
             <p className="text-xs text-ink-500 leading-relaxed">
               {status === "expired"
-                ? t("claim.assistant_expired_prefix") + " " + formatDate(product.expiry_date) + t("claim.assistant_expired_suffix")
-                : t("claim.assistant_active_prefix") + " " + product.brand + " " + product.name + " " + t("claim.assistant_active_mid") + " " + formatDate(product.expiry_date) + t("claim.assistant_active_suffix")}
+                ? t("claim.greeting_expired").replace("{product}", `${brand} ${name}`).replace("{date}", date)
+                : t("claim.greeting_active").replace("{product}", `${brand} ${name}`).replace("{date}", date)}
             </p>
           </div>
         </div>
