@@ -76,7 +76,7 @@ export default function StatsGrid({ stats }: StatsGridProps) {
             <span className="text-[10px] font-medium text-ink-400 uppercase tracking-wider">{item.label}</span>
           </div>
           <div className={`font-display text-3xl font-light ${item.color} leading-none mb-1`}>{item.value}</div>
-          <div className="text-[10px] text-ink-300">{item.sublabel}</div>
+          <div className="text-[9px] text-ink-300 leading-tight truncate" title={item.sublabel}>{item.sublabel}</div>
         </button>
       ))}
     </div>
