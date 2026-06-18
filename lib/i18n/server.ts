@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import messages from "./messages.json";
+import overrides from "./overrides.json";
 
 // Server-side counterpart to lib/i18n/provider.tsx (client).
 // Lets server components translate using the same catalog + the locale
@@ -10,9 +11,16 @@ export const LOCALES: Locale[] = ["en", "hi", "te", "ta", "kn", "ml"];
 export const LOCALE_COOKIE = "qsz_locale";
 
 const TABLES = messages as unknown as Record<string, Record<string, string>>;
+// Human-approved corrections applied on top of the machine catalog.
+const OVERRIDES = overrides as unknown as Record<string, Record<string, string>>;
 
 export function translate(locale: Locale, key: string): string {
-  return TABLES[locale]?.[key] ?? TABLES.en?.[key] ?? key;
+  return (
+    OVERRIDES[locale]?.[key] ??
+    TABLES[locale]?.[key] ??
+    TABLES.en?.[key] ??
+    key
+  );
 }
 
 /** Read the active locale from the cookie (defaults to 'en'). Server-only. */
