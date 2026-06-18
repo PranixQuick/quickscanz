@@ -1,0 +1,59 @@
+{
+  "_meta": {
+    "purpose": "Human-approved corrections applied ON TOP of machine-translated messages.json at lookup time. Never overwritten by translate_catalog.py regeneration. Fixes objective defects (corrupted output, hallucinated foreign words), normalises acronyms (OTP/IoT/SMS kept in Latin as Indian users read them), and improves high-visibility strings.",
+    "maintained_by": "reviewed corrections; safe to extend"
+  },
+  "hi": {
+    "nav.home": "होम",
+    "nav.claim": "क्लेम AI",
+    "tile.buying_assistant": "खरीद सहायक",
+    "tile.smart_devices_sub": "IoT सेवा अलर्ट",
+    "dashboard.explore": "एक्सप्लोर करें",
+    "login.password_label": "पासवर्ड",
+    "login.password_placeholder": "आपका पासवर्ड",
+    "login.change_number": "नंबर बदलें",
+    "login.otp_sent": "OTP भेजा गया",
+    "login.otp_send_btn": "OTP भेजें",
+    "login.otp_sending": "OTP भेजा जा रहा है...",
+    "login.otp_enter": "6 अंकों का OTP डालें",
+    "login.otp_wrong": "गलत OTP। कृपया फिर से प्रयास करें।",
+    "login.otp_hint": "हमने आपके फ़ोन पर 6 अंकों का कोड भेजा है। अपने SMS संदेश देखें।",
+    "login.otp_check_sms": "अपने SMS संदेश देखें।"
+  },
+  "te": {
+    "dashboard.hello": "నమస్కారం",
+    "tile.smart_devices_sub": "IoT సర్వీస్ హెచ్చరికలు",
+    "login.otp_sent": "OTP పంపబడింది",
+    "login.otp_send_btn": "OTP పంపండి",
+    "login.otp_sending": "OTP పంపుతోంది...",
+    "login.otp_enter": "6 అంకెల OTP ఎంటర్ చేయండి",
+    "login.otp_hint": "మేము మీ ఫోన్‌కు 6 అంకెల కోడ్ పంపాము. మీ SMS సందేశాలను తనిఖీ చేయండి.",
+    "login.otp_check_sms": "మీ SMS సందేశాలను తనిఖీ చేయండి."
+  },
+  "ta": {
+    "tile.smart_devices_sub": "IoT சேவை எச்சரிக்கைகள்",
+    "login.otp_sent": "OTP அனுப்பப்பட்டது",
+    "login.otp_send_btn": "OTP அனுப்பு",
+    "login.otp_sending": "OTP அனுப்புகிறது...",
+    "login.otp_enter": "6 இலக்க OTP ஐ உள்ளிடவும்",
+    "login.otp_check_sms": "உங்கள் SMS செய்திகளை சரிபார்க்கவும்.",
+    "claim.limit_reached_desc": "மேலும் AI செய்திகளுக்கு Pro க்கு மேம்படுத்தவும், அல்லது அங்கீகரிக்கப்பட்ட சேவை மையத்தை நேரடியாகப் பார்வையிடவும்."
+  },
+  "kn": {
+    "tile.smart_devices_sub": "IoT ಸೇವಾ ಎಚ್ಚರಿಕೆಗಳು",
+    "login.otp_sent": "OTP ಕಳುಹಿಸಲಾಗಿದೆ",
+    "login.otp_send_btn": "OTP ಕಳುಹಿಸಿ",
+    "login.otp_sending": "OTP ಕಳುಹಿಸಲಾಗುತ್ತಿದೆ...",
+    "login.otp_enter": "6 ಅಂಕಿಯ OTP ನಮೂದಿಸಿ",
+    "login.otp_check_sms": "ನಿಮ್ಮ SMS ಸಂದೇಶಗಳನ್ನು ಪರಿಶೀಲಿಸಿ.",
+    "claim.issue_prompt": "ಸಮಸ್ಯೆ ಏನು?"
+  },
+  "ml": {
+    "tile.smart_devices_sub": "IoT സേവന അലേർട്ടുകൾ",
+    "login.otp_sent": "OTP അയച്ചു",
+    "login.otp_send_btn": "OTP അയയ്ക്കുക",
+    "login.otp_sending": "OTP അയയ്ക്കുന്നു...",
+    "login.otp_enter": "6 അക്ക OTP നൽകുക",
+    "login.otp_check_sms": "നിങ്ങളുടെ SMS സന്ദേശങ്ങൾ പരിശോധിക്കുക."
+  }
+}
