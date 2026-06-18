@@ -5,6 +5,7 @@ import { getProducts } from "@/lib/actions/products";
 import AppLayout from "@/components/layout/AppLayout";
 import ClaimAssistant from "@/components/ai/ClaimAssistant";
 import type { Metadata } from "next";
+import { getT } from "@/lib/i18n/server";
 
 export const metadata: Metadata = {
   title: "AI Claim Assistant | QuickScanZ",
@@ -15,6 +16,7 @@ export default async function ClaimPage({
 }: {
   searchParams: { product?: string };
 }) {
+  const t = await getT();
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
@@ -33,15 +35,15 @@ export default async function ClaimPage({
               <path d="M9 13h.5M14 13h.5M19 13h.5" stroke="#c49572" strokeWidth="1.5" strokeLinecap="round"/>
             </svg>
           </div>
-          <h1 className="font-display text-2xl font-light text-ink-900 mb-2">Add a product first</h1>
+          <h1 className="font-display text-2xl font-light text-ink-900 mb-2">{t("claim.add_first_title")}</h1>
           <p className="text-sm text-ink-400 leading-relaxed mb-6 max-w-xs">
-            Claim AI guides you through warranty claims for your products. Add your first real product to get started.
+            {t("claim.add_first_desc")}
           </p>
           <Link href="/products/add" className="btn-primary text-sm px-6 py-2.5">
-            Add your first product →
+            {t("dashboard.add_first_product")} →
           </Link>
           <p className="text-xs text-ink-300 mt-4">
-            Demo products are excluded — Claim AI only works with products you own.
+            {t("claim.demo_excluded_hint")}
           </p>
         </div>
       </AppLayout>
@@ -56,8 +58,8 @@ export default async function ClaimPage({
     <AppLayout>
       <div className="space-y-4 animate-fade-up">
         <div>
-          <h1 className="font-display text-2xl font-light text-ink-900">AI Claim Assistant</h1>
-          <p className="text-sm text-ink-400 mt-1">Get guided through your warranty claim, step by step.</p>
+          <h1 className="font-display text-2xl font-light text-ink-900">{t("product.ai_assistant_title")}</h1>
+          <p className="text-sm text-ink-400 mt-1">{t("claim.page_subtitle")}</p>
         </div>
 
         {realProducts.length > 1 && (
@@ -80,7 +82,7 @@ export default async function ClaimPage({
           <div>
             <p className="text-sm font-medium text-ink-900">{selected.brand} {selected.name}</p>
             <p className="text-xs text-ink-400">
-              Warranty until {new Date(selected.expiry_date).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+              {t("product.warranty_until")} {new Date(selected.expiry_date).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
             </p>
           </div>
         </div>
@@ -95,7 +97,7 @@ export default async function ClaimPage({
             <path d="M6 5v4M6 3.5v.5" stroke="#c9bfb3" strokeWidth="1" strokeLinecap="round"/>
           </svg>
           <p className="text-[11px] text-ink-400 leading-relaxed">
-            AI guidance is informational only. Actual warranty coverage depends on your specific terms.
+            {t("claim.disclaimer")}
           </p>
         </div>
       </div>
