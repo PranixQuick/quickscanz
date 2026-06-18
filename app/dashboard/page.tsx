@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getT } from "@/lib/i18n/server";
 import { getProducts } from "@/lib/actions/products";
 import { getAllDueMaintenance } from "@/lib/actions/phase2";
 import { getUserSubscription } from "@/lib/actions/subscriptions";
@@ -70,17 +71,20 @@ export default async function DashboardPage() {
   );
   const userName = user?.email?.split("@")[0] || "there";
 
+  // Server-side translator (reads the qsz_locale cookie). i18n reference screen.
+  const t = await getT();
+
   const exploreTiles = [
-    { href: "/products/lifecycle", icon: "🔄", title: "Lifecycle",        sub: "Cost & lifespan" },
-    { href: "/compare",            icon: "⚖️",  title: "Compare",          sub: "Side-by-side products" },
-    { href: "/buying-assistant",   icon: "🛒", title: "Buying Assistant", sub: "Budget recommendations" },
-    { href: "/smart-devices",      icon: "📡", title: "Smart Devices",    sub: "IoT service alerts" },
-    { href: "/energy",             icon: "⚡", title: "Energy Monitor",   sub: "Power & cost" },
-    { href: "/family",             icon: "👪", title: "Family Vault",    sub: "Share with family" },
+    { href: "/products/lifecycle", icon: "🔄", title: t("tile.lifecycle"),        sub: t("tile.lifecycle_sub") },
+    { href: "/compare",            icon: "⚖️",  title: t("tile.compare"),          sub: t("tile.compare_sub") },
+    { href: "/buying-assistant",   icon: "🛒", title: t("tile.buying_assistant"), sub: t("tile.buying_assistant_sub") },
+    { href: "/smart-devices",      icon: "📡", title: t("tile.smart_devices"),    sub: t("tile.smart_devices_sub") },
+    { href: "/energy",             icon: "⚡", title: t("tile.energy"),           sub: t("tile.energy_sub") },
+    { href: "/family",             icon: "👪", title: t("tile.family"),           sub: t("tile.family_sub") },
     isPro
-      ? { href: "/account",  icon: "👑", title: "Pro Plan",        sub: "Manage subscription" }
-      : { href: "/pricing",  icon: "⭐", title: "Upgrade to Pro",  sub: "Unlimited · ₹149/mo" },
-    { href: "/products/add", icon: "➕", title: "Add Product",      sub: "30 seconds" },
+      ? { href: "/account",  icon: "👑", title: t("tile.upgrade"),       sub: t("tile.upgrade_sub") }
+      : { href: "/pricing",  icon: "⭐", title: t("tile.upgrade"),       sub: t("tile.upgrade_sub") },
+    { href: "/products/add", icon: "➕", title: t("tile.add_product"),    sub: t("tile.add_product_sub") },
   ];
 
   return (
@@ -91,18 +95,18 @@ export default async function DashboardPage() {
         <div className="flex items-start justify-between">
           <div>
             <h1 className="font-display text-2xl font-light text-ink-900">
-              Hello, {userName.charAt(0).toUpperCase() + userName.slice(1)} 👋
+              {t("dashboard.hello")}, {userName.charAt(0).toUpperCase() + userName.slice(1)} 👋
             </h1>
             <p className="text-sm text-ink-400 mt-0.5">
-              {stats.total} product{stats.total !== 1 ? "s" : ""} tracked
-              {stats.expiringSoon > 0 ? ` · ${stats.expiringSoon} expiring soon` : " · all looking good"}
+              {stats.total} {t("dashboard.products_tracked")}
+              {stats.expiringSoon > 0 ? ` · ${stats.expiringSoon} ${t("dashboard.expiring_soon")}` : ` · ${t("dashboard.all_looking_good")}`}
             </p>
           </div>
           <Link href="/products/add" className="btn-primary text-xs px-4 py-2 flex items-center gap-1.5">
             <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
               <path d="M6 2v8M2 6h8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
             </svg>
-            Add
+            {t("common.add")}
           </Link>
         </div>
 
@@ -194,8 +198,8 @@ export default async function DashboardPage() {
                 <span className="text-xl">🤖</span>
               </div>
               <div className="flex-1">
-                <p className="text-sm font-medium text-cream-100">Something broke? Try AI Claim Assistant</p>
-                <p className="text-xs text-cream-400 mt-0.5">Step-by-step warranty claim guidance</p>
+                <p className="text-sm font-medium text-cream-100">{t("dashboard.claim_cta_title")}</p>
+                <p className="text-xs text-cream-400 mt-0.5">{t("dashboard.claim_cta_sub")}</p>
               </div>
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="text-cream-400 group-hover:translate-x-0.5 transition-transform flex-shrink-0">
                 <path d="M3 7h8M8 4l3 3-3 3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
@@ -222,16 +226,16 @@ export default async function DashboardPage() {
 
         {products.length === 0 ? (
           <EmptyState
-            title="Your warranty wallet is empty"
-            description="Add a product to track its warranty and store the invoice. Takes under 30 seconds."
-            actionLabel="Add your first product"
+            title={t("dashboard.wallet_empty_title")}
+            description={t("dashboard.wallet_empty_desc")}
+            actionLabel={t("dashboard.add_first_product")}
             actionHref="/products/add"
           />
         ) : (
           <div>
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-xs font-semibold text-ink-400 uppercase tracking-wider">Products</h2>
-              <Link href="/products" className="text-xs text-sand-500 hover:text-sand-400 transition-colors">View all →</Link>
+              <Link href="/products" className="text-xs text-sand-500 hover:text-sand-400 transition-colors">{t("common.view_all")} →</Link>
             </div>
             <div className="space-y-3">
               {sortedProducts.slice(0, 4).map((p, i) => (
@@ -244,7 +248,7 @@ export default async function DashboardPage() {
         )}
 
         <div>
-          <h2 className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-3">Explore</h2>
+          <h2 className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-3">{t("dashboard.explore")}</h2>
           <div className="grid grid-cols-2 gap-3">
             {exploreTiles.map((item) => (
               <Link key={item.href} href={item.href}
