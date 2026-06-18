@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useTransition } from "react";
 import { startClaimSession, updateClaimSession, type ClaimMessage } from "@/lib/actions/claim";
 import type { Product } from "@/lib/types";
 import { getWarrantyStatus, formatDate } from "@/lib/utils";
+import { useT } from "@/lib/i18n/provider";
 
 interface Props {
   product: Product;
@@ -71,6 +72,7 @@ function Message({ msg }: { msg: ClaimMessage }) {
 }
 
 export default function ClaimAssistant({ product, sessionId: initialSessionId, initialMessages = [] }: Props) {
+  const t = useT();
   const [messages, setMessages] = useState<ClaimMessage[]>(initialMessages);
   const [sessionId, setSessionId] = useState<string | null>(initialSessionId ?? null);
   const [input, setInput] = useState("");
@@ -81,6 +83,8 @@ export default function ClaimAssistant({ product, sessionId: initialSessionId, i
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const status = getWarrantyStatus(product.expiry_date);
+  const { brand, name } = product;
+  const date = formatDate(product.expiry_date);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -159,18 +163,20 @@ RULES:
         role: "assistant",
         content: [
           isExpired
-            ? `⚠️ Your warranty expired on ${formatDate(product.expiry_date)}, but you still have options.`
-            : `✅ Your ${product.brand} ${product.name} is under warranty until ${formatDate(product.expiry_date)}.`,
+            ? t("claim.fallback_intro_expired").replace("{date}", date)
+            : t("claim.fallback_intro_active").replace("{product}", `${brand} ${name}`).replace("{date}", date),
           "",
-          "Here's how to file your claim:",
+          t("claim.fallback_how_to"),
           "",
-          `1. Gather your documents — ${hasInvoice ? "your invoice is already saved here ✓" : "find your purchase invoice or payment receipt"}, plus the product's serial number if available.`,
-          `2. Call ${product.brand} customer care — search "${product.brand} India toll free" on Google for the latest number.`,
-          "3. Describe the issue clearly — stick to the defect (how it started, when it started). Don't mention accidental damage even if it occurred.",
-          "4. Ask for a job sheet or complaint reference number — this is your proof the claim was registered.",
-          "5. If the service centre refuses a valid in-warranty repair, escalate to the National Consumer Helpline: 1800-11-4000 (free call).",
+          hasInvoice
+            ? t("claim.fallback_step1_have_invoice").replace("{product}", `${brand} ${name}`)
+            : t("claim.fallback_step1_no_invoice").replace("{product}", `${brand} ${name}`),
+          t("claim.fallback_step2").replace(/\{brand\}/g, brand),
+          t("claim.fallback_step3"),
+          t("claim.fallback_step4"),
+          t("claim.fallback_step5"),
           "",
-          "Tip: Under the Consumer Protection Act 2019, manufacturers must honour warranty commitments. If they don't, you can file a complaint at consumerhelpline.gov.in.",
+          t("claim.fallback_tip"),
         ].join("\n"),
       };
       setMessages((prev) => [...prev, fallbackMsg]);
@@ -181,7 +187,7 @@ RULES:
 
   async function handleStart(issue: string) {
     setStarted(true);
-    const userMsg: ClaimMessage = { role: "user", content: `I need help with my ${product.brand} ${product.name}. Issue: ${issue}` };
+    const userMsg: ClaimMessage = { role: "user", content: t("claim.initial_user_msg").replace("{product}", `${brand} ${name}`).replace("{issue}", issue) };
     const newMessages = [userMsg];
     setMessages(newMessages);
     const sid = await ensureSession(issue);
@@ -211,22 +217,31 @@ RULES:
             </svg>
           </div>
           <div>
-            <p className="text-sm font-medium text-ink-800 mb-0.5">QuickScanZ AI Assistant</p>
+            <p className="text-sm font-medium text-ink-800 mb-0.5">{t("claim.assistant_name")}</p>
             <p className="text-xs text-ink-500 leading-relaxed">
               {status === "expired"
-                ? `Your warranty expired on ${formatDate(product.expiry_date)}. I can still help you understand your out-of-warranty options.`
-                : `Your ${product.brand} ${product.name} is under warranty until ${formatDate(product.expiry_date)}. Tell me what's wrong and I'll guide you through the claim process.`}
+                ? t("claim.greeting_expired").replace("{product}", `${brand} ${name}`).replace("{date}", date)
+                : t("claim.greeting_active").replace("{product}", `${brand} ${name}`).replace("{date}", date)}
             </p>
           </div>
         </div>
 
         <div>
-          <p className="text-xs font-medium text-ink-400 uppercase tracking-wider mb-2">What&apos;s the issue?</p>
+          <p className="text-xs font-medium text-ink-400 uppercase tracking-wider mb-2">{t("claim.issue_prompt")}</p>
           <div className="grid grid-cols-2 gap-2">
-            {QUICK_ISSUES.map((issue) => (
-              <button key={issue} onClick={() => handleStart(issue)}
+            {[
+              { key: "claim.issue_stopped_working", defaultText: "Product stopped working" },
+              { key: "claim.issue_display", defaultText: "Screen / display problem" },
+              { key: "claim.issue_battery", defaultText: "Battery drains too fast" },
+              { key: "claim.issue_damage", defaultText: "Physical damage" },
+              { key: "claim.issue_cooling", defaultText: "Not cooling / heating" },
+              { key: "claim.issue_noise", defaultText: "Noise or vibration" },
+              { key: "claim.issue_software", defaultText: "Software / connectivity issue" },
+              { key: "claim.issue_parts", defaultText: "Parts missing or broken" }
+            ].map((issue) => (
+              <button key={issue.key} onClick={() => handleStart(t(issue.key))}
                 className="text-left text-xs px-3 py-2.5 bg-cream-100 hover:bg-cream-200 border border-cream-200 hover:border-sand-300 rounded-xl text-ink-600 transition-all leading-snug">
-                {issue}
+                {t(issue.key)}
               </button>
             ))}
           </div>
@@ -234,7 +249,7 @@ RULES:
 
         <div className="flex gap-2">
           <textarea ref={inputRef} value={input} onChange={(e) => setInput(e.target.value)}
-            data-testid="claim-input" placeholder="Or describe your issue in detail..." rows={2}
+            data-testid="claim-input" placeholder={t("claim.input_placeholder")} rows={2}
             className="flex-1 px-3 py-2.5 bg-cream-100 border border-cream-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sand-300 resize-none" />
           <button data-testid="create-claim" onClick={() => input.trim() && handleStart(input.trim())} disabled={!input.trim()}
             className="px-4 bg-ink-900 text-cream-50 rounded-xl hover:bg-ink-700 transition-colors disabled:opacity-40">
@@ -258,9 +273,9 @@ RULES:
       {limitReached ? (
         <div className="pt-3 border-t border-cream-200 mt-2">
           <div className="p-3 bg-sand-50 border border-sand-200 rounded-xl text-center">
-            <p className="text-sm font-medium text-ink-700">Usage limit reached for this product</p>
+            <p className="text-sm font-medium text-ink-700">{t("claim.limit_reached_title")}</p>
             <p className="text-xs text-ink-400 mt-1">
-              Upgrade to Pro for more AI messages, or visit an authorised service centre directly.
+              {t("claim.limit_reached_desc")}
             </p>
           </div>
         </div>
@@ -268,7 +283,7 @@ RULES:
         <div className="pt-3 border-t border-cream-200 flex gap-2 mt-2">
           <textarea ref={inputRef} value={input} onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
-            data-testid="claim-reply-input" placeholder="Type your response... (Enter to send)" rows={2} disabled={loading}
+            data-testid="claim-reply-input" placeholder={t("claim.reply_placeholder")} rows={2} disabled={loading}
             className="flex-1 px-3 py-2.5 bg-cream-100 border border-cream-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sand-300 resize-none disabled:opacity-50" />
           <button data-testid="update-claim" onClick={handleSend} disabled={!input.trim() || loading}
             className="px-4 bg-ink-900 text-cream-50 rounded-xl hover:bg-ink-700 transition-colors disabled:opacity-40 self-end pb-2.5 pt-2.5">
@@ -278,7 +293,7 @@ RULES:
           </button>
         </div>
       )}
-      <p className="text-[10px] text-ink-300 mt-1.5 text-center">AI guidance · Not legal advice · Shift+Enter for new line</p>
+      <p className="text-[10px] text-ink-300 mt-1.5 text-center">{t("claim.footer_note")}</p>
     </div>
   );
 }

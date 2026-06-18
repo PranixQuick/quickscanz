@@ -4,6 +4,7 @@ import Script from "next/script";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
 import { I18nProvider } from "../lib/i18n/provider";
+import { getLocale } from "../lib/i18n/server";
 import LocaleBar from "../components/LocaleBar";
 
 const cormorant = Cormorant_Garamond({
@@ -89,16 +90,20 @@ export const viewport: Viewport = {
   themeColor: "#fdfcf8",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
   // OneSignal SDK only loads when the env var is set in Vercel.
   // Safe: if var is absent, no SDK, no change to existing behaviour.
   const oneSignalAppId = process.env.NEXT_PUBLIC_ONESIGNAL_APP_ID;
   const gaId = process.env.NEXT_PUBLIC_GA_ID;
 
+  // Read the active language from the cookie so server-rendered pages and the
+  // font cascade (globals.css [data-locale]) are correct on the very first paint.
+  const locale = await getLocale();
+
   return (
-    <html lang="en" className={`scroll-smooth ${cormorant.variable} ${dmSans.variable} ${dmMono.variable}`}>
+    <html lang={locale} data-locale={locale} className={`scroll-smooth ${cormorant.variable} ${dmSans.variable} ${dmMono.variable}`}>
       <body className="bg-cream-50 text-ink-900 font-body antialiased">
-        <I18nProvider>
+        <I18nProvider initialLocale={locale}>
           <LocaleBar />
           {children}
         <Toaster

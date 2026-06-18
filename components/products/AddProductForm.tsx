@@ -6,10 +6,12 @@ import { useDropzone } from "react-dropzone";
 import toast from "react-hot-toast";
 import { addProduct } from "@/lib/actions/products";
 import ProductSearchInput from "./ProductSearchInput";
+import { useT } from "@/lib/i18n/provider";
 import type { CatalogProduct } from "@/lib/actions/catalog";
 
 // ---------- Bill OCR Modal ----------
-function ScanBillModal({ onResult, onClose }: {
+function ScanBillModal({ onResult, onClose, t }: {
+  t: any;
   onResult: (fields: Partial<FormState>) => void;
   onClose: () => void;
 }) {
@@ -36,7 +38,7 @@ function ScanBillModal({ onResult, onClose }: {
       setStage("done");
       setTimeout(() => { onResult(fields); onClose(); }, 800);
     } catch (e: any) {
-      setErrMsg("Couldn't read the bill — please fill manually.");
+      setErrMsg(t("product.ocr_error"));
       setStage("error");
     }
   }
@@ -46,7 +48,7 @@ function ScanBillModal({ onResult, onClose }: {
       <div className="relative w-full max-w-md rounded-t-3xl bg-white p-6 space-y-4" onClick={(e) => e.stopPropagation()}>
         <div className="w-10 h-1 rounded-full bg-cream-300 mx-auto" />
         <div className="flex items-center justify-between">
-          <p className="text-sm font-semibold text-ink-900">📸 Scan Bill / Invoice</p>
+          <p className="text-sm font-semibold text-ink-900">📸 {t("product.scan_bill_title")}</p>
           <button onClick={onClose} className="text-ink-300 hover:text-ink-600 transition-colors">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 2l12 12M14 2L2 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
           </button>
@@ -55,8 +57,7 @@ function ScanBillModal({ onResult, onClose }: {
         {stage === "idle" && (
           <>
             <p className="text-xs text-ink-400 leading-relaxed">
-              Take a photo of your paper bill, Amazon/Flipkart invoice, or any receipt.
-              The app will auto-fill brand, product, serial number, price and date.
+              {t("product.scan_bill_desc")}
             </p>
             <div className="grid grid-cols-2 gap-3">
               {/* Camera capture */}
@@ -67,7 +68,7 @@ function ScanBillModal({ onResult, onClose }: {
                   <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
                   <circle cx="12" cy="13" r="4"/>
                 </svg>
-                <span className="text-xs font-medium">Take Photo</span>
+                <span className="text-xs font-medium">{t("product.take_photo")}</span>
               </button>
               {/* Gallery / file pick */}
               <button
@@ -78,7 +79,7 @@ function ScanBillModal({ onResult, onClose }: {
                   <circle cx="8.5" cy="8.5" r="1.5"/>
                   <polyline points="21 15 16 10 5 21"/>
                 </svg>
-                <span className="text-xs font-medium">Choose File</span>
+                <span className="text-xs font-medium">{t("product.choose_file")}</span>
               </button>
             </div>
             <input ref={fileRef} type="file" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) processFile(f); }} />
@@ -88,8 +89,8 @@ function ScanBillModal({ onResult, onClose }: {
         {stage === "scanning" && (
           <div className="flex flex-col items-center gap-4 py-6">
             <div className="w-12 h-12 rounded-full border-4 border-cream-200 border-t-sand-500 animate-spin" />
-            <p className="text-sm text-ink-500">Reading your bill…</p>
-            <p className="text-xs text-ink-300">AI is extracting product details</p>
+            <p className="text-sm text-ink-500">{t("product.reading_bill")}</p>
+            <p className="text-xs text-ink-300">{t("product.extracting_details")}</p>
           </div>
         )}
 
@@ -98,15 +99,15 @@ function ScanBillModal({ onResult, onClose }: {
             <div className="w-12 h-12 rounded-full bg-sage-100 flex items-center justify-center">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#7aa67a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
             </div>
-            <p className="text-sm font-medium text-ink-800">Details extracted!</p>
-            <p className="text-xs text-ink-400">Form has been auto-filled</p>
+            <p className="text-sm font-medium text-ink-800">{t("product.details_extracted")}</p>
+            <p className="text-xs text-ink-400">{t("product.form_autofilled")}</p>
           </div>
         )}
 
         {stage === "error" && (
           <div className="space-y-3">
             <p className="text-xs text-blush-600 bg-blush-50 rounded-xl p-3 text-center">{errMsg}</p>
-            <button onClick={() => setStage("idle")} className="w-full py-2.5 text-sm btn-primary">Try Again</button>
+            <button onClick={() => setStage("idle")} className="w-full py-2.5 text-sm btn-primary">{t("common.retry")}</button>
           </div>
         )}
       </div>
@@ -115,7 +116,7 @@ function ScanBillModal({ onResult, onClose }: {
 }
 
 // ---------- Barcode Scanner Modal ----------
-function BarcodeScannerModal({ onResult, onClose }: { onResult: (code: string) => void; onClose: () => void }) {
+function BarcodeScannerModal({ onResult, onClose, t }: { onResult: (code: string) => void; onClose: () => void; t: any }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const rafRef = useRef<number>(0);
@@ -131,7 +132,7 @@ function BarcodeScannerModal({ onResult, onClose }: { onResult: (code: string) =
       }
       // Use native BarcodeDetector if available, else show fallback message
       if (!('BarcodeDetector' in window)) {
-        setError("Barcode scanning not supported in this browser. Please type the serial/model number manually.");
+        setError(t("product.barcode_unsupported"));
         return;
       }
       // @ts-ignore — BarcodeDetector is not yet in TS lib
@@ -151,7 +152,7 @@ function BarcodeScannerModal({ onResult, onClose }: { onResult: (code: string) =
       };
       rafRef.current = requestAnimationFrame(scan);
     } catch (e: any) {
-      setError("Camera access denied. Please allow camera permission and try again.");
+      setError(t("product.camera_denied"));
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [onResult]);
@@ -177,7 +178,7 @@ function BarcodeScannerModal({ onResult, onClose }: { onResult: (code: string) =
       <div className="relative w-full max-w-xs" onClick={(e) => e.stopPropagation()}>
         <div className="card overflow-hidden">
           <div className="flex items-center justify-between px-4 pt-4 pb-2">
-            <p className="text-sm font-medium text-ink-900">📷 Scan Barcode / QR</p>
+            <p className="text-sm font-medium text-ink-900">📷 {t("product.scan_barcode_title")}</p>
             <button onClick={() => { stopScan(); onClose(); }} className="text-ink-300 hover:text-ink-600 transition-colors">
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 2l12 12M14 2L2 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
             </button>
@@ -205,7 +206,7 @@ function BarcodeScannerModal({ onResult, onClose }: { onResult: (code: string) =
               </div>
             </div>
           )}
-          <p className="text-[11px] text-ink-300 text-center px-4 py-3">Point at barcode or QR code — auto-detects</p>
+          <p className="text-[11px] text-ink-300 text-center px-4 py-3">{t("product.scan_barcode_hint")}</p>
         </div>
       </div>
     </div>
@@ -242,6 +243,7 @@ const DEFAULT: FormState = {
 };
 
 export default function AddProductForm() {
+  const t = useT();
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [form, setForm] = useState<FormState>(DEFAULT);
@@ -278,7 +280,7 @@ export default function AddProductForm() {
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!form.name || !form.brand || !form.purchase_date) {
-      toast.error("Name, brand, and purchase date are required"); return;
+      toast.error(t("product.fields_required_toast")); return;
     }
     const fd = new FormData();
     Object.entries(form).forEach(([k, v]) => { if (v !== null) fd.append(k, String(v)); });
@@ -286,10 +288,10 @@ export default function AddProductForm() {
     startTransition(async () => {
       const result = await addProduct(fd);
       if (result.success) {
-        toast.success("Added to your Warranty Wallet!");
+        toast.success(t("product.added_success_toast"));
         router.push(result.id ? `/products/${result.id}` : "/products");
       } else {
-        toast.error(result.error || "Failed to add product");
+        toast.error(result.error || t("product.add_failed_toast"));
       }
     });
   }
@@ -311,43 +313,54 @@ export default function AddProductForm() {
           </svg>
         </div>
         <div className="text-center">
-          <p className="font-semibold text-ink-900 text-base">📸 Scan Box / Bill</p>
-          <p className="text-xs text-ink-400 mt-0.5">बॉक्स या बिल का बारकोड स्कैन करें • Auto-fills all details</p>
+          <p className="font-semibold text-ink-900 text-base">📸 {t("product.scan_cta_title")}</p>
+          <p className="text-xs text-ink-400 mt-0.5">{t("product.scan_cta_desc")}</p>
         </div>
       </div>
 
       {/* Divider with manual fallback label */}
       <div className="flex items-center gap-3">
         <div className="flex-1 h-px bg-cream-200" />
-        <span className="text-xs text-ink-300 font-medium">or fill manually ↓</span>
+        <span className="text-xs text-ink-300 font-medium">{t("product.fill_manually")} ↓</span>
         <div className="flex-1 h-px bg-cream-200" />
       </div>
 
       {/* Search */}
       <div>
-        <label className="block text-xs font-semibold text-ink-400 uppercase tracking-wider mb-2">Find Product</label>
+        <label className="block text-xs font-semibold text-ink-400 uppercase tracking-wider mb-2">{t("product.find_product")}</label>
         <ProductSearchInput onSelect={handleCatalogSelect} onManualEntry={(v) => set("name", v)} />
-        <p className="text-[11px] text-ink-300 mt-1.5">Search to auto-fill, or enter manually below</p>
+        <p className="text-[11px] text-ink-300 mt-1.5">{t("product.find_product_hint")}</p>
       </div>
 
       {/* Category */}
       <div>
-        <label className="block text-xs font-semibold text-ink-400 uppercase tracking-wider mb-2">Category</label>
-        <div className="grid grid-cols-5 gap-1.5">
-          {CATEGORIES.map((c) => (
-            <button key={c.value} type="button" onClick={() => { set("category", c.value); set("subcategory", c.subs[0]); }}
-              className={`flex flex-col items-center gap-1 p-2 rounded-xl border transition-all text-center ${form.category === c.value ? "bg-ink-900 border-ink-900 text-cream-50" : "bg-cream-100 border-cream-200 text-ink-600 hover:border-sand-300"}`}>
-              <span className="text-lg">{c.icon}</span>
-              <span className="text-[10px] font-medium leading-tight">{c.label}</span>
-            </button>
-          ))}
-        </div>
+        <label className="block text-xs font-semibold text-ink-400 uppercase tracking-wider mb-2">{t("product.category")}</label>
+        {(() => {
+          const catLabels: Record<string, string> = {
+            "Electronics": t("category.electronics"),
+            "Home Appliance": t("category.appliance"),
+            "Vehicle": t("category.vehicle"),
+            "Furniture": t("category.furniture"),
+            "Other": t("category.other")
+          };
+          return (
+            <div className="grid grid-cols-5 gap-1.5">
+              {CATEGORIES.map((c) => (
+                <button key={c.value} type="button" onClick={() => { set("category", c.value); set("subcategory", c.subs[0]); }}
+                  className={`flex flex-col items-center gap-1 p-2 rounded-xl border transition-all text-center ${form.category === c.value ? "bg-ink-900 border-ink-900 text-cream-50" : "bg-cream-100 border-cream-200 text-ink-600 hover:border-sand-300"}`}>
+                  <span className="text-lg">{c.icon}</span>
+                  <span className="text-[10px] font-medium leading-tight">{catLabels[c.value] || c.label}</span>
+                </button>
+              ))}
+            </div>
+          );
+        })()}
         {selectedCat && (
           <div className="flex flex-wrap gap-1.5 mt-2">
             {selectedCat.subs.map((sub) => (
               <button key={sub} type="button" onClick={() => set("subcategory", sub)}
                 className={`text-xs px-3 py-1.5 rounded-full border transition-all ${form.subcategory === sub ? "bg-sand-400 border-sand-400 text-white" : "bg-cream-100 border-cream-200 text-ink-500 hover:border-sand-300"}`}>
-                {sub}
+                {t("subcategory." + sub.toLowerCase().replace(/ /g, "_"))}
               </button>
             ))}
           </div>
@@ -358,33 +371,33 @@ export default function AddProductForm() {
 
       {/* Core fields */}
       <div>
-        <label className="block text-xs font-semibold text-ink-400 uppercase tracking-wider mb-3">Product Details</label>
+        <label className="block text-xs font-semibold text-ink-400 uppercase tracking-wider mb-3">{t("product.details_header")}</label>
         <div className="space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs text-ink-500 mb-1.5">Product Name *</label>
-              <input value={form.name} onChange={(e) => set("name", e.target.value)} placeholder="e.g. Galaxy S24" required
+              <label className="block text-xs text-ink-500 mb-1.5">{t("product.name_label")} *</label>
+              <input value={form.name} onChange={(e) => set("name", e.target.value)} placeholder={t("product.name_placeholder")} required
                 className="w-full px-3 py-2.5 bg-cream-100 border border-cream-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sand-300" />
             </div>
             <div>
-              <label className="block text-xs text-ink-500 mb-1.5">Brand *</label>
-              <input value={form.brand} onChange={(e) => set("brand", e.target.value)} placeholder="e.g. Samsung" required
+              <label className="block text-xs text-ink-500 mb-1.5">{t("product.brand_label")} *</label>
+              <input value={form.brand} onChange={(e) => set("brand", e.target.value)} placeholder={t("product.brand_placeholder")} required
                 className="w-full px-3 py-2.5 bg-cream-100 border border-cream-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sand-300" />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs text-ink-500 mb-1.5">Model Number</label>
+              <label className="block text-xs text-ink-500 mb-1.5">{t("product.model_label")}</label>
               <input value={form.model_number} onChange={(e) => set("model_number", e.target.value)} placeholder="e.g. SM-S921B"
                 className="w-full px-3 py-2.5 bg-cream-100 border border-cream-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sand-300" />
             </div>
             <div>
-              <label className="block text-xs text-ink-500 mb-1.5">Serial / IMEI</label>
+              <label className="block text-xs text-ink-500 mb-1.5">{t("product.serial_imei")}</label>
               <div className="relative">
-                <input value={form.serial_number} onChange={(e) => set("serial_number", e.target.value)} placeholder="Optional or scan 📷"
+                <input value={form.serial_number} onChange={(e) => set("serial_number", e.target.value)} placeholder={t("product.serial_placeholder") + " 📷"}
                   className="w-full px-3 py-2.5 pr-10 bg-cream-100 border border-cream-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sand-300" />
                 <button type="button" onClick={() => setShowScanner(true)}
-                  aria-label="Scan barcode"
+                  aria-label={t("product.scan_barcode_aria")}
                   className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 flex items-center justify-center rounded-lg bg-cream-200 hover:bg-sand-100 text-ink-400 hover:text-ink-700 transition-colors">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/>
@@ -396,15 +409,15 @@ export default function AddProductForm() {
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs text-ink-500 mb-1.5">When did you buy it? *</label>
+              <label className="block text-xs text-ink-500 mb-1.5">{t("product.purchase_date_label")} *</label>
               {/* Friendly date presets — Ramu Uncle doesn't remember exact dates */}
               <div className="flex flex-wrap gap-1.5 mb-2">
                 {([
-                  { label: "This week", days: 3 },
-                  { label: "Last month", days: 30 },
-                  { label: "Last Diwali", days: 210 },
-                  { label: "~1 year ago", days: 365 },
-                  { label: "~2 years ago", days: 730 },
+                  { label: t("product.date_preset_this_week"), days: 3 },
+                  { label: t("product.date_preset_last_month"), days: 30 },
+                  { label: t("product.date_preset_diwali"), days: 210 },
+                  { label: t("product.date_preset_year_1"), days: 365 },
+                  { label: t("product.date_preset_year_2"), days: 730 },
                 ] as { label: string; days: number }[]).map(({ label, days }) => {
                   const d = new Date();
                   d.setDate(d.getDate() - days);
@@ -427,13 +440,13 @@ export default function AddProductForm() {
                 className="w-full px-3 py-2.5 bg-cream-100 border border-cream-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sand-300" />
             </div>
             <div>
-              <label className="block text-xs text-ink-500 mb-1.5">Store / Platform</label>
-              <input value={form.store_name} onChange={(e) => set("store_name", e.target.value)} placeholder="e.g. Flipkart"
+              <label className="block text-xs text-ink-500 mb-1.5">{t("product.store_label")}</label>
+              <input value={form.store_name} onChange={(e) => set("store_name", e.target.value)} placeholder={t("product.store_placeholder")}
                 className="w-full px-3 py-2.5 bg-cream-100 border border-cream-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sand-300" />
             </div>
           </div>
           <div>
-            <label className="block text-xs text-ink-500 mb-1.5">Price Paid (₹)</label>
+            <label className="block text-xs text-ink-500 mb-1.5">{t("product.price_paid_label")} (₹)</label>
             <input type="number" value={form.price} onChange={(e) => set("price", e.target.value)} placeholder="e.g. 74999" min="0"
               className="w-full px-3 py-2.5 bg-cream-100 border border-cream-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sand-300" />
           </div>
@@ -444,24 +457,33 @@ export default function AddProductForm() {
 
       {/* Warranty */}
       <div>
-        <label className="block text-xs font-semibold text-ink-400 uppercase tracking-wider mb-3">Warranty Duration</label>
+        <label className="block text-xs font-semibold text-ink-400 uppercase tracking-wider mb-3">{t("product.warranty_duration")}</label>
         <div className="flex gap-2 flex-wrap">
-          {WARRANTY_PRESETS.map((p) => (
-            <button key={p.value} type="button" onClick={() => { set("warranty_months", p.value); setCustomWarranty(false); }}
-              className={`px-3 py-2 rounded-xl text-sm font-medium border transition-all ${form.warranty_months === p.value && !customWarranty ? "bg-ink-900 border-ink-900 text-cream-50" : "bg-cream-100 border-cream-200 text-ink-600 hover:border-sand-300"}`}>
-              {p.label}
-            </button>
-          ))}
+          {(() => {
+            const presetLabels: Record<number, string> = {
+              6: t("product.warranty_preset_6mo"),
+              12: t("product.warranty_preset_1yr"),
+              24: t("product.warranty_preset_2yr"),
+              36: t("product.warranty_preset_3yr"),
+              60: t("product.warranty_preset_5yr")
+            };
+            return WARRANTY_PRESETS.map((p) => (
+              <button key={p.value} type="button" onClick={() => { set("warranty_months", p.value); setCustomWarranty(false); }}
+                className={`px-3 py-2 rounded-xl text-sm font-medium border transition-all ${form.warranty_months === p.value && !customWarranty ? "bg-ink-900 border-ink-900 text-cream-50" : "bg-cream-100 border-cream-200 text-ink-600 hover:border-sand-300"}`}>
+                {presetLabels[p.value] || p.label}
+              </button>
+            ));
+          })()}
           <button type="button" onClick={() => setCustomWarranty(true)}
             className={`px-3 py-2 rounded-xl text-sm font-medium border transition-all ${customWarranty ? "bg-ink-900 border-ink-900 text-cream-50" : "bg-cream-100 border-cream-200 text-ink-600 hover:border-sand-300"}`}>
-            Custom
+            {t("product.warranty_preset_custom")}
           </button>
         </div>
         {customWarranty && (
           <div className="flex items-center gap-2 mt-2">
             <input type="number" value={form.warranty_months} onChange={(e) => set("warranty_months", parseInt(e.target.value) || 12)}
               min="1" max="240" className="w-24 px-3 py-2.5 bg-cream-100 border border-cream-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sand-300" />
-            <span className="text-sm text-ink-400">months</span>
+            <span className="text-sm text-ink-400">{t("product.months")}</span>
           </div>
         )}
         {form.purchase_date && form.warranty_months > 0 && (() => {
@@ -472,9 +494,9 @@ export default function AddProductForm() {
             <p className={`text-xs mt-2 px-1 ${
               isExpired ? "text-blush-500" : "text-sage-600"
             }`}>
-              {isExpired ? "⚠️" : "✓"} Warranty expires{" "}
+              {isExpired ? "⚠️" : "✓"} {t("product.warranty_expires_on")}{" "}
               {expiry.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
-              {isExpired ? " (already expired)" : ""}
+              {isExpired ? " (" + t("product.warranty_already_expired") + ")" : ""}
             </p>
           );
         })()}
@@ -484,20 +506,20 @@ export default function AddProductForm() {
 
       {/* Invoice */}
       <div>
-        <label className="block text-xs font-semibold text-ink-400 uppercase tracking-wider mb-3">Invoice / Receipt</label>
+        <label className="block text-xs font-semibold text-ink-400 uppercase tracking-wider mb-3">{t("product.invoice_receipt_header")}</label>
         <div {...getRootProps()} className={`border-2 border-dashed rounded-2xl p-6 text-center cursor-pointer transition-all ${isDragActive ? "border-sand-400 bg-sand-50" : invoiceFile ? "border-sage-300 bg-sage-50" : "border-cream-300 hover:border-sand-300 hover:bg-cream-100"}`}>
           <input {...getInputProps()} capture="environment" />
           {invoiceFile ? (
             <div className="flex items-center justify-center gap-2">
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 2h8l4 4v8H2V2z" stroke="#7aa67a" strokeWidth="1.2"/><path d="M10 2v4h4" stroke="#7aa67a" strokeWidth="1.2"/></svg>
               <span className="text-sm text-sage-700 font-medium truncate max-w-[200px]">{invoiceFile.name}</span>
-              <button type="button" onClick={(e) => { e.stopPropagation(); setInvoiceFile(null); }} className="text-xs text-blush-500 hover:text-blush-600 ml-1">Remove</button>
+              <button type="button" onClick={(e) => { e.stopPropagation(); setInvoiceFile(null); }} className="text-xs text-blush-500 hover:text-blush-600 ml-1">{t("common.remove")}</button>
             </div>
           ) : (
             <div>
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="mx-auto mb-2 text-ink-300"><path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2M12 4v12M8 8l4-4 4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-              <p className="text-sm text-ink-400">{isDragActive ? "Drop it here" : "Upload invoice or receipt"}</p>
-              <p className="text-xs text-ink-300 mt-1">JPG, PNG, PDF · Max 10MB</p>
+              <p className="text-sm text-ink-400">{isDragActive ? t("product.invoice_drop_cta") : t("product.invoice_upload_cta")}</p>
+              <p className="text-xs text-ink-300 mt-1">{t("product.invoice_upload_specs")}</p>
             </div>
           )}
         </div>
@@ -505,8 +527,8 @@ export default function AddProductForm() {
 
       {/* Notes */}
       <div>
-        <label className="block text-xs text-ink-500 mb-1.5">Notes (optional)</label>
-        <textarea value={form.notes} onChange={(e) => set("notes", e.target.value)} placeholder="Any notes about this product..."
+        <label className="block text-xs text-ink-500 mb-1.5">{t("product.notes_label")}</label>
+        <textarea value={form.notes} onChange={(e) => set("notes", e.target.value)} placeholder={t("product.notes_placeholder")}
           rows={2} className="w-full px-3 py-2.5 bg-cream-100 border border-cream-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sand-300 resize-none" />
       </div>
 
@@ -515,18 +537,19 @@ export default function AddProductForm() {
         {isPending ? (
           <span className="flex items-center justify-center gap-2">
             <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
-            Saving...
+            {t("product.saving")}
           </span>
-        ) : "Add to Warranty Wallet"}
+        ) : t("product.add_submit_btn")}
       </button>
 
       {/* Barcode Scanner Modal */}
       {showScanner && (
         <BarcodeScannerModal
+          t={t}
           onResult={(code) => {
             set("serial_number", code);
             setShowScanner(false);
-            toast.success(`Scanned: ${code}`);
+            toast.success(t("product.scanned_toast") + ": " + code);
           }}
           onClose={() => setShowScanner(false)}
         />
@@ -535,12 +558,13 @@ export default function AddProductForm() {
       {/* Bill OCR Modal */}
       {showBillScan && (
         <ScanBillModal
+          t={t}
           onResult={(fields) => {
             setForm((prev) => ({ ...prev, ...fields }));
             const filled = Object.keys(fields).length;
             toast.success(filled > 2
-              ? `✨ Auto-filled ${filled} fields from your bill!`
-              : "Bill scanned — please review the details."
+              ? "✨ " + t("product.ocr_autofill_toast").replace("{count}", String(filled))
+              : t("product.ocr_scanned_toast")
             );
           }}
           onClose={() => setShowBillScan(false)}

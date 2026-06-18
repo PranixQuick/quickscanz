@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useT } from "@/lib/i18n/provider";
 import type { DashboardStats } from "@/lib/types";
 
 interface StatsGridProps {
@@ -8,11 +9,12 @@ interface StatsGridProps {
 }
 
 export default function StatsGrid({ stats }: StatsGridProps) {
+  const t = useT();
   const router = useRouter();
 
   const items = [
     {
-      label: "Total",
+      label: t("dashboard.stats_total"),
       value: stats.total,
       icon: (
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -23,12 +25,12 @@ export default function StatsGrid({ stats }: StatsGridProps) {
         </svg>
       ),
       color: "text-ink-800",
-      sublabel: "products",
+      sublabel: t("dashboard.stats_sub_products"),
       href: "/products",
       active: stats.total > 0,
     },
     {
-      label: "Active",
+      label: t("dashboard.stats_active"),
       value: stats.active,
       icon: (
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -37,12 +39,12 @@ export default function StatsGrid({ stats }: StatsGridProps) {
         </svg>
       ),
       color: "text-sage-500",
-      sublabel: "warranties",
+      sublabel: t("dashboard.stats_sub_warranties"),
       href: "/products?status=active",
       active: stats.active > 0,
     },
     {
-      label: "Expiring",
+      label: t("dashboard.stats_expiring"),
       value: stats.expiringSoon,
       icon: (
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -51,7 +53,7 @@ export default function StatsGrid({ stats }: StatsGridProps) {
         </svg>
       ),
       color: stats.expiringSoon > 0 ? "text-amber-600" : "text-ink-400",
-      sublabel: "within 30d",
+      sublabel: t("dashboard.stats_sub_within_30d"),
       href: "/products?status=expiring_soon",
       active: stats.expiringSoon > 0,
     },
@@ -74,7 +76,7 @@ export default function StatsGrid({ stats }: StatsGridProps) {
             <span className="text-[10px] font-medium text-ink-400 uppercase tracking-wider">{item.label}</span>
           </div>
           <div className={`font-display text-3xl font-light ${item.color} leading-none mb-1`}>{item.value}</div>
-          <div className="text-[10px] text-ink-300">{item.sublabel}</div>
+          <div className="text-[9px] text-ink-300 leading-tight truncate" title={item.sublabel}>{item.sublabel}</div>
         </button>
       ))}
     </div>

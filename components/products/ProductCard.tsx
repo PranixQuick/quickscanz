@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { useT } from "@/lib/i18n/provider";
 import { getWarrantyStatus, getStatusConfig, formatDate, formatWarrantyCountdown, formatCurrency } from "@/lib/utils";
 import { getProductIntelligence } from "@/lib/intelligence";
 import type { Product } from "@/lib/types";
@@ -11,19 +12,20 @@ interface ProductCardProps {
 
 // VIRAL: WhatsApp deeplink share — India's primary distribution channel.
 // Sends a pre-written message with product name, warranty expiry, and app URL.
-function whatsappShare(product: Product, e: React.MouseEvent) {
+function whatsappShare(product: Product, e: React.MouseEvent, t: any) {
   e.preventDefault();
   e.stopPropagation();
   const expiry = product.expiry_date
     ? new Date(product.expiry_date).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })
     : "unknown";
   const text = encodeURIComponent(
-    `Hey! I just logged our *${product.name}* (${product.brand}) warranty on QuickScanZ — it expires on ${expiry}. You can track it here: https://quickscanz.app`
+    t("product.whatsapp_share_message").replace("{name}", product.name).replace("{brand}", product.brand).replace("{expiry}", expiry)
   );
   window.open(`https://wa.me/?text=${text}`, "_blank", "noopener,noreferrer");
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
+  const t = useT();
   const config = getStatusConfig(getWarrantyStatus(product.expiry_date));
   const countdown = formatWarrantyCountdown(product.expiry_date);
   const intel = getProductIntelligence(product.name, product.brand);
@@ -55,12 +57,12 @@ export default function ProductCard({ product }: ProductCardProps) {
                   <rect x="1" y="1.5" width="9" height="8" rx="1.5" stroke="currentColor" strokeWidth="1"/>
                   <path d="M3.5 1v1.5M7.5 1v1.5M1 4.5h9" stroke="currentColor" strokeWidth="1" strokeLinecap="round"/>
                 </svg>
-                <span>Expires {formatDate(product.expiry_date)}</span>
+                <span>{t("product.expires_on")} {formatDate(product.expiry_date)}</span>
               </div>
               <span className={`font-medium text-[11px] ${config.color}`}>{countdown}</span>
             </div>
             {product.price && (
-              <p className="text-[11px] text-ink-300 mt-1.5">Purchased at {formatCurrency(product.price)}</p>
+              <p className="text-[11px] text-ink-300 mt-1.5">{t("product.purchased_at_val")} {formatCurrency(product.price)}</p>
             )}
             {product.price && product.resale_estimate_pct != null && (
               <div className="mt-2 inline-flex items-center gap-1.5 text-[10px] bg-sage-50 border border-sage-200 text-sage-700 px-2 py-0.5 rounded-full">
@@ -69,7 +71,7 @@ export default function ProductCard({ product }: ProductCardProps) {
                   <polyline points="17 6 23 6 23 12"/>
                 </svg>
                 <span>
-                  Est. value ~{formatCurrency(Math.round(product.price * product.resale_estimate_pct / 100))}
+                  {t("product.est_value")} ~{formatCurrency(Math.round(product.price * product.resale_estimate_pct / 100))}
                   {" "}({product.resale_estimate_pct}%)
                 </span>
               </div>
@@ -79,8 +81,8 @@ export default function ProductCard({ product }: ProductCardProps) {
             {/* WhatsApp share — viral family loop */}
             {!product.is_demo && (
               <button
-                onClick={(e) => whatsappShare(product, e)}
-                aria-label="Share warranty on WhatsApp"
+                onClick={(e) => whatsappShare(product, e, t)}
+                aria-label={t("product.share_whatsapp_aria")}
                 className="w-7 h-7 rounded-lg bg-[#25D366]/10 hover:bg-[#25D366]/20 flex items-center justify-center transition-colors"
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="#25D366">
