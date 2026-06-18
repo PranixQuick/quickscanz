@@ -121,13 +121,12 @@ export default async function DashboardPage() {
             <div className="flex items-start gap-3">
               <span className="text-lg mt-0.5">💡</span>
               <div className="flex-1">
-                <p className="text-sm font-medium text-ink-800">These are sample products</p>
+                <p className="text-sm font-medium text-ink-800">{t("dashboard.demo_title")}</p>
                 <p className="text-xs text-ink-400 mt-0.5 leading-relaxed">
-                  The stats above show demo data so you can explore the app.
-                  Add your first real product to start tracking your actual warranties.
+                  {t("dashboard.demo_desc")}
                 </p>
                 <a href="/products/add" className="mt-2.5 inline-flex items-center gap-1.5 text-xs btn-primary px-3 py-1.5">
-                  + Add my first product
+                  + {t("dashboard.demo_cta")}
                 </a>
               </div>
             </div>
@@ -214,8 +213,8 @@ export default async function DashboardPage() {
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-2xl bg-sand-100 flex items-center justify-center flex-shrink-0 text-xl">⭐</div>
               <div className="flex-1">
-                <p className="text-sm font-medium text-ink-900">You&apos;re nearing the free limit</p>
-                <p className="text-xs text-ink-500 mt-0.5">Upgrade to Pro for unlimited products · ₹149/mo</p>
+                <p className="text-sm font-medium text-ink-900">{t("dashboard.near_limit_title")}</p>
+                <p className="text-xs text-ink-500 mt-0.5">{t("dashboard.near_limit_sub")} · ₹149/mo</p>
               </div>
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="text-sand-400 group-hover:translate-x-0.5 transition-transform flex-shrink-0">
                 <path d="M3 7h8M8 4l3 3-3 3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
@@ -234,7 +233,7 @@ export default async function DashboardPage() {
         ) : (
           <div>
             <div className="flex items-center justify-between mb-3">
-              <h2 className="text-xs font-semibold text-ink-400 uppercase tracking-wider">Products</h2>
+              <h2 className="text-xs font-semibold text-ink-400 uppercase tracking-wider">{t("dashboard.products_heading")}</h2>
               <Link href="/products" className="text-xs text-sand-500 hover:text-sand-400 transition-colors">{t("common.view_all")} →</Link>
             </div>
             <div className="space-y-3">
