@@ -20,13 +20,18 @@ const GetHelpModal = dynamic(() => import("@/components/products/GetHelpModal"))
 const ProductIntelligenceCard = dynamic(() => import("@/components/products/ProductIntelligenceCard"));
 const ServiceCentreLocator = dynamic(() => import("@/components/products/ServiceCentreLocator"));
 const HomeServiceFinder = dynamic(() => import("@/components/products/HomeServiceFinder"));
-const ClaimAssistant = dynamic(() => import("@/components/ai/ClaimAssistant"), {
-  loading: () => (
+function ClaimAssistantLoader() {
+  const t = useT();
+  return (
     <div className="card p-8 text-center">
       <div className="w-8 h-8 rounded-full border-2 border-sand-200 border-t-sand-500 animate-spin mx-auto mb-3" />
-      <p className="text-sm text-ink-400">Loading AI assistant…</p>
+      <p className="text-sm text-ink-400">{t("product.loading_ai")}</p>
     </div>
-  ),
+  );
+}
+
+const ClaimAssistant = dynamic(() => import("@/components/ai/ClaimAssistant"), {
+  loading: () => <ClaimAssistantLoader />,
 });
 const ProductReviewCard = dynamic(() => import("@/components/reviews/ProductReviewCard"));
 const EditProductModal = dynamic(() => import("@/components/products/EditProductModal"));
@@ -236,7 +241,7 @@ export default function ProductDetailClient({
               <p className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-3">{t("product.invoice")}</p>
               <button onClick={handleInvoiceOpen} className="relative w-full aspect-[4/3] rounded-xl overflow-hidden bg-cream-100 group">
                 {isImage && signedInvoiceUrl ? (
-                  <Image src={signedInvoiceUrl} alt="Invoice" fill className="object-cover group-hover:scale-105 transition-transform duration-300" />
+                  <Image src={signedInvoiceUrl} alt={t("product.invoice")} fill className="object-cover group-hover:scale-105 transition-transform duration-300" />
                 ) : (
                   <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
                     <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
@@ -244,7 +249,7 @@ export default function ProductDetailClient({
                       <path d="M20 4v6h6" stroke="#c9bfb3" strokeWidth="1.5"/>
                       <path d="M11 16h10M11 20h7" stroke="#c9bfb3" strokeWidth="1.3" strokeLinecap="round"/>
                     </svg>
-                    <p className="text-xs text-ink-400">{isImage ? "{t("product.invoice_loading")}" : "{t("product.invoice_tap_view")}"}</p>
+                    <p className="text-xs text-ink-400">{isImage ? t("product.invoice_loading") : t("product.invoice_tap_view")}</p>
                   </div>
                 )}
                 <div className="absolute inset-0 bg-ink-900/0 group-hover:bg-ink-900/10 transition-colors" />
@@ -420,11 +425,11 @@ export default function ProductDetailClient({
               </div>
             ) : isImage ? (
               <div className="relative rounded-2xl overflow-hidden aspect-[3/4]">
-                <Image src={signedInvoiceUrl} alt="Invoice" fill className="object-contain bg-white" />
+                <Image src={signedInvoiceUrl} alt={t("product.invoice")} fill className="object-contain bg-white" />
               </div>
             ) : (
               <div className="rounded-2xl overflow-hidden bg-white" style={{ height: "80vh" }}>
-                <iframe src={signedInvoiceUrl} className="w-full h-full border-0" title="Invoice PDF" />
+                <iframe src={signedInvoiceUrl} className="w-full h-full border-0" title={t("product.invoice_pdf")} />
               </div>
             )}
           </div>
