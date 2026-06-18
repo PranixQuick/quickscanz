@@ -21,31 +21,23 @@
   "common.no": "No",
   "common.remaining": "remaining",
   "common.expires": "Expires",
-
   "form.required": "This field is required",
   "form.invalid_email": "Enter a valid email address",
-
   "error.generic": "Something went wrong. Please try again.",
   "error.network": "Network error. Check your connection.",
-
   "notification.saved": "Saved",
   "notification.deleted": "Deleted",
   "notification.sent": "Sent",
-
   "help.contact_support": "Need help? Contact support.",
-
   "app.tagline": "Your Warranty Wallet",
   "app.add_product": "Add Product",
-
   "nav.home": "Home",
   "nav.products": "Products",
   "nav.claim": "Claim AI",
   "nav.account": "Account",
-
   "status.active": "Active",
   "status.expired": "Expired",
   "status.expiring_soon": "Expiring soon",
-
   "product.name": "Product name",
   "product.brand": "Brand",
   "product.category": "Category",
@@ -56,7 +48,6 @@
   "product.invoice": "Invoice",
   "product.warranty": "Warranty",
   "product.purchased_at": "Purchased at",
-
   "login.google_button": "Sign in with Google",
   "login.google_connecting": "Connecting to Google...",
   "login.phone_label": "Mobile number",
@@ -65,7 +56,6 @@
   "login.otp_enter": "Enter 6-digit OTP",
   "login.otp_wrong": "Wrong OTP. Please try again.",
   "login.otp_hint": "We sent a 6-digit code to your phone. Check your SMS messages.",
-
   "dashboard.hello": "Hello",
   "dashboard.products_tracked": "products tracked",
   "dashboard.all_looking_good": "all looking good",
@@ -86,7 +76,6 @@
   "dashboard.near_limit_title": "You're nearing the free limit",
   "dashboard.near_limit_sub": "Upgrade to Pro for unlimited products",
   "dashboard.weekly_checkin": "Weekly check-in",
-
   "tile.lifecycle": "Lifecycle",
   "tile.lifecycle_sub": "Cost & lifespan",
   "tile.compare": "Compare",
@@ -103,7 +92,6 @@
   "tile.upgrade_sub": "Unlimited products",
   "tile.add_product": "Add Product",
   "tile.add_product_sub": "30 seconds",
-
   "login.otp_sent_to": "We sent a 6-digit code to",
   "login.otp_check_sms": "Check your SMS messages.",
   "login.otp_verifying": "Verifying...",
@@ -126,11 +114,9 @@
   "login.use_email": "Use email & password instead",
   "login.new_user": "New user?",
   "login.create_account": "Create free account",
-
   "common.all": "All",
   "products.title": "My Products",
   "products.total_tracked": "total tracked",
-
   "notification.copied": "Link copied!",
   "product.share": "Share product",
   "common.compare": "Compare",
@@ -305,10 +291,36 @@
   "product.est_value": "Est. value",
   "product.share_whatsapp_aria": "Share warranty on WhatsApp",
   "product.whatsapp_share_message": "Hey! I just logged our *{name}* ({brand}) warranty on QuickScanZ — it expires on {expiry}. You can track it here: https://quickscanz.app",
-
   "category.electronics": "Electronics",
   "category.appliance": "Appliance",
   "category.vehicle": "Vehicle",
   "category.furniture": "Furniture",
-  "category.other": "Other"
+  "category.other": "Other",
+  "product.invoice_pdf": "Invoice PDF",
+  "product.loading_ai": "Loading AI assistant…",
+  "product.name_placeholder": "e.g. Galaxy S24",
+  "product.brand_placeholder": "e.g. Samsung",
+  "product.store_placeholder": "e.g. Flipkart",
+  "subcategory.smartphone": "Smartphone",
+  "subcategory.laptop": "Laptop",
+  "subcategory.television": "Television",
+  "subcategory.camera": "Camera",
+  "subcategory.audio": "Audio",
+  "subcategory.wearable": "Wearable",
+  "subcategory.printer": "Printer",
+  "subcategory.networking": "Networking",
+  "subcategory.air_conditioner": "Air Conditioner",
+  "subcategory.washing_machine": "Washing Machine",
+  "subcategory.refrigerator": "Refrigerator",
+  "subcategory.microwave": "Microwave",
+  "subcategory.water_heater": "Water Heater",
+  "subcategory.air_purifier": "Air Purifier",
+  "subcategory.kitchen_appliance": "Kitchen Appliance",
+  "subcategory.car": "Car",
+  "subcategory.motorcycle": "Motorcycle",
+  "subcategory.scooter": "Scooter",
+  "subcategory.sofa": "Sofa",
+  "subcategory.bed": "Bed",
+  "subcategory.wardrobe": "Wardrobe",
+  "subcategory.other": "Other"
 }
