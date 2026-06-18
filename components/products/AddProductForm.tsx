@@ -232,14 +232,14 @@ const WARRANTY_PRESETS = [
 interface FormState {
   name: string; brand: string; category: string; subcategory: string;
   model_number: string; serial_number: string; purchase_date: string;
-  store_name: string; warranty_{t("product.months")}: number; price: string; notes: string;
+  store_name: string; warranty_months: number; price: string; notes: string;
   catalog_product_id: string | null;
 }
 
 const DEFAULT: FormState = {
   name: "", brand: "", category: "", subcategory: "",
   model_number: "", serial_number: "", purchase_date: "",
-  store_name: "", warranty_{t("product.months")}: 12, price: "", notes: "", catalog_product_id: null,
+  store_name: "", warranty_months: 12, price: "", notes: "", catalog_product_id: null,
 };
 
 export default function AddProductForm() {
@@ -247,7 +247,7 @@ export default function AddProductForm() {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [form, setForm] = useState<FormState>(DEFAULT);
-  const [customWarranty, set{t("product.warranty_preset_custom")}Warranty] = useState(false);
+  const [customWarranty, setCustomWarranty] = useState(false);
   const [invoiceFile, setInvoiceFile] = useState<File | null>(null);
   const [showScanner, setShowScanner] = useState(false);
   const [showBillScan, setShowBillScan] = useState(false);
@@ -263,7 +263,7 @@ export default function AddProductForm() {
       category: product.category,
       subcategory: product.subcategory || "",
       model_number: product.model_number || "",
-      warranty_{t("product.months")}: product.standard_warranty_{t("product.months")},
+      warranty_months: product.standard_warranty_months,
       catalog_product_id: product.id,
     }));
   }
@@ -360,7 +360,7 @@ export default function AddProductForm() {
             {selectedCat.subs.map((sub) => (
               <button key={sub} type="button" onClick={() => set("subcategory", sub)}
                 className={`text-xs px-3 py-1.5 rounded-full border transition-all ${form.subcategory === sub ? "bg-sand-400 border-sand-400 text-white" : "bg-cream-100 border-cream-200 text-ink-500 hover:border-sand-300"}`}>
-                {sub}
+                {t("subcategory." + sub.toLowerCase().replace(/ /g, "_"))}
               </button>
             ))}
           </div>
@@ -376,12 +376,12 @@ export default function AddProductForm() {
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs text-ink-500 mb-1.5">{t("product.name_label")} *</label>
-              <input value={form.name} onChange={(e) => set("name", e.target.value)} placeholder="e.g. Galaxy S24" required
+              <input value={form.name} onChange={(e) => set("name", e.target.value)} placeholder={t("product.name_placeholder")} required
                 className="w-full px-3 py-2.5 bg-cream-100 border border-cream-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sand-300" />
             </div>
             <div>
               <label className="block text-xs text-ink-500 mb-1.5">{t("product.brand_label")} *</label>
-              <input value={form.brand} onChange={(e) => set("brand", e.target.value)} placeholder="e.g. Samsung" required
+              <input value={form.brand} onChange={(e) => set("brand", e.target.value)} placeholder={t("product.brand_placeholder")} required
                 className="w-full px-3 py-2.5 bg-cream-100 border border-cream-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sand-300" />
             </div>
           </div>
@@ -441,7 +441,7 @@ export default function AddProductForm() {
             </div>
             <div>
               <label className="block text-xs text-ink-500 mb-1.5">{t("product.store_label")}</label>
-              <input value={form.store_name} onChange={(e) => set("store_name", e.target.value)} placeholder="e.g. Flipkart"
+              <input value={form.store_name} onChange={(e) => set("store_name", e.target.value)} placeholder={t("product.store_placeholder")}
                 className="w-full px-3 py-2.5 bg-cream-100 border border-cream-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sand-300" />
             </div>
           </div>
@@ -458,40 +458,37 @@ export default function AddProductForm() {
       {/* Warranty */}
       <div>
         <label className="block text-xs font-semibold text-ink-400 uppercase tracking-wider mb-3">{t("product.warranty_duration")}</label>
-        {(() => {
-          const presetLabels: Record<number, string> = {
-            6: t("product.warranty_preset_6mo"),
-            12: t("product.warranty_preset_1yr"),
-            24: t("product.warranty_preset_2yr"),
-            36: t("product.warranty_preset_3yr"),
-            60: t("product.warranty_preset_5yr")
-          };
-          return (
-            <div className="flex gap-2 flex-wrap">
-              {WARRANTY_PRESETS.map((p) => (
-                <button key={p.value} type="button" onClick={() => { set("warranty_{t("product.months")}", p.value); set{t("product.warranty_preset_custom")}Warranty(false); }}
-                  className={`px-3 py-2 rounded-xl text-sm font-medium border transition-all ${form.warranty_{t("product.months")} === p.value && !customWarranty ? "bg-ink-900 border-ink-900 text-cream-50" : "bg-cream-100 border-cream-200 text-ink-600 hover:border-sand-300"}`}>
-                  {presetLabels[p.value] || p.label}
-                </button>
-              ))}
-            </div>
-          );
-        })()}
-          <button type="button" onClick={() => set{t("product.warranty_preset_custom")}Warranty(true)}
+        <div className="flex gap-2 flex-wrap">
+          {(() => {
+            const presetLabels: Record<number, string> = {
+              6: t("product.warranty_preset_6mo"),
+              12: t("product.warranty_preset_1yr"),
+              24: t("product.warranty_preset_2yr"),
+              36: t("product.warranty_preset_3yr"),
+              60: t("product.warranty_preset_5yr")
+            };
+            return WARRANTY_PRESETS.map((p) => (
+              <button key={p.value} type="button" onClick={() => { set("warranty_months", p.value); setCustomWarranty(false); }}
+                className={`px-3 py-2 rounded-xl text-sm font-medium border transition-all ${form.warranty_months === p.value && !customWarranty ? "bg-ink-900 border-ink-900 text-cream-50" : "bg-cream-100 border-cream-200 text-ink-600 hover:border-sand-300"}`}>
+                {presetLabels[p.value] || p.label}
+              </button>
+            ));
+          })()}
+          <button type="button" onClick={() => setCustomWarranty(true)}
             className={`px-3 py-2 rounded-xl text-sm font-medium border transition-all ${customWarranty ? "bg-ink-900 border-ink-900 text-cream-50" : "bg-cream-100 border-cream-200 text-ink-600 hover:border-sand-300"}`}>
             {t("product.warranty_preset_custom")}
           </button>
         </div>
         {customWarranty && (
           <div className="flex items-center gap-2 mt-2">
-            <input type="number" value={form.warranty_{t("product.months")}} onChange={(e) => set("warranty_{t("product.months")}", parseInt(e.target.value) || 12)}
+            <input type="number" value={form.warranty_months} onChange={(e) => set("warranty_months", parseInt(e.target.value) || 12)}
               min="1" max="240" className="w-24 px-3 py-2.5 bg-cream-100 border border-cream-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sand-300" />
             <span className="text-sm text-ink-400">{t("product.months")}</span>
           </div>
         )}
-        {form.purchase_date && form.warranty_{t("product.months")} > 0 && (() => {
+        {form.purchase_date && form.warranty_months > 0 && (() => {
           const expiry = new Date(form.purchase_date);
-          expiry.setMonth(expiry.getMonth() + Number(form.warranty_{t("product.months")}));
+          expiry.setMonth(expiry.getMonth() + Number(form.warranty_months));
           const isExpired = expiry < new Date();
           return (
             <p className={`text-xs mt-2 px-1 ${
@@ -521,7 +518,7 @@ export default function AddProductForm() {
           ) : (
             <div>
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="mx-auto mb-2 text-ink-300"><path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2M12 4v12M8 8l4-4 4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-              <p className="text-sm text-ink-400">{isDragActive ? "{t("product.invoice_drop_cta")}" : "{t("product.invoice_upload_cta")}"}</p>
+              <p className="text-sm text-ink-400">{isDragActive ? t("product.invoice_drop_cta") : t("product.invoice_upload_cta")}</p>
               <p className="text-xs text-ink-300 mt-1">{t("product.invoice_upload_specs")}</p>
             </div>
           )}
