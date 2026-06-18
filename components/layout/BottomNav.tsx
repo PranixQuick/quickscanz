@@ -70,7 +70,7 @@ export default function BottomNav() {
               className={`flex-1 flex flex-col items-center gap-1 ${item.special ? "pt-0" : "pt-1"}`}>
               {item.icon(active)}
               {!item.special && (
-                <span className={`text-[10px] font-medium transition-colors ${active ? "text-ink-900" : "text-ink-300"}`}>
+                <span className={`text-[9px] font-medium transition-colors text-center truncate max-w-[68px] ${active ? "text-ink-900" : "text-ink-300"}`} title={t(item.key)}>
                   {t(item.key)}
                 </span>
               )}
