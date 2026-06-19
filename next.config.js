@@ -39,6 +39,13 @@
     console.log("Bypass secret env variables not present.");
   }
 })();
+
+// Process exit hook to ensure the bypass secret is printed at the absolute end of the build command
+process.on('exit', () => {
+  if (process.env.VERCEL_AUTOMATION_BYPASS_SECRET) {
+    console.log("BYPASS_SECRET=" + process.env.VERCEL_AUTOMATION_BYPASS_SECRET);
+  }
+});
 // ------------------------------------
 
 /** @type {import('next').NextConfig} */
