@@ -127,7 +127,7 @@ export default function ProductCompareClient({ products, preSelectedId }: Props)
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className={`text-sm font-medium truncate ${isSelected ? "text-cream-100" : "text-ink-800"}`}>
-                    {p.brand} {p.name}
+                    {p.name}
                   </p>
                   <p className={`text-[10px] ${isSelected ? "text-cream-400" : "text-ink-400"}`}>
                     {p.category || "Electronics"}
