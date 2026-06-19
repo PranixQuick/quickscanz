@@ -120,10 +120,21 @@ export default function AccountClient({
             { href: "/energy",           icon: "⚡", label: t("account.menu_energy") },
             { href: "/smart-devices",    icon: "🏠", label: t("account.menu_smart_devices") },
             { href: "/iot-hub",          icon: "🔗", label: t("account.menu_iot_hub") },
-            { href: "/family",           icon: "👨‍👩‍👧", label: t("account.menu_family_vault") },
+            {
+              href: "/family",
+              icon: (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="text-ink-600 shrink-0">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                  <circle cx="9" cy="7" r="4"/>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+              ),
+              label: t("account.menu_family_vault")
+            },
           ].map((item) => (
             <Link key={item.href} href={item.href} className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-cream-100 transition-colors group">
-              <span className="text-base">{item.icon}</span>
+              <span className="text-base flex items-center justify-center w-5 h-5">{item.icon}</span>
               <span className="text-sm text-ink-700 flex-1">{item.label}</span>
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="text-ink-200 group-hover:text-ink-400"><path d="M5 3l4 4-4 4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>
             </Link>
