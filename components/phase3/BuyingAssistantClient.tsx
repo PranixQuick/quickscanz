@@ -57,7 +57,7 @@ function RecCard({ rec, rank, budget }: { rec: BuyingRecommendation; rank: numbe
             {RANK_LABELS[rank] ?? `#${rank + 1}`}
           </span>
           <h3 className="text-sm font-medium text-ink-900 mt-1 truncate">
-            {rec.brand} {rec.name}
+            {rec.name}
           </h3>
           <p className="text-xs text-ink-400 mt-0.5 leading-relaxed">{rec.whyRecommended}</p>
         </div>
@@ -93,9 +93,13 @@ function RecCard({ rec, rank, budget }: { rec: BuyingRecommendation; rank: numbe
               href={url}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex-1 text-center text-xs btn-secondary py-2"
+              className="flex-1 text-center text-xs btn-secondary py-2 flex items-center justify-center gap-1"
             >
-              {label} →
+              {label}
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
+                <line x1="5" y1="12" x2="19" y2="12" />
+                <polyline points="12 5 19 12 12 19" />
+              </svg>
             </a>
           );
         })}
@@ -283,9 +287,19 @@ export default function BuyingAssistantClient({ categories }: Props) {
         <button
           onClick={handleSearch}
           disabled={!category || !budget || isPending}
-          className="w-full btn-primary py-3 text-sm font-medium disabled:opacity-40"
+          className="w-full btn-primary py-3 text-sm font-medium disabled:opacity-40 flex items-center justify-center gap-1.5"
         >
-          {isPending ? "Finding best options…" : "Find best options →"}
+          {isPending ? (
+            "Finding best options…"
+          ) : (
+            <>
+              Find best options
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
+                <line x1="5" y1="12" x2="19" y2="12" />
+                <polyline points="12 5 19 12 12 19" />
+              </svg>
+            </>
+          )}
         </button>
       </div>
 

@@ -130,7 +130,12 @@ export default function FamilyVaultPage() {
             <div className="flex items-start justify-between gap-3">
               <div>
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="text-xl">👨‍👩‍👧</span>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="text-cream-100 shrink-0">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                    <circle cx="9" cy="7" r="4"/>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                  </svg>
                   <h2 className="font-display text-lg font-light text-cream-100">{group.name}</h2>
                 </div>
                 <p className="text-xs text-cream-400">{members.length} member{members.length !== 1 ? "s" : ""}</p>
@@ -141,7 +146,7 @@ export default function FamilyVaultPage() {
                   <span className="font-mono text-lg font-bold text-cream-100 tracking-widest">{group.invite_code}</span>
                   <button onClick={handleCopyCode}
                     className="text-[11px] bg-white/10 hover:bg-white/20 text-cream-300 px-2 py-1 rounded-lg transition-colors">
-                    {copied ? "✓ Copied" : "Copy"}
+                    {copied ? "Copied" : "Copy"}
                   </button>
                 </div>
               </div>
@@ -186,7 +191,7 @@ export default function FamilyVaultPage() {
           <div className="card p-4 bg-sage-50/50 border-sage-200">
             <p className="text-xs font-medium text-sage-700 mb-1">📤 Invite family members</p>
             <p className="text-xs text-sage-600 leading-relaxed">
-              Share the invite code <span className="font-mono font-bold">{group.invite_code}</span> with family members. They can join at quickscanz.com → Family Vault → Join.
+              Share the invite code <span className="font-mono font-bold">{group.invite_code}</span> with family members. They can join at quickscanz.com &gt; Family Vault &gt; Join.
             </p>
           </div>
         </div>

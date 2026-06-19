@@ -121,16 +121,16 @@ export default function ProductDetailClient({
               <div>
                 <h1 className="font-display text-xl font-light text-ink-900">{product.name}</h1>
                 <p className="text-sm text-ink-500 mt-0.5">
-                  {product.brand}
-                  {(product as any).model_number ? ` · ${(product as any).model_number}` : ""}
-                  {(product as any).category ? ` · ${(product as any).category}` : ""}
+                  {(product as any).model_number || ""}
+                  {(product as any).model_number && (product as any).category ? " · " : ""}
+                  {(product as any).category || ""}
                 </p>
               </div>
               <div className="flex items-center gap-2 flex-shrink-0">
                 {/* Share button — Web Share API with clipboard fallback */}
                 <button
                   onClick={async () => {
-                    const text = `${product.name} by ${product.brand} — warranty tracked on QuickScanZ`;
+                    const text = `${product.name} — warranty tracked on QuickScanZ`;
                     if (navigator.share) {
                       try { await navigator.share({ title: product.name, text, url: window.location.href }); }
                       catch (_) { /* user cancelled */ }
@@ -257,7 +257,7 @@ export default function ProductDetailClient({
               {signedInvoiceUrl && (
                 <a href={signedInvoiceUrl} rel="noopener noreferrer"
                   className="block text-center text-xs text-sand-500 hover:text-sand-400 mt-2">
-                  {t("product.invoice_open_new_tab")} →
+                  {t("product.invoice_open_new_tab")} &gt;
                 </a>
               )}
             </div>
@@ -368,12 +368,12 @@ export default function ProductDetailClient({
           <div>
             <p className="text-sm font-medium text-ink-800">{t("product.manual_title")}</p>
             <p className="text-xs text-ink-400 mt-1 max-w-xs mx-auto">
-              {t("product.manual_desc_prefix")} {product.brand} {product.name}.
+              {t("product.manual_desc_prefix")} {product.name}.
             </p>
           </div>
           <div className="flex flex-col gap-2">
             <a
-              href={`https://www.google.com/search?q=${encodeURIComponent(product.brand + " " + product.name + " user manual PDF")}`}
+              href={`https://www.google.com/search?q=${encodeURIComponent(product.name + " user manual PDF")}`}
               rel="noopener noreferrer"
               className="btn-primary text-sm px-6 py-2.5 inline-flex items-center justify-center gap-2"
             >
@@ -384,23 +384,23 @@ export default function ProductDetailClient({
               {t("product.search_google")}
             </a>
             <a
-              href={`https://www.manualslib.com/search/?q=${encodeURIComponent(product.brand + " " + product.name)}`}
+              href={`https://www.manualslib.com/search/?q=${encodeURIComponent(product.name)}`}
               rel="noopener noreferrer"
               className="text-xs text-sand-500 hover:text-sand-400 transition-colors"
             >
-              {t("product.try_manualslib")} →
+              {t("product.try_manualslib")} &gt;
             </a>
             {(product as any).category?.toLowerCase().includes("samsung") || product.brand?.toLowerCase() === "samsung" ? (
               <a href="https://www.samsung.com/in/support/" rel="noopener noreferrer" className="text-xs text-ink-400 hover:text-ink-600 transition-colors">
-                Samsung {t("product.india_support")} →
+                Samsung {t("product.india_support")} &gt;
               </a>
             ) : product.brand?.toLowerCase() === "lg" ? (
               <a href="https://www.lg.com/in/support/" rel="noopener noreferrer" className="text-xs text-ink-400 hover:text-ink-600 transition-colors">
-                LG {t("product.india_support")} →
+                LG {t("product.india_support")} &gt;
               </a>
             ) : product.brand?.toLowerCase().includes("apple") ? (
               <a href="https://support.apple.com/en-in" rel="noopener noreferrer" className="text-xs text-ink-400 hover:text-ink-600 transition-colors">
-                Apple {t("product.india_support")} →
+                Apple {t("product.india_support")} &gt;
               </a>
             ) : null}
           </div>

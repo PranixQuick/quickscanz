@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Cormorant_Garamond, DM_Sans, DM_Mono } from "next/font/google";
+import { Cormorant_Garamond, DM_Sans, DM_Mono, Noto_Sans_Devanagari, Noto_Sans_Telugu, Noto_Sans_Tamil, Noto_Sans_Kannada, Noto_Sans_Malayalam } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
@@ -26,6 +26,41 @@ const dmMono = DM_Mono({
   weight: ["300", "400"],
   variable: "--font-dm-mono",
   display: "swap",
+});
+const notoHi = Noto_Sans_Devanagari({
+  subsets: ["devanagari"],
+  weight: ["400", "500", "600"],
+  variable: "--font-noto-hi",
+  display: "swap",
+  preload: false,
+});
+const notoTe = Noto_Sans_Telugu({
+  subsets: ["telugu"],
+  weight: ["400", "500", "600"],
+  variable: "--font-noto-te",
+  display: "swap",
+  preload: false,
+});
+const notoTa = Noto_Sans_Tamil({
+  subsets: ["tamil"],
+  weight: ["400", "500", "600"],
+  variable: "--font-noto-ta",
+  display: "swap",
+  preload: false,
+});
+const notoKn = Noto_Sans_Kannada({
+  subsets: ["kannada"],
+  weight: ["400", "500", "600"],
+  variable: "--font-noto-kn",
+  display: "swap",
+  preload: false,
+});
+const notoMl = Noto_Sans_Malayalam({
+  subsets: ["malayalam"],
+  weight: ["400", "500", "600"],
+  variable: "--font-noto-ml",
+  display: "swap",
+  preload: false,
 });
 
 export const metadata: Metadata = {
@@ -101,7 +136,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const locale = await getLocale();
 
   return (
-    <html lang={locale} data-locale={locale} className={`scroll-smooth ${cormorant.variable} ${dmSans.variable} ${dmMono.variable}`}>
+    <html lang={locale} data-locale={locale} className={`scroll-smooth ${cormorant.variable} ${dmSans.variable} ${dmMono.variable} ${notoHi.variable} ${notoTe.variable} ${notoTa.variable} ${notoKn.variable} ${notoMl.variable}`}>
       <body className="bg-cream-50 text-ink-900 font-body antialiased">
         <I18nProvider initialLocale={locale}>
           <LocaleBar />

@@ -39,15 +39,7 @@ function persistLocale(l: Locale) {
   try { document.cookie = `${COOKIE_KEY}=${l};path=/;max-age=${ONE_YEAR};samesite=lax`; } catch { /* noop */ }
 }
 
-// BUG-005: Indic font cascade — defined at module scope so it is never a
-// reactive dependency and never triggers the exhaustive-deps lint warning.
-const INDIC_FONTS: Partial<Record<Locale, string>> = {
-  hi: 'Noto+Sans+Devanagari:wght@400;500;600',
-  te: 'Noto+Sans+Telugu:wght@400;500;600',
-  ta: 'Noto+Sans+Tamil:wght@400;500;600',
-  kn: 'Noto+Sans+Kannada:wght@400;500;600',
-  ml: 'Noto+Sans+Malayalam:wght@400;500;600',
-};
+
 
 export function I18nProvider({
   children,
@@ -82,30 +74,6 @@ export function I18nProvider({
       // 2. Set data-locale so CSS rules in globals.css can override font-family
       //    on body and all child elements via the cascade (BUG-005 fix).
       document.documentElement.setAttribute('data-locale', locale);
-
-      // 3. Dynamically inject the Noto font <link> for Indic locales so we
-      //    don't bloat the initial bundle. The link is idempotent: if a <link>
-      //    with the same href already exists we skip insertion.
-      const fontParam = INDIC_FONTS[locale];
-      if (fontParam) {
-        const href = `https://fonts.googleapis.com/css2?family=${fontParam}&display=swap`;
-        if (!document.querySelector(`link[href="${href}"]`)) {
-          // Ensure preconnect hints exist
-          ['https://fonts.googleapis.com', 'https://fonts.gstatic.com'].forEach((origin) => {
-            if (!document.querySelector(`link[rel="preconnect"][href="${origin}"]`)) {
-              const pre = document.createElement('link');
-              pre.rel = 'preconnect';
-              pre.href = origin;
-              if (origin.includes('gstatic')) pre.crossOrigin = 'anonymous';
-              document.head.appendChild(pre);
-            }
-          });
-          const link = document.createElement('link');
-          link.rel = 'stylesheet';
-          link.href = href;
-          document.head.appendChild(link);
-        }
-      }
     } catch { /* noop — SSR or restricted environment */ }
   }, [locale]);
 

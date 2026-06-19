@@ -52,7 +52,7 @@ export default function DashboardNudge() {
           if (daysLeft > 0 && daysLeft <= 60) {
             setNudge({
               type: "expiring_soon",
-              title: `${p.brand} ${p.name} warranty ends in ${daysLeft}d`,
+              title: `${p.name} warranty ends in ${daysLeft}d`,
               sub: "Tap to review or extend before it lapses.",
               href: `/products/${p.id}`,
               icon: "bell",
@@ -72,7 +72,7 @@ export default function DashboardNudge() {
         const p = oldProducts[0];
         setNudge({
           type: "amc_reminder",
-          title: `${p.brand} ${p.name} — consider an AMC`,
+          title: `${p.name} — consider an AMC`,
           sub: "Annual Maintenance Contract protects post-warranty.",
           href: `/products/${p.id}`,
           icon: "wrench",

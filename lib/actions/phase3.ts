@@ -116,8 +116,8 @@ export async function getBuyingRecommendations(
         item.features?.slice(0, 2).join(", ") || null,
       ].filter(Boolean).join(" · "),
       whereToCheck: [
-        `https://www.amazon.in/s?k=${encodeURIComponent(item.brand + " " + item.name)}`,
-        `https://www.flipkart.com/search?q=${encodeURIComponent(item.brand + " " + item.name)}`,
+        `https://www.amazon.in/s?k=${encodeURIComponent(item.name)}`,
+        `https://www.flipkart.com/search?q=${encodeURIComponent(item.name)}`,
       ].filter(Boolean),
       confidence: "catalog-based",
     };
@@ -132,7 +132,7 @@ export async function getBuyingRecommendations(
   });
 
   const best = recs[0];
-  const summary = `Found ${recs.length} ${input.category} options. At your ₹${input.budget.toLocaleString("en-IN")} budget, best option by lifespan: ${best.brand} ${best.name} (${best.avgLifespanYears}yr, ₹${best.costPerDayAtBudget}/day).`;
+  const summary = `Found ${recs.length} ${input.category} options. At your ₹${input.budget.toLocaleString("en-IN")} budget, best option by lifespan: ${best.name} (${best.avgLifespanYears}yr, ₹${best.costPerDayAtBudget}/day).`;
   const disclaimer = "Prices not available — catalog shows warranty and lifespan data only. Check Amazon or Flipkart links for current pricing.";
 
   return { recommendations: recs, summary, disclaimer };

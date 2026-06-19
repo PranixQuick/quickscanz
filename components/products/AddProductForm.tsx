@@ -491,12 +491,21 @@ export default function AddProductForm() {
           expiry.setMonth(expiry.getMonth() + Number(form.warranty_months));
           const isExpired = expiry < new Date();
           return (
-            <p className={`text-xs mt-2 px-1 ${
+            <p className={`text-xs mt-2 px-1 flex items-center gap-1.5 ${
               isExpired ? "text-blush-500" : "text-sage-600"
             }`}>
-              {isExpired ? "⚠️" : "✓"} {t("product.warranty_expires_on")}{" "}
-              {expiry.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
-              {isExpired ? " (" + t("product.warranty_already_expired") + ")" : ""}
+              {isExpired ? (
+                <span className="shrink-0">⚠️</span>
+              ) : (
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+              )}
+              <span>
+                {t("product.warranty_expires_on")}{" "}
+                {expiry.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+                {isExpired ? " (" + t("product.warranty_already_expired") + ")" : ""}
+              </span>
             </p>
           );
         })()}

@@ -58,7 +58,7 @@ export default function ExtendedWarrantyUpsell({ brand, productName, purchaseDat
       <div style={{ flex: 1 }}>
         <div className="ext-warranty-card__title">Extend Your Warranty</div>
         <div className="ext-warranty-card__sub">
-          Protect your {brand} {productName.length > 24 ? productName.slice(0,24)+"…" : productName} for up to 3 extra years.
+          Protect your {productName.length > 24 ? productName.slice(0,24)+"…" : productName} for up to 3 extra years.
         </div>
         <div className="ext-warranty-card__badge">{estimatePremium(category)}</div>
       </div>

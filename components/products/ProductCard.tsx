@@ -19,7 +19,12 @@ function whatsappShare(product: Product, e: React.MouseEvent, t: any) {
     ? new Date(product.expiry_date).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })
     : "unknown";
   const text = encodeURIComponent(
-    t("product.whatsapp_share_message").replace("{name}", product.name).replace("{brand}", product.brand).replace("{expiry}", expiry)
+    t("product.whatsapp_share_message")
+      .replace("{brand} {name}", "{name}")
+      .replace("{brand} {product}", "{name}")
+      .replace("{brand}", "")
+      .replace("{name}", product.name)
+      .replace("{expiry}", expiry)
   );
   window.open(`https://wa.me/?text=${text}`, "_blank", "noopener,noreferrer");
 }
@@ -46,7 +51,7 @@ export default function ProductCard({ product }: ProductCardProps) {
             <div className="flex items-start justify-between gap-2 mb-1.5">
               <div className="min-w-0 pr-10">
                 <h3 className="font-medium text-sm text-ink-900 truncate leading-snug">{product.name}</h3>
-                <p className="text-xs text-ink-400 mt-0.5">{product.brand} · {intel.category}</p>
+                <p className="text-xs text-ink-400 mt-0.5">{intel.category}</p>
               </div>
             </div>
             <StatusBadge expiryDate={product.expiry_date} size="sm" />

@@ -57,9 +57,9 @@ export async function addProduct(
       .eq("user_id", user.id)
       .eq("is_demo", false),
   ]);
-  // Free tier default raised 5 → 8 (Jun 2026) for better conversion curve.
+  // Free tier default lowered 8 → 5 (Jun 2026) for better conversion curve.
   // Pro plans pull their limit from subscription_plans.product_limit in DB.
-  const limit: number = (activeSub as any)?.plan?.product_limit ?? 8;
+  const limit: number = (activeSub as any)?.plan?.product_limit ?? 5;
   if ((realCount ?? 0) >= limit) {
     return {
       success: false,

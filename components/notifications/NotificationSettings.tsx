@@ -177,8 +177,9 @@ export default function NotificationSettings({ userId: _userId }: NotificationSe
           <p className="text-xs text-ink-400">You&apos;ll receive:</p>
           <div className="flex flex-wrap gap-1.5 mt-1.5">
             {["30-day expiry warning", "7-day urgent alert", "Service due reminders"].map((item) => (
-              <span key={item} className="text-[10px] bg-sage-50 text-sage-600 border border-sage-200 px-2 py-0.5 rounded-full">
-                ✓ {item}
+              <span key={item} className="inline-flex items-center gap-1 text-[10px] bg-sage-50 text-sage-600 border border-sage-200 px-2 py-0.5 rounded-full">
+                <svg width="8" height="8" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0"><path d="M2 6l3 3 5-5"/></svg>
+                {item}
               </span>
             ))}
           </div>
@@ -187,7 +188,7 @@ export default function NotificationSettings({ userId: _userId }: NotificationSe
 
       {permission === "denied" && (
         <p className="mt-3 pt-3 border-t border-cream-100 text-xs text-amber-600">
-          To enable: browser Settings → Site Settings → Notifications → Allow for quickscanz.com
+          To enable: browser Settings &gt; Site Settings &gt; Notifications &gt; Allow for quickscanz.com
         </p>
       )}
     </div>

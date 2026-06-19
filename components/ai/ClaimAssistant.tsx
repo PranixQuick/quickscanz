@@ -164,13 +164,13 @@ RULES:
         content: [
           isExpired
             ? t("claim.fallback_intro_expired").replace("{date}", date)
-            : t("claim.fallback_intro_active").replace("{product}", `${brand} ${name}`).replace("{date}", date),
+            : t("claim.fallback_intro_active").replace("{product}", name).replace("{date}", date),
           "",
           t("claim.fallback_how_to"),
           "",
           hasInvoice
-            ? t("claim.fallback_step1_have_invoice").replace("{product}", `${brand} ${name}`)
-            : t("claim.fallback_step1_no_invoice").replace("{product}", `${brand} ${name}`),
+            ? t("claim.fallback_step1_have_invoice").replace("{product}", name)
+            : t("claim.fallback_step1_no_invoice").replace("{product}", name),
           t("claim.fallback_step2").replace(/\{brand\}/g, brand),
           t("claim.fallback_step3"),
           t("claim.fallback_step4"),
@@ -187,7 +187,7 @@ RULES:
 
   async function handleStart(issue: string) {
     setStarted(true);
-    const userMsg: ClaimMessage = { role: "user", content: t("claim.initial_user_msg").replace("{product}", `${brand} ${name}`).replace("{issue}", issue) };
+    const userMsg: ClaimMessage = { role: "user", content: t("claim.initial_user_msg").replace("{product}", name).replace("{issue}", issue) };
     const newMessages = [userMsg];
     setMessages(newMessages);
     const sid = await ensureSession(issue);
@@ -220,8 +220,8 @@ RULES:
             <p className="text-sm font-medium text-ink-800 mb-0.5">{t("claim.assistant_name")}</p>
             <p className="text-xs text-ink-500 leading-relaxed">
               {status === "expired"
-                ? t("claim.greeting_expired").replace("{product}", `${brand} ${name}`).replace("{date}", date)
-                : t("claim.greeting_active").replace("{product}", `${brand} ${name}`).replace("{date}", date)}
+                ? t("claim.greeting_expired").replace("{product}", name).replace("{date}", date)
+                : t("claim.greeting_active").replace("{product}", name).replace("{date}", date)}
             </p>
           </div>
         </div>

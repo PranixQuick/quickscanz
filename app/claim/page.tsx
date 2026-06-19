@@ -71,7 +71,7 @@ export default async function ClaimPage({
                     ? "bg-ink-900 border-ink-900 text-cream-50"
                     : "bg-cream-100 border-cream-200 text-ink-600"
                 }`}>
-                {p.brand} {p.name}
+                {p.name}
               </a>
             ))}
           </div>
@@ -80,7 +80,7 @@ export default async function ClaimPage({
         <div className="card p-4 flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-cream-100 flex items-center justify-center text-lg">🔧</div>
           <div>
-            <p className="text-sm font-medium text-ink-900">{selected.brand} {selected.name}</p>
+            <p className="text-sm font-medium text-ink-900">{selected.name}</p>
             <p className="text-xs text-ink-400">
               {t("product.warranty_until")} {new Date(selected.expiry_date).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
             </p>
