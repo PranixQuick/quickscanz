@@ -207,13 +207,13 @@ export default async function DashboardPage() {
           </Link>
         )}
 
-        {/* Show upgrade nudge when approaching the new free limit of 8 */}
-        {!isPro && realProducts.length >= 6 && (
+        {/* Show upgrade nudge when approaching the new free limit of 5 */}
+        {!isPro && realProducts.length >= 4 && (
           <Link href="/pricing" className="block card p-4 border-sand-200 bg-gradient-to-r from-sand-50 to-cream-50 hover:border-sand-300 transition-all group">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-2xl bg-sand-100 flex items-center justify-center flex-shrink-0 text-xl">⭐</div>
               <div className="flex-1">
-                <p className="text-sm font-medium text-ink-900">{t("dashboard.near_limit_title")}</p>
+                <p className="text-sm font-medium text-ink-900">{t("dashboard.near_limit_title")} (max 5)</p>
                 <p className="text-xs text-ink-500 mt-0.5">{t("dashboard.near_limit_sub")} · ₹149/mo</p>
               </div>
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="text-sand-400 group-hover:translate-x-0.5 transition-transform flex-shrink-0">
