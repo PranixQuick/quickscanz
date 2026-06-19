@@ -12,10 +12,10 @@ interface Props {
 
 // Feature comparison rows shown below the plan cards
 const FEATURE_ROWS = [
-  { label: "Products tracked",        free: "8",           pro: "Unlimited" },
+  { label: "Products tracked",        free: "5",           pro: "Unlimited" },
   { label: "AI Claim Assistant",       free: "3 / month",   pro: "Unlimited" },
   { label: "WhatsApp warranty share",  free: "✕",           pro: "✓" },
-  { label: "Invoice storage",          free: "8 files",     pro: "Unlimited" },
+  { label: "Invoice storage",          free: "5 files",     pro: "Unlimited" },
   { label: "Family Vault",             free: "✕",           pro: "✓" },
   { label: "Expiry push notifications",free: "✓",           pro: "✓" },
   { label: "Energy monitor",           free: "✕",           pro: "✓" },
@@ -34,7 +34,7 @@ const FAQ = [
   },
   {
     q: "What happens to my data if I downgrade?",
-    a: "Your products and invoices are safe. If you exceed 8 products on the free plan, existing products stay visible but you can’t add new ones until you’re under the limit.",
+    a: "Your products and invoices are safe. If you exceed 5 products on the free plan, existing products stay visible but you can’t add new ones until you’re under the limit.",
   },
   {
     q: "Does GST apply?",
