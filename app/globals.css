@@ -112,60 +112,60 @@ body {
 
 /* ── Layer A: override the CSS font variables at the root ───── */
 [data-locale="hi"] {
-  --font-dm-sans: 'Noto Sans Devanagari', sans-serif;
-  --font-cormorant: 'Noto Sans Devanagari', sans-serif;
+  --font-dm-sans: var(--font-noto-hi), sans-serif;
+  --font-cormorant: var(--font-noto-hi), sans-serif;
 }
 [data-locale="te"] {
-  --font-dm-sans: 'Noto Sans Telugu', sans-serif;
-  --font-cormorant: 'Noto Sans Telugu', sans-serif;
+  --font-dm-sans: var(--font-noto-te), sans-serif;
+  --font-cormorant: var(--font-noto-te), sans-serif;
 }
 [data-locale="ta"] {
-  --font-dm-sans: 'Noto Sans Tamil', sans-serif;
-  --font-cormorant: 'Noto Sans Tamil', sans-serif;
+  --font-dm-sans: var(--font-noto-ta), sans-serif;
+  --font-cormorant: var(--font-noto-ta), sans-serif;
 }
 [data-locale="kn"] {
-  --font-dm-sans: 'Noto Sans Kannada', sans-serif;
-  --font-cormorant: 'Noto Sans Kannada', sans-serif;
+  --font-dm-sans: var(--font-noto-kn), sans-serif;
+  --font-cormorant: var(--font-noto-kn), sans-serif;
 }
 [data-locale="ml"] {
-  --font-dm-sans: 'Noto Sans Malayalam', sans-serif;
-  --font-cormorant: 'Noto Sans Malayalam', sans-serif;
+  --font-dm-sans: var(--font-noto-ml), sans-serif;
+  --font-cormorant: var(--font-noto-ml), sans-serif;
 }
 
 /* ── Layer B: explicit font override on every element ────────── */
 /* Uses explicit Noto family names (NOT `inherit`) so elements with */
 /* hardcoded font-family or Tailwind utility classes are also fixed. */
 [data-locale="hi"] * {
-  font-family: 'Noto Sans Devanagari', sans-serif !important;
+  font-family: var(--font-noto-hi), sans-serif !important;
 }
 [data-locale="te"] * {
-  font-family: 'Noto Sans Telugu', sans-serif !important;
+  font-family: var(--font-noto-te), sans-serif !important;
 }
 [data-locale="ta"] * {
-  font-family: 'Noto Sans Tamil', sans-serif !important;
+  font-family: var(--font-noto-ta), sans-serif !important;
 }
 [data-locale="kn"] * {
-  font-family: 'Noto Sans Kannada', sans-serif !important;
+  font-family: var(--font-noto-kn), sans-serif !important;
 }
 [data-locale="ml"] * {
-  font-family: 'Noto Sans Malayalam', sans-serif !important;
+  font-family: var(--font-noto-ml), sans-serif !important;
 }
 
 /* ── Legacy selectors kept for specificity safety ───────────── */
 [data-locale="hi"] body, [data-locale="hi"] .font-body, [data-locale="hi"] .font-display {
-  font-family: 'Noto Sans Devanagari', sans-serif;
+  font-family: var(--font-noto-hi), sans-serif;
 }
 [data-locale="te"] body, [data-locale="te"] .font-body, [data-locale="te"] .font-display {
-  font-family: 'Noto Sans Telugu', sans-serif;
+  font-family: var(--font-noto-te), sans-serif;
 }
 [data-locale="ta"] body, [data-locale="ta"] .font-body, [data-locale="ta"] .font-display {
-  font-family: 'Noto Sans Tamil', sans-serif;
+  font-family: var(--font-noto-ta), sans-serif;
 }
 [data-locale="kn"] body, [data-locale="kn"] .font-body, [data-locale="kn"] .font-display {
-  font-family: 'Noto Sans Kannada', sans-serif;
+  font-family: var(--font-noto-kn), sans-serif;
 }
 [data-locale="ml"] body, [data-locale="ml"] .font-body, [data-locale="ml"] .font-display {
-  font-family: 'Noto Sans Malayalam', sans-serif;
+  font-family: var(--font-noto-ml), sans-serif;
 }
 
 /* =============================================================
