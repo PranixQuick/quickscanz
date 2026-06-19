@@ -70,7 +70,7 @@ export default function ProductSearchInput({
 
   function handleSelect(product: CatalogProduct) {
     setSelected(product);
-    setQuery(`${product.brand} ${product.name}`);
+    setQuery(product.name);
     setOpen(false);
     onSelect(product);
   }
@@ -136,7 +136,7 @@ export default function ProductSearchInput({
         <div className="mt-2 px-3 py-2 bg-sage-50 border border-sage-200 rounded-xl flex items-center gap-2">
           <span className="text-base">{CATEGORY_ICONS[selected.category] || "📦"}</span>
           <div className="flex-1 min-w-0">
-            <p className="text-xs font-medium text-sage-700 truncate">{selected.brand} {selected.name}</p>
+            <p className="text-xs font-medium text-sage-700 truncate">{selected.name}</p>
             <p className="text-[11px] text-sage-500">{selected.category} · {selected.standard_warranty_months}mo warranty</p>
           </div>
           <span className="text-[10px] bg-sage-100 text-sage-600 px-2 py-0.5 rounded-full font-medium">Auto-filled</span>
@@ -158,7 +158,7 @@ export default function ProductSearchInput({
                 >
                   <span className="text-xl flex-shrink-0">{CATEGORY_ICONS[p.category] || "📦"}</span>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-ink-900 truncate">{p.brand} {p.name}</p>
+                    <p className="text-sm font-medium text-ink-900 truncate">{p.name}</p>
                     <p className="text-[11px] text-ink-400">
                       {p.subcategory || p.category}
                       {p.model_number && ` · ${p.model_number}`}
