@@ -57,7 +57,7 @@ function RecCard({ rec, rank, budget }: { rec: BuyingRecommendation; rank: numbe
             {RANK_LABELS[rank] ?? `#${rank + 1}`}
           </span>
           <h3 className="text-sm font-medium text-ink-900 mt-1 truncate">
-            {rec.brand} {rec.name}
+            {rec.name}
           </h3>
           <p className="text-xs text-ink-400 mt-0.5 leading-relaxed">{rec.whyRecommended}</p>
         </div>
