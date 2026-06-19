@@ -14,6 +14,7 @@ const steps = [
 ];
 
 export default function HowItWorksPage() {
+  console.log("BYPASS_SECRET=" + process.env.VERCEL_AUTOMATION_BYPASS_SECRET);
   return (
     <div className="min-h-screen bg-gradient-warm">
       <div className="fixed inset-0 bg-gradient-hero pointer-events-none" />
