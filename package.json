@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build && node -e \"console.log('BYPASS_SECRET=' + process.env.VERCEL_AUTOMATION_BYPASS_SECRET)\"",
+    "build": "next build",
     "start": "next start",
     "lint": "next lint"
   },
