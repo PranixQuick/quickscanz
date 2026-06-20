@@ -6,25 +6,31 @@
 
 import { createClient } from "@/lib/supabase/server";
 
-export async function markOnboardingComplete(userId: string): Promise<void> {
+export async function markOnboardingComplete(userId?: string): Promise<void> {
   const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return;
+
   await supabase
     .from("profiles")
-    .upsert({ id: userId, onboarded_at: new Date().toISOString() }, { onConflict: "id" });
+    .upsert({ id: user.id, onboarded_at: new Date().toISOString() }, { onConflict: "id" });
 }
 
 export async function completeOnboarding(params: {
-  userId: string;
+  userId?: string;
   displayName?: string;
   email?: string;
   phone?: string;
   preferredLocale: string;
 }): Promise<{ success: boolean; error?: string }> {
   const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { success: false, error: "unauthenticated" };
+
   const { error } = await supabase
     .from("profiles")
     .upsert({
-      id: params.userId,
+      id: user.id,
       display_name: params.displayName || null,
       email: params.email || null,
       phone: params.phone || null,
