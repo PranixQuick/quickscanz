@@ -41,7 +41,9 @@ export default async function DashboardPage() {
     return <PhoneBindingOverlay userId={user.id} />;
   }
 
-  const needsOnboarding = !profile?.onboarded_at;
+  if (!profile?.onboarded_at) {
+    redirect("/onboarding");
+  }
 
   const [products, dueMaintenance, subscription] = await Promise.all([
     getProducts(),
