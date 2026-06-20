@@ -3,9 +3,9 @@ import { SMSProvider } from "./sms-provider";
 export class MSG91Provider implements SMSProvider {
   async sendOTP(phone: string, code: string): Promise<boolean> {
     const authKey = process.env.MSG91_AUTH_KEY;
-    const templateId = process.env.MSG91_TEMPLATE_ID;
+    const templateId = process.env.MSG91_OTP_TEMPLATE_ID;
     const senderId = process.env.MSG91_SENDER_ID;
-    const otpVarName = process.env.MSG91_OTP_VAR_NAME || "otp"; // Configurable DLT variable name
+    const otpVarName = process.env.MSG91_OTP_VAR_NAME || "OTP"; // Configurable DLT variable name
 
     if (!authKey || !templateId || !senderId) {
       console.error("MSG91 configuration missing");
@@ -23,7 +23,6 @@ export class MSG91Provider implements SMSProvider {
         },
         body: JSON.stringify({
           template_id: templateId,
-          sender: senderId,
           recipients: [
             {
               mobiles: cleanPhone,
