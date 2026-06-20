@@ -34,7 +34,7 @@ export default function LandingPage() {
         </div>
         <div className="flex items-center gap-3">
           <Link href="/login" className="text-sm font-medium text-ink-800 border border-ink-400 hover:border-ink-700 hover:bg-ink-50 hover:text-ink-900 transition-colors px-4 py-2 rounded-xl">Sign in</Link>
-          <Link href="/signup" className="btn-primary text-sm px-4 py-2">Get started free</Link>
+          <Link href="/login" className="btn-primary text-sm px-4 py-2">Get started free</Link>
         </div>
       </nav>
 
@@ -53,7 +53,7 @@ export default function LandingPage() {
             Track every product, store invoices, get warranty alerts, and know exactly what to do when something breaks.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Link href="/signup" className="btn-primary text-base px-8 py-3.5 inline-flex items-center gap-2">
+            <Link href="/login" className="btn-primary text-base px-8 py-3.5 inline-flex items-center gap-2">
               Start for free
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                 <path d="M3 7h8M8 4l3 3-3 3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
@@ -112,7 +112,7 @@ export default function LandingPage() {
           <div className="card p-8 bg-ink-900 border-ink-800 text-center">
             <h2 className="font-display text-2xl font-light text-cream-100 mb-2">Ready to get started?</h2>
             <p className="text-sm text-cream-400 mb-6">Free forever. No app store needed — works on any phone.</p>
-            <Link href="/signup" className="inline-flex items-center gap-2 bg-cream-50 text-ink-900 text-sm font-medium px-8 py-3 rounded-xl hover:bg-white transition-colors">
+            <Link href="/login" className="inline-flex items-center gap-2 bg-cream-50 text-ink-900 text-sm font-medium px-8 py-3 rounded-xl hover:bg-white transition-colors">
               Create free account →
             </Link>
             <p className="text-xs text-cream-500 mt-4">
