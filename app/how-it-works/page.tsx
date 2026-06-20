@@ -1,19 +1,22 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { getT } from "@/lib/i18n/server";
 
 export const metadata: Metadata = {
   title: "How It Works — QuickScanZ",
   description: "QuickScanZ takes under 30 seconds to set up. Add your product, upload the invoice, and you are protected.",
 };
 
-const steps = [
-  { step: "01", title: "Add your product", desc: "Enter the product name, brand, purchase date, and warranty duration. Takes under 30 seconds.", icon: "📦" },
-  { step: "02", title: "Upload your invoice", desc: "Photograph or upload your receipt or invoice. JPG, PNG, or PDF — we store it securely.", icon: "📄" },
-  { step: "03", title: "We calculate everything", desc: "QuickScanZ automatically calculates the expiry date and monitors when it is getting close.", icon: "⏳" },
-  { step: "04", title: "Find it when it matters", desc: "When something breaks, open QuickScanZ. See your warranty status, invoice, and support contacts instantly.", icon: "🔍" },
-];
+export default async function HowItWorksPage() {
+  const t = await getT();
 
-export default function HowItWorksPage() {
+  const steps = [
+    { step: "01", title: t("how.step_1_title"), desc: t("how.step_1_desc"), icon: "📦" },
+    { step: "02", title: t("how.step_2_title"), desc: t("how.step_2_desc"), icon: "📄" },
+    { step: "03", title: t("how.step_3_title"), desc: t("how.step_3_desc"), icon: "⏳" },
+    { step: "04", title: t("how.step_4_title"), desc: t("how.step_4_desc"), icon: "🔍" },
+  ];
+
   return (
     <div className="min-h-screen bg-gradient-warm">
       <div className="fixed inset-0 bg-gradient-hero pointer-events-none" />
@@ -27,14 +30,14 @@ export default function HowItWorksPage() {
               <rect x="8" y="8" width="5" height="5" rx="1.5" fill="#fdfcf8" opacity="0.3"/>
             </svg>
           </div>
-          <span className="font-display text-base font-light text-ink-900">QuickScanZ</span>
+          <span className="font-display text-base font-light text-ink-900">{t("how.header_brand")}</span>
         </Link>
-        <Link href="/login" className="btn-primary text-xs px-4 py-2">Sign In</Link>
+        <Link href="/login" className="btn-primary text-xs px-4 py-2">{t("how.header_signin")}</Link>
       </header>
       <main className="relative z-10 max-w-2xl mx-auto px-6 py-12 space-y-10 animate-fade-up">
         <div>
-          <h1 className="font-display text-4xl font-light text-ink-900 mb-3">How it works</h1>
-          <p className="text-base text-ink-400 leading-relaxed">From purchase to protection in under a minute.</p>
+          <h1 className="font-display text-4xl font-light text-ink-900 mb-3">{t("how.heading")}</h1>
+          <p className="text-base text-ink-400 leading-relaxed">{t("how.subheading")}</p>
         </div>
         <div className="space-y-4">
           {steps.map((s) => (
@@ -51,8 +54,8 @@ export default function HowItWorksPage() {
           ))}
         </div>
         <div className="flex gap-4 pt-4">
-          <Link href="/login" className="btn-primary">Get Started Free</Link>
-          <Link href="/about" className="btn-secondary">About us</Link>
+          <Link href="/login" className="btn-primary">{t("how.cta_get_started")}</Link>
+          <Link href="/about" className="btn-secondary">{t("how.cta_about")}</Link>
         </div>
       </main>
     </div>
