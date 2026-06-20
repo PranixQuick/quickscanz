@@ -108,7 +108,25 @@ function PhoneOTPForm() {
         type: "sms",
       });
       if (error) { setError(t("login.otp_wrong")); return; }
-      router.push("/dashboard");
+
+      // Get user session to check onboarding status
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        setError("Failed to retrieve user session");
+        return;
+      }
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("onboarded_at")
+        .eq("id", user.id)
+        .single();
+
+      if (!profile?.onboarded_at) {
+        router.push("/onboarding");
+      } else {
+        router.push("/dashboard");
+      }
       router.refresh();
     });
   }
@@ -341,7 +359,7 @@ export default function LoginPage() {
 
               <p className="text-sm text-ink-400">
                 {t("login.new_user")}{" "}
-                <Link href="/signup" className="text-sand-500 hover:text-sand-400 font-medium transition-colors">
+                <Link href="/login" className="text-sand-500 hover:text-sand-400 font-medium transition-colors">
                   {t("login.create_account")}
                 </Link>
               </p>
