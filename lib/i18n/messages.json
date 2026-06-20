@@ -335,7 +335,12 @@
     "subcategory.sofa": "Sofa",
     "subcategory.bed": "Bed",
     "subcategory.wardrobe": "Wardrobe",
-    "subcategory.other": "Other"
+    "subcategory.other": "Other",
+    "onboarding.title": "Welcome! Let's get to know you",
+    "onboarding.name_label": "Your Name",
+    "onboarding.name_placeholder": "Enter your display name",
+    "onboarding.continue": "Continue",
+    "onboarding.skip": "Skip for now"
   },
   "hi": {
     "common.save": "सहेजें",
@@ -661,7 +666,12 @@
     "subcategory.sofa": "सोफा",
     "subcategory.bed": "बिस्तर",
     "subcategory.wardrobe": "वार्डरोब",
-    "subcategory.other": "अन्य"
+    "subcategory.other": "अन्य",
+    "onboarding.title": "स्वागत है! आइए आपके बारे में जानें",
+    "onboarding.name_label": "आपका नाम",
+    "onboarding.name_placeholder": "अपना नाम दर्ज करें",
+    "onboarding.continue": "जारी रखें",
+    "onboarding.skip": "अभी छोड़ें"
   },
   "te": {
     "common.save": "సేవ్ చేయండి",
@@ -987,7 +997,12 @@
     "subcategory.sofa": "సోఫా",
     "subcategory.bed": "మంచం",
     "subcategory.wardrobe": "వార్డ్రోబ్",
-    "subcategory.other": "ఇతర"
+    "subcategory.other": "ఇతర",
+    "onboarding.title": "స్వాగతం! మీ గురించి తెలుసుకుందాం",
+    "onboarding.name_label": "మీ పేరు",
+    "onboarding.name_placeholder": "మీ పేరును నమోదు చేయండి",
+    "onboarding.continue": "కొనసాగించు",
+    "onboarding.skip": "ఇప్పుడే దాటవేయి"
   },
   "ta": {
     "common.save": "சேமிக்கவும்",
@@ -1313,7 +1328,12 @@
     "subcategory.sofa": "சோஃபா",
     "subcategory.bed": "படுக்கை",
     "subcategory.wardrobe": "அலமாரிகள்",
-    "subcategory.other": "மற்றவை"
+    "subcategory.other": "மற்றவை",
+    "onboarding.title": "வரவேற்கிறோம்! உங்களைப் பற்றி தெரிந்து கொள்வோம்",
+    "onboarding.name_label": "உங்கள் பெயர்",
+    "onboarding.name_placeholder": "உங்கள் பெயரை உள்ளிடவும்",
+    "onboarding.continue": "தொடரவும்",
+    "onboarding.skip": "இப்போது தவிர்க்கவும்"
   },
   "kn": {
     "common.save": "ಉಳಿಸಿ",
@@ -1639,7 +1659,12 @@
     "subcategory.sofa": "ಸೋಫಾ",
     "subcategory.bed": "ಹಾಸಿಗೆ.",
     "subcategory.wardrobe": "ವಾರ್ಡ್ರೋಬ್",
-    "subcategory.other": "ಇತರ"
+    "subcategory.other": "ಇತರ",
+    "onboarding.title": "ಸ್ವಾಗತ! ನಿಮ್ಮ ಬಗ್ಗೆ ತಿಳಿದುಕೊಳ್ಳೋಣ",
+    "onboarding.name_label": "ನಿಮ್ಮ ಹೆಸರು",
+    "onboarding.name_placeholder": "ನಿಮ್ಮ ಹೆಸರನ್ನು ನಮೂದಿಸಿ",
+    "onboarding.continue": "ಮುಂದುವರಿಯಿರಿ",
+    "onboarding.skip": "ಈಗ ಹಾರಿಸಿ"
   },
   "ml": {
     "common.save": "സേവ് ചെയ്യുക",
@@ -1965,6 +1990,11 @@
     "subcategory.sofa": "സോഫ",
     "subcategory.bed": "കിടക്ക",
     "subcategory.wardrobe": "വാർഡ്രോബ്",
-    "subcategory.other": "മറ്റുള്ളവ"
+    "subcategory.other": "മറ്റുള്ളവ",
+    "onboarding.title": "സ്വാഗതം! നിങ്ങളെക്കുറിച്ച് അറിയാം",
+    "onboarding.name_label": "നിങ്ങളുടെ പേര്",
+    "onboarding.name_placeholder": "നിങ്ങളുടെ പേര് നൽകുക",
+    "onboarding.continue": "തുടരുക",
+    "onboarding.skip": "ഇപ്പോൾ ഒഴിവാക്കുക"
   }
 }
