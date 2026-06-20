@@ -42,6 +42,7 @@ export default function TermsPage() {
         <div>
           <h1 className="font-display text-4xl font-light text-ink-900 mb-2">Terms of Service</h1>
           <p className="text-xs text-ink-400">Last updated: June 2026</p>
+          <p className="text-xs text-ink-400 italic mt-1">The English version is authoritative.</p>
         </div>
         {sections.map(({ title, content }) => (
           <div key={title} className="card p-5">
