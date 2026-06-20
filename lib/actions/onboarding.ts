@@ -12,3 +12,29 @@ export async function markOnboardingComplete(userId: string): Promise<void> {
     .from("profiles")
     .upsert({ id: userId, onboarded_at: new Date().toISOString() }, { onConflict: "id" });
 }
+
+export async function completeOnboarding(params: {
+  userId: string;
+  displayName?: string;
+  email?: string;
+  phone?: string;
+  preferredLocale: string;
+}): Promise<{ success: boolean; error?: string }> {
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("profiles")
+    .upsert({
+      id: params.userId,
+      display_name: params.displayName || null,
+      email: params.email || null,
+      phone: params.phone || null,
+      preferred_locale: params.preferredLocale,
+      onboarded_at: new Date().toISOString()
+    }, { onConflict: "id" });
+
+  if (error) {
+    console.error("Failed to complete onboarding:", error);
+    return { success: false, error: error.message };
+  }
+  return { success: true };
+}
