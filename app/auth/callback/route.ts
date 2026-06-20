@@ -1,26 +1,29 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
-export async function GET(request: NextRequest) {
-  const requestUrl = new URL(request.url);
-  const code = requestUrl.searchParams.get("code");
-  const next = requestUrl.searchParams.get("next") ?? "/dashboard";
-  const type = requestUrl.searchParams.get("type");
+export async function GET(request: Request) {
+  const { searchParams, origin } = new URL(request.url);
+  const code = searchParams.get("code");
+  const next = searchParams.get("next") ?? "/dashboard";
 
   if (code) {
     const supabase = await createClient();
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    const { error, data } = await supabase.auth.exchangeCodeForSession(code);
+    if (!error && data.user) {
+      // Check if user is onboarded
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("onboarded_at")
+        .eq("id", data.user.id)
+        .single();
 
-    if (!error) {
-      // Password recovery — redirect to reset page
-      if (type === "recovery") {
-        return NextResponse.redirect(new URL("/auth/reset-password", requestUrl.origin));
+      if (!profile?.onboarded_at) {
+        return NextResponse.redirect(`${origin}/onboarding`);
       }
-      // Email verification — redirect to dashboard
-      return NextResponse.redirect(new URL(next, requestUrl.origin));
+      return NextResponse.redirect(`${origin}${next}`);
     }
   }
 
-  // Something went wrong — redirect to login with error
-  return NextResponse.redirect(new URL("/login?error=auth_callback_failed", requestUrl.origin));
+  // Return the user to login page with error info
+  return NextResponse.redirect(`${origin}/login?error=auth_callback_failed`);
 }
