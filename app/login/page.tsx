@@ -1,8 +1,6 @@
 "use client";
 
-import { useState, useTransition, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
-import Link from "next/link";
+import { useState, useTransition } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { useT } from "@/lib/i18n/provider";
@@ -237,82 +235,9 @@ function PhoneOTPForm() {
   );
 }
 
-// ─── Email fallback (secondary — for tech-savvy users) ────────────────────────
-function EmailLoginForm() {
-  const t = useT();
-  const searchParams = useSearchParams();
-  const urlError = searchParams.get("error");
-  const [isPending, startTransition] = useTransition();
-  const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState(
-    urlError === "auth_callback_failed"
-      ? t("login.email_link_expired")
-      : ""
-  );
-  const [form, setFormState] = useState({ email: "", password: "" });
-  const router = useRouter();
-
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setError("");
-    startTransition(async () => {
-      const supabase = createClient();
-      const { error } = await supabase.auth.signInWithPassword({
-        email: form.email,
-        password: form.password,
-      });
-      if (error) { setError(error.message); return; }
-      router.push("/dashboard");
-      router.refresh();
-    });
-  }
-
-  return (
-    <form onSubmit={handleSubmit} className="card p-5 space-y-4">
-      <div>
-        <label className="block text-xs font-medium text-ink-500 mb-1.5">{t("login.email_label")}</label>
-        <input type="email" value={form.email}
-          onChange={(e) => setFormState((p) => ({ ...p, email: e.target.value }))}
-          placeholder="you@example.com" required autoComplete="email"
-          className="w-full px-3.5 py-3 bg-cream-100 border border-cream-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sand-300 transition-all" />
-      </div>
-      <div>
-        <div className="flex items-center justify-between mb-1.5">
-          <label className="text-xs font-medium text-ink-500">{t("login.password_label")}</label>
-          <Link href="/forgot-password" className="text-xs text-sand-500 hover:text-sand-400 transition-colors">{t("login.forgot_password")}</Link>
-        </div>
-        <div className="relative">
-          <input type={showPassword ? "text" : "password"} value={form.password}
-            onChange={(e) => setFormState((p) => ({ ...p, password: e.target.value }))}
-            placeholder={t("login.password_placeholder")} required autoComplete="current-password"
-            className="w-full px-3.5 py-3 pr-11 bg-cream-100 border border-cream-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sand-300 transition-all" />
-          <button type="button" onClick={() => setShowPassword((v) => !v)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-300 hover:text-ink-500 transition-colors" aria-label={showPassword ? t("common.hide") : t("common.show")}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-              {showPassword
-                ? <><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></>
-                : <><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></>}
-            </svg>
-          </button>
-        </div>
-      </div>
-      {error && (
-        <div className="px-3 py-2.5 bg-blush-50 border border-blush-200 rounded-xl">
-          <p className="text-xs text-blush-600">{error}</p>
-        </div>
-      )}
-      <button type="submit" disabled={isPending}
-        className="w-full btn-primary py-3 text-sm font-medium disabled:opacity-40">
-        {isPending ? t("login.email_signing_in") : t("login.email_signin_btn")}
-      </button>
-    </form>
-  );
-}
-
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export default function LoginPage() {
   const t = useT();
-  const [showEmail, setShowEmail] = useState(false);
   const otpEnabled = process.env.NEXT_PUBLIC_OTP_ENABLED !== "false";
 
   return (
@@ -335,38 +260,10 @@ export default function LoginPage() {
 
         {otpEnabled ? (
           <>
-            {/* PRIMARY: Phone OTP */}
-            {!showEmail && (
-              <PhoneOTPForm />
-            )}
-
-            {/* SECONDARY: Email login (collapsed by default) */}
-            {showEmail && (
-              <Suspense fallback={<div className="card p-6 animate-pulse"><div className="h-10 bg-cream-200 rounded-xl mb-3" /><div className="h-10 bg-cream-200 rounded-xl mb-3" /><div className="h-11 bg-cream-200 rounded-xl" /></div>}>
-                <EmailLoginForm />
-              </Suspense>
-            )}
-
-            {/* Google Sign-In */}
+            <PhoneOTPForm />
             <GoogleSignInButton showSeparator={true} />
-
-            {/* Toggle between phone and email */}
-            <div className="text-center mt-5 space-y-3">
-              <button onClick={() => setShowEmail((v) => !v)}
-                className="text-sm text-ink-400 hover:text-ink-600 transition-colors underline underline-offset-2">
-                {showEmail ? "← " + t("login.use_phone") : t("login.use_email")}
-              </button>
-
-              <p className="text-sm text-ink-400">
-                {t("login.new_user")}{" "}
-                <Link href="/login" className="text-sand-500 hover:text-sand-400 font-medium transition-colors">
-                  {t("login.create_account")}
-                </Link>
-              </p>
-            </div>
           </>
         ) : (
-          /* Google Sign-In Only Mode */
           <GoogleSignInButton showSeparator={false} />
         )}
       </div>
