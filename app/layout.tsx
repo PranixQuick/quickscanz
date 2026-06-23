@@ -76,7 +76,7 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "QuickScanZ" }],
   creator: "QuickScanZ",
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://quickscanz.com"),
+  metadataBase: new URL("https://www.quickscanz.com"),
   alternates: {
     canonical: "https://quickscanz.com",
   },
