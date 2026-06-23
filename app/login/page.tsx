@@ -5,6 +5,23 @@ import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { useT } from "@/lib/i18n/provider";
 
+// ─── Safety net: never let an auth call hang forever ─────────────────────────
+// Supabase auth promises can stall on a wedged page / flaky network. Racing them
+// against a timeout guarantees the UI always resolves (button never stuck on
+// "Sending…"). The SMS may still have been sent, so callers fall through to the
+// code-entry step rather than dead-ending.
+async function withTimeout<T>(promise: PromiseLike<T>, ms = 20000): Promise<T> {
+  let timer: ReturnType<typeof setTimeout>;
+  const timeout = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => reject(new Error("timeout")), ms);
+  });
+  try {
+    return (await Promise.race([promise, timeout])) as T;
+  } finally {
+    clearTimeout(timer!);
+  }
+}
+
 // ─── Google Sign-In Button ─────────────────────────────────────────────────────────────────────
 function GoogleSignInButton({ showSeparator = true }: { showSeparator?: boolean }) {
   const t = useT();
