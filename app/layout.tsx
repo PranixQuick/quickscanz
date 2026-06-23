@@ -5,7 +5,6 @@ import "./globals.css";
 import { Toaster } from "react-hot-toast";
 import { I18nProvider } from "../lib/i18n/provider";
 import { getLocale } from "../lib/i18n/server";
-import LocaleBar from "../components/LocaleBar";
 
 const cormorant = Cormorant_Garamond({
   subsets: ["latin"],
