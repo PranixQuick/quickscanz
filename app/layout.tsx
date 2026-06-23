@@ -5,7 +5,6 @@ import "./globals.css";
 import { Toaster } from "react-hot-toast";
 import { I18nProvider } from "../lib/i18n/provider";
 import { getLocale } from "../lib/i18n/server";
-import LocaleBar from "../components/LocaleBar";
 
 const cormorant = Cormorant_Garamond({
   subsets: ["latin"],
@@ -139,7 +138,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html lang={locale} data-locale={locale} className={`scroll-smooth ${cormorant.variable} ${dmSans.variable} ${dmMono.variable} ${notoHi.variable} ${notoTe.variable} ${notoTa.variable} ${notoKn.variable} ${notoMl.variable}`}>
       <body className="bg-cream-50 text-ink-900 font-body antialiased">
         <I18nProvider initialLocale={locale}>
-          <LocaleBar />
           {children}
         <Toaster
           position="bottom-center"

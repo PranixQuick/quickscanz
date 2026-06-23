@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { useT } from "@/lib/i18n/provider";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 // ─── Safety net: never let an auth call hang forever ─────────────────────────
 // Supabase auth promises can stall on a wedged page / flaky network. Racing them
@@ -269,6 +270,9 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-cream-50 flex flex-col items-center overflow-y-auto px-5 py-10">
       <div className="w-full max-w-sm">
+        <div className="flex justify-end mb-4">
+          <LanguageSwitcher />
+        </div>
 
         {/* Logo */}
         <div className="text-center mb-8">
