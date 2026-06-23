@@ -48,6 +48,7 @@ const FAQ = [
 ];
 
 export default function PricingClient({ plans, currentPlanId, userEmail }: Props) {
+  const isAppMode = useAppMode();
   const [isPending, startTransition] = useTransition();
   const [processingPlanId, setProcessingPlanId] = useState<string | null>(null);
   const [interval, setInterval] = useState<"monthly" | "yearly">("yearly");
