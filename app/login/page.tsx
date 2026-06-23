@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { useT } from "@/lib/i18n/provider";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 // ─── Safety net: never let an auth call hang forever ─────────────────────────
 // Supabase auth promises can stall on a wedged page / flaky network. Racing them
