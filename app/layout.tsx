@@ -84,7 +84,7 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_IN",
     siteName: "QuickScanZ",
-    url: "https://quickscanz.com",
+    url: "https://www.quickscanz.com",
     title: "QuickScanZ — Your Warranty Wallet",
     description: "Never lose a warranty or invoice again. Track warranties, store invoices, get AI-guided claims.",
     images: [
