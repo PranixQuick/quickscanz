@@ -138,7 +138,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html lang={locale} data-locale={locale} className={`scroll-smooth ${cormorant.variable} ${dmSans.variable} ${dmMono.variable} ${notoHi.variable} ${notoTe.variable} ${notoTa.variable} ${notoKn.variable} ${notoMl.variable}`}>
       <body className="bg-cream-50 text-ink-900 font-body antialiased">
         <I18nProvider initialLocale={locale}>
-          <LocaleBar />
           {children}
         <Toaster
           position="bottom-center"
