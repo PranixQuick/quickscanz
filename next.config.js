@@ -73,8 +73,40 @@ const withPWA = require("@ducanh2912/next-pwa").default({
   },
 });
 
+// ─── Security headers (F7) ───────────────────────────────────────────────────
+// Enforcing headers below are non-breaking. The Content-Security-Policy is sent
+// as Report-Only on purpose: it surfaces violations in the browser console
+// without risking a white-screen on a payment app that loads Razorpay, OneSignal,
+// Supabase (incl. websockets), Google Fonts/OAuth, GA and Sentry. Once the
+// canonical domain is settled (F15) and the console shows no breaking violations,
+// flip the key to "Content-Security-Policy" to enforce.
+const cspReportOnly = [
+  "default-src 'self'",
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://checkout.razorpay.com https://*.razorpay.com https://cdn.onesignal.com https://*.onesignal.com https://www.googletagmanager.com https://www.google-analytics.com",
+  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+  "font-src 'self' data: https://fonts.gstatic.com",
+  "img-src 'self' data: blob: https:",
+  "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.onesignal.com https://*.razorpay.com https://api.razorpay.com https://www.google-analytics.com https://*.sentry.io",
+  "frame-src 'self' https://*.razorpay.com https://checkout.razorpay.com https://accounts.google.com",
+  "worker-src 'self' blob:",
+  "frame-ancestors 'self'",
+  "base-uri 'self'",
+  "form-action 'self'",
+].join("; ");
+
+const securityHeaders = [
+  { key: "X-Content-Type-Options", value: "nosniff" },
+  { key: "X-Frame-Options", value: "SAMEORIGIN" },
+  { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+  { key: "Permissions-Policy", value: "camera=(self), microphone=(), geolocation=()" },
+  { key: "Content-Security-Policy-Report-Only", value: cspReportOnly },
+];
+
 const nextConfig = {
   experimental: { instrumentationHook: true },
+  async headers() {
+    return [{ source: "/:path*", headers: securityHeaders }];
+  },
   images: {
     remotePatterns: [
       {
