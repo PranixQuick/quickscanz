@@ -1,4 +1,9 @@
 import type { Metadata } from "next";
+
+// Allow extra server time for invoice image uploads on slow mobile networks.
+// Without this, large uploads on weak connections could hit the default
+// function timeout and return an intermittent 503. (Vercel Pro allows up to 300s.)
+export const maxDuration = 60;
 import AppLayout from "@/components/layout/AppLayout";
 import AddProductForm from "@/components/products/AddProductForm";
 import Link from "next/link";
