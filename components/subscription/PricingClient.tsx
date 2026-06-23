@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import toast from "react-hot-toast";
 import { createRazorpayRedirectUrl, type SubscriptionPlan } from "@/lib/actions/subscriptions";
+import { useAppMode } from "@/lib/useAppMode";
 
 interface Props {
   plans: SubscriptionPlan[];
