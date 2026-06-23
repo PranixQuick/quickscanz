@@ -24,6 +24,7 @@ export default function AccountClient({
 }: Props) {
   const t = useT();
   const router = useRouter();
+  const isAppMode = useAppMode();
   const [isPending, startTransition] = useTransition();
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
