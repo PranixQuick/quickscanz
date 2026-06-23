@@ -76,15 +76,15 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "QuickScanZ" }],
   creator: "QuickScanZ",
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://quickscanz.com"),
+  metadataBase: new URL("https://www.quickscanz.com"),
   alternates: {
-    canonical: "https://quickscanz.com",
+    canonical: "https://www.quickscanz.com",
   },
   openGraph: {
     type: "website",
     locale: "en_IN",
     siteName: "QuickScanZ",
-    url: "https://quickscanz.com",
+    url: "https://www.quickscanz.com",
     title: "QuickScanZ — Your Warranty Wallet",
     description: "Never lose a warranty or invoice again. Track warranties, store invoices, get AI-guided claims.",
     images: [

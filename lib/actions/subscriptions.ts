@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
 
 export interface SubscriptionPlan {
   id: string;
@@ -182,7 +183,13 @@ export async function createRazorpayRedirectUrl(
     return { error: "Payment not configured — please contact support" };
 
   const amountPaise = plan.price_inr * 100;
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://quickscanz.com";
+  // Return the user to the exact host they're on (e.g. www.quickscanz.com), so the
+  // post-payment redirect + session/entitlement stay on the same origin. Avoids the
+  // old NEXT_PUBLIC_APP_URL (which pointed at the vercel.app domain).
+  const h = await headers();
+  const host = h.get("x-forwarded-host") ?? h.get("host");
+  const proto = h.get("x-forwarded-proto") ?? "https";
+  const appUrl = host ? `${proto}://${host}` : (process.env.NEXT_PUBLIC_APP_URL || "https://www.quickscanz.com");
   // Razorpay embedded checkout POSTs the result here; must be the POST route (not the GET page).
   const callbackUrl = `${appUrl}/api/payment/callback?plan_id=${planId}`;
   const credentials = Buffer.from(`${RAZORPAY_KEY_ID}:${RAZORPAY_KEY_SECRET}`).toString("base64");
