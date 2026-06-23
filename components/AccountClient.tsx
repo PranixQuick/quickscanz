@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import NotificationSettings from "@/components/notifications/NotificationSettings";
 import Link from "next/link";
 import toast from "react-hot-toast";
+import { useAppMode } from "@/lib/useAppMode";
 
 interface Props {
   email: string;
