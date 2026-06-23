@@ -95,20 +95,26 @@ function PhoneOTPForm() {
     return `+${digits}`;
   }
 
-  function sendOTP(e: React.FormEvent) {
+  async function sendOTP(e: React.FormEvent) {
     e.preventDefault();
     setError("");
     const formatted = formatPhone(phone);
     if (formatted.length < 13) { setError(t("login.phone_invalid")); return; }
-    startTransition(async () => {
+    setIsPending(true);
+    try {
       const supabase = createClient();
-      const { error } = await supabase.auth.signInWithOtp({
-        phone: formatted,
-        options: { channel: "sms" },
-      });
+      const { error } = await withTimeout(
+        supabase.auth.signInWithOtp({ phone: formatted, options: { channel: "sms" } })
+      );
       if (error) { setError(error.message); return; }
       setStep("otp");
-    });
+    } catch {
+      // No confirmation came back in time — but the SMS was very likely sent.
+      // Never leave the user stuck on "Sending…": advance to the code-entry step.
+      setStep("otp");
+    } finally {
+      setIsPending(false);
+    }
   }
 
   function verifyOTP(e: React.FormEvent) {
