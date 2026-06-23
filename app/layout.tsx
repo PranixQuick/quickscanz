@@ -78,7 +78,7 @@ export const metadata: Metadata = {
   creator: "QuickScanZ",
   metadataBase: new URL("https://www.quickscanz.com"),
   alternates: {
-    canonical: "https://quickscanz.com",
+    canonical: "https://www.quickscanz.com",
   },
   openGraph: {
     type: "website",
