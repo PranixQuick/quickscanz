@@ -117,17 +117,16 @@ function PhoneOTPForm() {
     }
   }
 
-  function verifyOTP(e: React.FormEvent) {
+  async function verifyOTP(e: React.FormEvent) {
     e.preventDefault();
     setError("");
     const formatted = formatPhone(phone);
-    startTransition(async () => {
+    setIsPending(true);
+    try {
       const supabase = createClient();
-      const { error } = await supabase.auth.verifyOtp({
-        phone: formatted,
-        token: otp,
-        type: "sms",
-      });
+      const { error } = await withTimeout(
+        supabase.auth.verifyOtp({ phone: formatted, token: otp, type: "sms" })
+      );
       if (error) { setError(t("login.otp_wrong")); return; }
 
       // Get user session to check onboarding status
@@ -149,7 +148,11 @@ function PhoneOTPForm() {
         router.push("/dashboard");
       }
       router.refresh();
-    });
+    } catch {
+      setError(t("login.otp_wrong"));
+    } finally {
+      setIsPending(false);
+    }
   }
 
   if (step === "otp") {
