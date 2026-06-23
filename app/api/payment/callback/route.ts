@@ -15,12 +15,17 @@ import { protocol } from "@/lib/protocol-core";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-function appBase(): string {
-  return process.env.NEXT_PUBLIC_APP_URL || "https://quickscanz.com";
+function appBase(req: NextRequest): string {
+  // Use the host this callback arrived on (matches the checkout origin we sent to
+  // Razorpay), so the user is redirected back to the same site they paid from.
+  const host = req.headers.get("x-forwarded-host") ?? req.headers.get("host");
+  const proto = req.headers.get("x-forwarded-proto") ?? "https";
+  if (host) return `${proto}://${host}`;
+  return process.env.NEXT_PUBLIC_APP_URL || "https://www.quickscanz.com";
 }
 
 export async function POST(req: NextRequest) {
-  const base = appBase();
+  const base = appBase(req);
   const fail = (reason: string) =>
     NextResponse.redirect(new URL(`/pricing?error=${reason}`, base), 303);
 
