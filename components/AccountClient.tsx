@@ -186,18 +186,35 @@ export default function AccountClient({
       {/* Delete account — required by Google Play Data Safety & DPDP Act */}
       <div className="pt-2 border-t border-cream-200">
         <p className="text-[10px] text-ink-300 text-center mb-3">{t("account.danger_zone")}</p>
-        <a
-          href={`mailto:privacy@quickscanz.com?subject=Account%20Deletion%20Request&body=Please%20delete%20my%20account%20and%20all%20data.%20Registered%20email%3A%20${encodeURIComponent(email)}`}
-          className="w-full flex items-center justify-center gap-2 py-3 text-xs font-medium text-ink-300 hover:text-blush-500 hover:bg-blush-50/30 rounded-xl transition-colors border border-transparent hover:border-blush-100"
-        >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="3 6 5 6 21 6"/>
-            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-            <path d="M10 11v6M14 11v6"/>
-            <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
-          </svg>
-          {t("account.delete_account_btn")}
-        </a>
+        {!confirmingDelete ? (
+          <button
+            type="button"
+            onClick={() => setConfirmingDelete(true)}
+            className="w-full flex items-center justify-center gap-2 py-3 text-xs font-medium text-ink-300 hover:text-blush-500 hover:bg-blush-50/30 rounded-xl transition-colors border border-transparent hover:border-blush-100"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="3 6 5 6 21 6"/>
+              <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+              <path d="M10 11v6M14 11v6"/>
+              <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+            </svg>
+            {t("account.delete_account_btn")}
+          </button>
+        ) : (
+          <div className="rounded-xl border border-blush-200 bg-blush-50/40 p-4 space-y-3">
+            <p className="text-xs text-ink-600 text-center">{t("account.delete_confirm_warning")}</p>
+            <div className="flex gap-2">
+              <button type="button" onClick={() => setConfirmingDelete(false)} disabled={deleting}
+                className="flex-1 py-2.5 text-xs font-medium text-ink-500 bg-white border border-cream-300 rounded-xl hover:bg-cream-100 transition-colors disabled:opacity-40">
+                {t("account.delete_cancel")}
+              </button>
+              <button type="button" onClick={handleDelete} disabled={deleting}
+                className="flex-1 py-2.5 text-xs font-semibold text-white bg-blush-500 rounded-xl hover:bg-blush-600 transition-colors disabled:opacity-50">
+                {deleting ? t("account.deleting") : t("account.delete_confirm_yes")}
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       <p className="text-center text-[10px] text-ink-200 pb-2">QuickScanZ · v2.0</p>
