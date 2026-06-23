@@ -24,6 +24,8 @@ export default function AccountClient({
   const t = useT();
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const isPro = planId !== "free";
   const username = email.split("@")[0];
 
