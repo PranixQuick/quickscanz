@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import NotificationSettings from "@/components/notifications/NotificationSettings";
 import Link from "next/link";
 import toast from "react-hot-toast";
+import { useAppMode } from "@/lib/useAppMode";
 
 interface Props {
   email: string;
@@ -23,6 +24,7 @@ export default function AccountClient({
 }: Props) {
   const t = useT();
   const router = useRouter();
+  const isAppMode = useAppMode();
   const [isPending, startTransition] = useTransition();
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -83,8 +85,8 @@ export default function AccountClient({
         </div>
       </div>
 
-      {/* Upgrade CTA */}
-      {!isPro && (
+      {/* Upgrade CTA — hidden inside the installed Android app (Play billing policy) */}
+      {!isPro && !isAppMode && (
         <Link href="/pricing" className="block card p-4 bg-gradient-to-r from-sand-100 to-cream-100 border-sand-200 group hover:border-sand-300 transition-all">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-sand-200 flex items-center justify-center text-xl flex-shrink-0">⭐</div>

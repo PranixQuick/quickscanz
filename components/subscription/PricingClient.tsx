@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import toast from "react-hot-toast";
 import { createRazorpayRedirectUrl, type SubscriptionPlan } from "@/lib/actions/subscriptions";
+import { useAppMode } from "@/lib/useAppMode";
 
 interface Props {
   plans: SubscriptionPlan[];
@@ -47,6 +48,7 @@ const FAQ = [
 ];
 
 export default function PricingClient({ plans, currentPlanId, userEmail }: Props) {
+  const isAppMode = useAppMode();
   const [isPending, startTransition] = useTransition();
   const [processingPlanId, setProcessingPlanId] = useState<string | null>(null);
   const [interval, setInterval] = useState<"monthly" | "yearly">("yearly");
@@ -66,6 +68,26 @@ export default function PricingClient({ plans, currentPlanId, userEmail }: Props
       }
       window.location.href = result.redirectUrl;
     });
+  }
+
+  // Inside the installed Android app, do not surface any in-app purchase flow
+  // (Google Play billing policy). Direct users to the website instead.
+  if (isAppMode) {
+    return (
+      <div className="space-y-6 animate-fade-up">
+        <div>
+          <h1 className="font-display text-2xl font-light text-ink-900">Upgrade Your Plan</h1>
+          <p className="text-sm text-ink-400 mt-1">Manage your plan on the web</p>
+        </div>
+        <div className="card p-5 text-center space-y-2">
+          <p className="text-sm text-ink-700 font-medium">Pro plans are available on our website.</p>
+          <p className="text-xs text-ink-400">
+            Open <span className="font-semibold">quickscanz.com</span> in your browser to view and
+            upgrade plans. Your account and data stay exactly the same.
+          </p>
+        </div>
+      </div>
+    );
   }
 
   return (
