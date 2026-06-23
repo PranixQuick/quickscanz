@@ -194,11 +194,18 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             <Script id="onesignal-init" strategy="lazyOnload">{`
               window.OneSignalDeferred = window.OneSignalDeferred || [];
               OneSignalDeferred.push(async function(OneSignal) {
-                await OneSignal.init({
-                  appId: "${oneSignalAppId}",
-                  notifyButton: { enable: false },
-                  allowLocalhostAsSecureOrigin: false,
-                });
+                try {
+                  await OneSignal.init({
+                    appId: "${oneSignalAppId}",
+                    notifyButton: { enable: false },
+                    allowLocalhostAsSecureOrigin: false,
+                  });
+                } catch (e) {
+                  // OneSignal throws if the runtime origin doesn't match the
+                  // configured site URL (e.g. www vs apex). Swallow it so push
+                  // setup can never throw on load and wedge the page/login flow.
+                  console.warn("[onesignal] init skipped:", (e && e.message) ? e.message : e);
+                }
               });
             `}</Script>
           </>

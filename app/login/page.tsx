@@ -5,6 +5,23 @@ import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { useT } from "@/lib/i18n/provider";
 
+// ─── Safety net: never let an auth call hang forever ─────────────────────────
+// Supabase auth promises can stall on a wedged page / flaky network. Racing them
+// against a timeout guarantees the UI always resolves (button never stuck on
+// "Sending…"). The SMS may still have been sent, so callers fall through to the
+// code-entry step rather than dead-ending.
+async function withTimeout<T>(promise: PromiseLike<T>, ms = 20000): Promise<T> {
+  let timer: ReturnType<typeof setTimeout>;
+  const timeout = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => reject(new Error("timeout")), ms);
+  });
+  try {
+    return (await Promise.race([promise, timeout])) as T;
+  } finally {
+    clearTimeout(timer!);
+  }
+}
+
 // ─── Google Sign-In Button ─────────────────────────────────────────────────────────────────────
 function GoogleSignInButton({ showSeparator = true }: { showSeparator?: boolean }) {
   const t = useT();
@@ -67,7 +84,7 @@ function PhoneOTPForm() {
   const [phone, setPhone] = useState("");
   const [otp, setOtp] = useState("");
   const [step, setStep] = useState<"phone" | "otp">("phone");
-  const [isPending, startTransition] = useTransition();
+  const [isPending, setIsPending] = useState(false);
   const [error, setError] = useState("");
 
   function formatPhone(raw: string) {
@@ -78,33 +95,38 @@ function PhoneOTPForm() {
     return `+${digits}`;
   }
 
-  function sendOTP(e: React.FormEvent) {
+  async function sendOTP(e: React.FormEvent) {
     e.preventDefault();
     setError("");
     const formatted = formatPhone(phone);
     if (formatted.length < 13) { setError(t("login.phone_invalid")); return; }
-    startTransition(async () => {
+    setIsPending(true);
+    try {
       const supabase = createClient();
-      const { error } = await supabase.auth.signInWithOtp({
-        phone: formatted,
-        options: { channel: "sms" },
-      });
+      const { error } = await withTimeout(
+        supabase.auth.signInWithOtp({ phone: formatted, options: { channel: "sms" } })
+      );
       if (error) { setError(error.message); return; }
       setStep("otp");
-    });
+    } catch {
+      // No confirmation came back in time — but the SMS was very likely sent.
+      // Never leave the user stuck on "Sending…": advance to the code-entry step.
+      setStep("otp");
+    } finally {
+      setIsPending(false);
+    }
   }
 
-  function verifyOTP(e: React.FormEvent) {
+  async function verifyOTP(e: React.FormEvent) {
     e.preventDefault();
     setError("");
     const formatted = formatPhone(phone);
-    startTransition(async () => {
+    setIsPending(true);
+    try {
       const supabase = createClient();
-      const { error } = await supabase.auth.verifyOtp({
-        phone: formatted,
-        token: otp,
-        type: "sms",
-      });
+      const { error } = await withTimeout(
+        supabase.auth.verifyOtp({ phone: formatted, token: otp, type: "sms" })
+      );
       if (error) { setError(t("login.otp_wrong")); return; }
 
       // Get user session to check onboarding status
@@ -126,7 +148,11 @@ function PhoneOTPForm() {
         router.push("/dashboard");
       }
       router.refresh();
-    });
+    } catch {
+      setError(t("login.otp_wrong"));
+    } finally {
+      setIsPending(false);
+    }
   }
 
   if (step === "otp") {
