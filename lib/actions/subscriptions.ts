@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 
@@ -111,10 +112,22 @@ export async function createRazorpayOrder(
   }
 
   const order = await orderRes.json();
-  await supabase.from("user_subscriptions").upsert(
+  // user_subscriptions is SELECT-only under RLS (P0 lockdown), so the user's own
+  // client cannot insert this pending row. Write it with the service role instead:
+  // user.id comes from the verified session above (cannot be forged), and the status
+  // is fixed to 'trial' so this path can never self-grant an 'active' subscription.
+  const admin = createAdminClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+  const { error: pendingErr } = await admin.from("user_subscriptions").upsert(
     { user_id: user.id, plan_id: planId, status: "trial", razorpay_order_id: order.id },
     { onConflict: "user_id" }
   );
+  if (pendingErr) {
+    console.error("[Razorpay] Failed to record pending subscription:", pendingErr.message);
+    return { error: "Could not start checkout — please try again" };
+  }
   return { orderId: order.id, amount: amountPaise, currency: "INR", key: RAZORPAY_KEY_ID };
 }
 
@@ -216,10 +229,22 @@ export async function createRazorpayRedirectUrl(
   }
 
   const order = await orderRes.json();
-  await supabase.from("user_subscriptions").upsert(
+  // user_subscriptions is SELECT-only under RLS (P0 lockdown), so the user's own
+  // client cannot insert this pending row. Write it with the service role instead:
+  // user.id comes from the verified session above (cannot be forged), and the status
+  // is fixed to 'trial' so this path can never self-grant an 'active' subscription.
+  const admin = createAdminClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+  const { error: pendingErr } = await admin.from("user_subscriptions").upsert(
     { user_id: user.id, plan_id: planId, status: "trial", razorpay_order_id: order.id },
     { onConflict: "user_id" }
   );
+  if (pendingErr) {
+    console.error("[Razorpay] Failed to record pending subscription:", pendingErr.message);
+    return { error: "Could not start checkout — please try again" };
+  }
 
   const searchParams = new URLSearchParams({
     key_id: RAZORPAY_KEY_ID, order_id: order.id,
