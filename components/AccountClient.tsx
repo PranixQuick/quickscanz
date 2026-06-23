@@ -38,6 +38,19 @@ export default function AccountClient({
     });
   }
 
+  async function handleDelete() {
+    setDeleting(true);
+    try {
+      const res = await fetch("/api/account/delete", { method: "POST" });
+      if (!res.ok) throw new Error("delete failed");
+      try { await createClient().auth.signOut(); } catch { /* already gone */ }
+      router.push("/login");
+    } catch {
+      toast.error(t("account.delete_failed"));
+      setDeleting(false);
+    }
+  }
+
   return (
     <div className="space-y-6 animate-fade-up">
       <div>
