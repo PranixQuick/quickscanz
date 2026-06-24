@@ -3,9 +3,10 @@
     "relation": ["delegate_permission/common.handle_all_urls"],
     "target": {
       "namespace": "android_app",
-      "package_name": "com.quickscanz.app",
+      "package_name": "com.quickscanz.warranty",
       "sha256_cert_fingerprints": [
-        "01:81:E3:12:6D:D1:5F:97:A3:F1:89:12:65:66:53:E9:F7:8E:DD:D6:0F:D3:D3:72:E8:D4:AE:F8:E8:70:52:21"
+        "0E:0F:73:70:47:56:40:86:1B:2C:12:EC:ED:8A:39:1D:5A:38:9B:EE:E7:A4:F4:45:87:E7:CC:F4:81:16:B3:95",
+        "EA:FE:A6:1A:FE:8F:63:10:EC:59:30:D3:63:01:BE:AE:60:E1:28:5F:5E:B5:D7:00:22:CE:A3:E9:EB:CA:EF:C8"
       ]
     }
   }
