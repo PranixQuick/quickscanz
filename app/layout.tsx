@@ -5,6 +5,7 @@ import "./globals.css";
 import { Toaster } from "react-hot-toast";
 import { I18nProvider } from "../lib/i18n/provider";
 import { getLocale } from "../lib/i18n/server";
+import LocaleBar from "../components/LocaleBar";
 
 const cormorant = Cormorant_Garamond({
   subsets: ["latin"],
@@ -75,15 +76,15 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "QuickScanZ" }],
   creator: "QuickScanZ",
-  metadataBase: new URL("https://www.quickscanz.com"),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://quickscanz.com"),
   alternates: {
-    canonical: "https://www.quickscanz.com",
+    canonical: "https://quickscanz.com",
   },
   openGraph: {
     type: "website",
     locale: "en_IN",
     siteName: "QuickScanZ",
-    url: "https://www.quickscanz.com",
+    url: "https://quickscanz.com",
     title: "QuickScanZ — Your Warranty Wallet",
     description: "Never lose a warranty or invoice again. Track warranties, store invoices, get AI-guided claims.",
     images: [
@@ -138,6 +139,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html lang={locale} data-locale={locale} className={`scroll-smooth ${cormorant.variable} ${dmSans.variable} ${dmMono.variable} ${notoHi.variable} ${notoTe.variable} ${notoTa.variable} ${notoKn.variable} ${notoMl.variable}`}>
       <body className="bg-cream-50 text-ink-900 font-body antialiased">
         <I18nProvider initialLocale={locale}>
+          <LocaleBar />
           {children}
         <Toaster
           position="bottom-center"
@@ -192,18 +194,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             <Script id="onesignal-init" strategy="lazyOnload">{`
               window.OneSignalDeferred = window.OneSignalDeferred || [];
               OneSignalDeferred.push(async function(OneSignal) {
-                try {
-                  await OneSignal.init({
-                    appId: "${oneSignalAppId}",
-                    notifyButton: { enable: false },
-                    allowLocalhostAsSecureOrigin: false,
-                  });
-                } catch (e) {
-                  // OneSignal throws if the runtime origin doesn't match the
-                  // configured site URL (e.g. www vs apex). Swallow it so push
-                  // setup can never throw on load and wedge the page/login flow.
-                  console.warn("[onesignal] init skipped:", (e && e.message) ? e.message : e);
-                }
+                await OneSignal.init({
+                  appId: "${oneSignalAppId}",
+                  notifyButton: { enable: false },
+                  allowLocalhostAsSecureOrigin: false,
+                });
               });
             `}</Script>
           </>
