@@ -382,6 +382,7 @@ export default function LoginPage() {
         ) : (
           <GoogleSignInButton showSeparator={false} />
         )}
+        <DemoSignInForm />
       </div>
     </div>
   );
