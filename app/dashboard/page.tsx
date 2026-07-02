@@ -36,7 +36,8 @@ export default async function DashboardPage() {
     .single();
 
   const otpEnabled = process.env.NEXT_PUBLIC_OTP_ENABLED !== "false";
-  const needsPhoneBinding = otpEnabled && !profile?.phone;
+  const isDemoAccount = !!user.email && DEMO_LOGIN_ALLOWLIST.includes(user.email.toLowerCase());
+  const needsPhoneBinding = otpEnabled && !profile?.phone && !isDemoAccount;
 
   if (needsPhoneBinding) {
     return <PhoneBindingOverlay userId={user.id} />;
