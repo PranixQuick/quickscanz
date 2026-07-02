@@ -9,7 +9,7 @@ import { redirect } from "next/navigation";
 // scoped strictly to known demo accounts — real users still authenticate via
 // Phone OTP or "Continue with Google" only. Configurable via env so ops can
 // rotate/retire demo accounts without a code change.
-const DEMO_LOGIN_ALLOWLIST = (
+export const DEMO_LOGIN_ALLOWLIST = (
   process.env.DEMO_LOGIN_ALLOWLIST ?? "test1@quickscanz.com,test2@quickscanz.com"
 )
   .split(",")
