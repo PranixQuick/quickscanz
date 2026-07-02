@@ -263,6 +263,94 @@ function PhoneOTPForm() {
   );
 }
 
+// ─── Reviewer / Demo Sign-In (email + password) ────────────────────────────
+// Google Play reviewers can't receive an SMS OTP. This restores a narrow,
+// allow-listed email+password path (see demoSignIn in lib/actions/auth.ts) so
+// reviewers can sign in with the documented demo account. It is not promoted
+// to real users, who continue to use Phone OTP or Google — demoSignIn rejects
+// any email that isn't on the server-side allow-list before Supabase is ever
+// called, so this never weakens auth for real accounts.
+function DemoSignInForm() {
+  const router = useRouter();
+  const [show, setShow] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [isPending, startTransition] = useTransition();
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError("");
+    startTransition(async () => {
+      const formData = new FormData();
+      formData.set("email", email);
+      formData.set("password", password);
+      try {
+        const result = await demoSignIn(formData);
+        if (result?.error) setError(result.error);
+      } catch (err) {
+        // demoSignIn calls redirect() on success, which Next.js implements by
+        // throwing — that's expected and not a real error, so just re-throw.
+        throw err;
+      }
+    });
+  }
+
+  if (!show) {
+    return (
+      <button
+        type="button"
+        onClick={() => setShow(true)}
+        className="w-full text-center text-xs text-ink-300 hover:text-ink-500 transition-colors mt-4 py-1"
+      >
+        Reviewer or demo account? Sign in with email
+      </button>
+    );
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="card p-5 mt-4 space-y-3">
+      <p className="text-xs text-ink-400 text-center">Demo / reviewer sign-in</p>
+      <input
+        type="email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        placeholder="Email"
+        autoComplete="username"
+        required
+        className="w-full px-4 py-3 bg-cream-100 border border-cream-200 rounded-xl text-sm text-ink-900 focus:outline-none focus:border-sand-400 focus:ring-2 focus:ring-sand-200 transition-all"
+      />
+      <input
+        type="password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        placeholder="Password"
+        autoComplete="current-password"
+        required
+        className="w-full px-4 py-3 bg-cream-100 border border-cream-200 rounded-xl text-sm text-ink-900 focus:outline-none focus:border-sand-400 focus:ring-2 focus:ring-sand-200 transition-all"
+      />
+      {error && <p className="text-xs text-blush-600 text-center">{error}</p>}
+      <button
+        type="submit"
+        disabled={isPending}
+        className="w-full btn-primary py-3 text-sm font-semibold disabled:opacity-40 rounded-xl"
+      >
+        {isPending ? "Signing in…" : "Sign in"}
+      </button>
+      <button
+        type="button"
+        onClick={() => {
+          setShow(false);
+          setError("");
+        }}
+        className="w-full text-xs text-ink-400 hover:text-ink-600 transition-colors py-1"
+      >
+        ← Back
+      </button>
+    </form>
+  );
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export default function LoginPage() {
   const t = useT();
