@@ -3,6 +3,19 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 
+// ─── Reviewer / demo sign-in allow-list ────────────────────────────────────
+// Google Play reviewers can't receive an SMS OTP, so they need a login path
+// that doesn't depend on Phone-OTP or Google. This restores that path, but
+// scoped strictly to known demo accounts — real users still authenticate via
+// Phone OTP or "Continue with Google" only. Configurable via env so ops can
+// rotate/retire demo accounts without a code change.
+const DEMO_LOGIN_ALLOWLIST = (
+  process.env.DEMO_LOGIN_ALLOWLIST ?? "test1@quickscanz.com,test2@quickscanz.com"
+)
+  .split(",")
+  .map((e) => e.trim().toLowerCase())
+  .filter(Boolean);
+
 export async function signIn(formData: FormData) {
   const supabase = await createClient();
 
@@ -16,6 +29,44 @@ export async function signIn(formData: FormData) {
   }
 
   redirect("/dashboard");
+}
+
+/**
+ * Reviewer/demo sign-in — used by the "Sign in with email" link on the login
+ * page. Every email is checked against DEMO_LOGIN_ALLOWLIST *before* Supabase
+ * is ever called; anything not on the list gets the same generic error a
+ * failed password would, so this never becomes a general password-login
+ * feature and never weakens auth for real users.
+ */
+export async function demoSignIn(formData: FormData): Promise<{ error?: string }> {
+  const email = ((formData.get("email") as string) || "").trim().toLowerCase();
+  const password = (formData.get("password") as string) || "";
+
+  if (!email || !password || !DEMO_LOGIN_ALLOWLIST.includes(email)) {
+    // Generic message — never reveal whether an email is allow-listed.
+    return { error: "Invalid credentials. Please try again." };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  if (error) {
+    return { error: "Invalid credentials. Please try again." };
+  }
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
+    return { error: "Failed to retrieve session. Please try again." };
+  }
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("onboarded_at")
+    .eq("id", user.id)
+    .single();
+
+  redirect(profile?.onboarded_at ? "/dashboard" : "/onboarding");
 }
 
 export async function signOut() {
