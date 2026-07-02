@@ -2,19 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-
-// ─── Reviewer / demo sign-in allow-list ────────────────────────────────────
-// Google Play reviewers can't receive an SMS OTP, so they need a login path
-// that doesn't depend on Phone-OTP or Google. This restores that path, but
-// scoped strictly to known demo accounts — real users still authenticate via
-// Phone OTP or "Continue with Google" only. Configurable via env so ops can
-// rotate/retire demo accounts without a code change.
-export const DEMO_LOGIN_ALLOWLIST = (
-  process.env.DEMO_LOGIN_ALLOWLIST ?? "test1@quickscanz.com,test2@quickscanz.com"
-)
-  .split(",")
-  .map((e) => e.trim().toLowerCase())
-  .filter(Boolean);
+import { DEMO_LOGIN_ALLOWLIST } from "@/lib/demo-allowlist";
 
 export async function signIn(formData: FormData) {
   const supabase = await createClient();
