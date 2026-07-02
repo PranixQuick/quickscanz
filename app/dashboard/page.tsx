@@ -14,6 +14,7 @@ import Link from "next/link";
 import DashboardNudge from "@/components/DashboardNudge";
 import OnboardingFlow from "@/components/onboarding/OnboardingFlow";
 import PhoneBindingOverlay from "@/components/auth/PhoneBindingOverlay";
+import { DEMO_LOGIN_ALLOWLIST } from "@/lib/actions/auth";
 import type { Metadata } from "next";
 import type { DashboardStats } from "@/lib/types";
 
