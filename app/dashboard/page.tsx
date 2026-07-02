@@ -14,6 +14,7 @@ import Link from "next/link";
 import DashboardNudge from "@/components/DashboardNudge";
 import OnboardingFlow from "@/components/onboarding/OnboardingFlow";
 import PhoneBindingOverlay from "@/components/auth/PhoneBindingOverlay";
+import { DEMO_LOGIN_ALLOWLIST } from "@/lib/actions/auth";
 import type { Metadata } from "next";
 import type { DashboardStats } from "@/lib/types";
 
@@ -35,7 +36,8 @@ export default async function DashboardPage() {
     .single();
 
   const otpEnabled = process.env.NEXT_PUBLIC_OTP_ENABLED !== "false";
-  const needsPhoneBinding = otpEnabled && !profile?.phone;
+  const isDemoAccount = !!user.email && DEMO_LOGIN_ALLOWLIST.includes(user.email.toLowerCase());
+  const needsPhoneBinding = otpEnabled && !profile?.phone && !isDemoAccount;
 
   if (needsPhoneBinding) {
     return <PhoneBindingOverlay userId={user.id} />;
