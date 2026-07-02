@@ -271,7 +271,6 @@ function PhoneOTPForm() {
 // any email that isn't on the server-side allow-list before Supabase is ever
 // called, so this never weakens auth for real accounts.
 function DemoSignInForm() {
-  const router = useRouter();
   const [show, setShow] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -285,14 +284,12 @@ function DemoSignInForm() {
       const formData = new FormData();
       formData.set("email", email);
       formData.set("password", password);
-      try {
-        const result = await demoSignIn(formData);
-        if (result?.error) setError(result.error);
-      } catch (err) {
-        // demoSignIn calls redirect() on success, which Next.js implements by
-        // throwing — that's expected and not a real error, so just re-throw.
-        throw err;
-      }
+      // On success demoSignIn calls redirect(), which Next.js implements by
+      // throwing a NEXT_REDIRECT signal — that propagates past this await
+      // and is handled by the router, so we only ever reach the next line
+      // on a genuine (non-redirect) failure.
+      const result = await demoSignIn(formData);
+      if (result?.error) setError(result.error);
     });
   }
 
