@@ -12,7 +12,7 @@ import { demoSignIn } from "@/lib/actions/auth";
 // against a timeout guarantees the UI always resolves (button never stuck on
 // "Sending…"). The SMS may still have been sent, so callers fall through to the
 // code-entry step rather than dead-ending.
-async function withTimeout<T>(promise: PromiseLike<T>, ms = 20000): Promise<T> {
+async function withTimeout<T>(promise: PromiseLike<T>, ms = 8000): Promise<T> {
   let timer: ReturnType<typeof setTimeout>;
   const timeout = new Promise<never>((_, reject) => {
     timer = setTimeout(() => reject(new Error("timeout")), ms);
