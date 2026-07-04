@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { createClient as createServiceRoleClient } from "@supabase/supabase-js";
 import { protocol } from "@/lib/protocol-core";
 import { revalidatePath } from "next/cache";
 
@@ -33,7 +34,20 @@ export async function POST(req: NextRequest) {
   if (expectedSig !== signature)
     return NextResponse.json({ success: false, error: "Payment verification failed" }, { status: 400 });
 
-  const { data: plan } = await supabase
+  // Service-role client for the privileged write below — created INSIDE the handler
+  // (not module level) so a missing SUPABASE_SERVICE_ROLE_KEY at build time can't crash
+  // the Next.js build, matching the existing pattern in app/api/razorpay/webhook/route.ts.
+  // Needed because user_subscriptions is (correctly) RLS-locked against self-service writes:
+  // the anon/session client used above for auth.getUser() cannot update this table, so this
+  // route's activation update was failing/no-op-ing silently after a valid signature check,
+  // leaving activation to happen only later via the async Razorpay webhook instead of
+  // immediately for the user sitting on the confirmation screen.
+  const supabaseAdmin = createServiceRoleClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+
+  const { data: plan } = await supabaseAdmin
     .from("subscription_plans").select("interval").eq("id", planId).single();
 
   const now = new Date();
@@ -41,7 +55,7 @@ export async function POST(req: NextRequest) {
   if (plan?.interval === "yearly") periodEnd.setFullYear(periodEnd.getFullYear() + 1);
   else periodEnd.setMonth(periodEnd.getMonth() + 1);
 
-  const { error } = await supabase.from("user_subscriptions").update({
+  const { error } = await supabaseAdmin.from("user_subscriptions").update({
     status: "active", plan_id: planId,
     razorpay_payment_id: paymentId, razorpay_order_id: orderId,
     current_period_start: now.toISOString(),
