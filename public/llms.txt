@@ -1,0 +1,19 @@
+# QuickScanZ
+
+> QuickScanZ is a post-purchase intelligence platform for India. It helps people never lose a warranty or invoice again — scan and store purchase receipts, track warranty expiry dates, get reminders before coverage lapses, and get AI-guided help filing a claim when a product breaks.
+
+QuickScanZ is built by Pranix AI Labs Private Limited, based in Vijayawada, Andhra Pradesh, India.
+
+## Core pages
+
+- [Homepage](https://www.quickscanz.com/): Overview of the warranty wallet product.
+- [How it works](https://www.quickscanz.com/): Scan receipts, extract warranty info via OCR, get expiry reminders, file claims with AI guidance.
+
+## For AI agents / developers
+
+- App is a PWA (installable, offline-capable) — see `/manifest.json`.
+- Supports multiple Indian languages (Hindi, Telugu, Tamil, Kannada, Malayalam) in addition to English.
+
+## Optional
+
+- Legal and account pages are available in-app after sign-in.
