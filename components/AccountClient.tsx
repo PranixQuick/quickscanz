@@ -5,6 +5,7 @@ import { useT } from "@/lib/i18n/provider";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import NotificationSettings from "@/components/notifications/NotificationSettings";
+import AariaAssistantButton from "@/components/ui/AariaAssistantButton";
 import Link from "next/link";
 import toast from "react-hot-toast";
 
