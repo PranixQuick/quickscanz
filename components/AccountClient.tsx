@@ -85,7 +85,18 @@ export default function AccountClient({
         </Link>
       )}
 
-,
+      {/* Aaria voice assistant */}
+      <div>
+        <p className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-3">Assistant</p>
+        <AariaAssistantButton />
+      </div>
+
+      {/* Notifications */}
+      <div>
+        <p className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-3">{t("account.notifications_header")}</p>
+        <NotificationSettings userId={userId} />
+        <p className="text-[11px] text-ink-300 mt-2 px-1">{t("account.pwa_push_note")}</p>
+      </div>
 
       {/* Warranty Features */}
       <div>
