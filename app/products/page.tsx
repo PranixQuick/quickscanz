@@ -73,6 +73,8 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
           </Link>
         </div>
 
+        <AariaAssistantButton />
+
         {/* Filter pills */}
         {products.length > 0 && (
           <div className="flex gap-2 flex-wrap">
