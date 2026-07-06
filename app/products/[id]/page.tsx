@@ -35,6 +35,9 @@ export default async function ProductDetailPage({ params }: Props) {
         priceHistory={priceHistory}
         maintenanceTasks={maintenanceTasks}
       />
+      <div className="mt-5">
+        <WarrantySpeakCard product={product} />
+      </div>
     </AppLayout>
   );
 }
