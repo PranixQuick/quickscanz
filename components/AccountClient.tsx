@@ -5,6 +5,7 @@ import { useT } from "@/lib/i18n/provider";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import NotificationSettings from "@/components/notifications/NotificationSettings";
+import AariaAssistantButton from "@/components/ui/AariaAssistantButton";
 import Link from "next/link";
 import toast from "react-hot-toast";
 
@@ -83,6 +84,12 @@ export default function AccountClient({
           </div>
         </Link>
       )}
+
+      {/* Aaria voice assistant */}
+      <div>
+        <p className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-3">Assistant</p>
+        <AariaAssistantButton />
+      </div>
 
       {/* Notifications */}
       <div>

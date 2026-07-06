@@ -4,6 +4,7 @@ import { getWarrantyStatus } from "@/lib/utils";
 import AppLayout from "@/components/layout/AppLayout";
 import ProductCard from "@/components/products/ProductCard";
 import EmptyState from "@/components/ui/EmptyState";
+import AariaAssistantButton from "@/components/ui/AariaAssistantButton";
 import Link from "next/link";
 import { getT } from "@/lib/i18n/server";
 
@@ -71,6 +72,8 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
             {t("common.add")}
           </Link>
         </div>
+
+        <AariaAssistantButton />
 
         {/* Filter pills */}
         {products.length > 0 && (
