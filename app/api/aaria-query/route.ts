@@ -1,5 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { getProducts } from "@/lib/actions/products";
+import { getWarrantyStatus, formatWarrantyCountdown } from "@/lib/utils";
+import {
+  aariaUnderstand,
+  aariaSpeak,
+  AariaClientError,
+  AARIA_PRODUCT,
+} from "@/lib/aaria-client";
 
 // ── Aaria voice-control-plane integration ────────────────────────────────────
 // This is a DISTINCT integration from hooks/useVoiceSearch.ts +
@@ -8,13 +16,30 @@ import { createClient } from "@/lib/supabase/server";
 // language text to Aaria (pranix-aaria), Pranix's shared voice/intent
 // understanding service, so QuickScanZ can support Aaria-routed intents such
 // as "register_product" and "get_warranty_status".
-const AARIA_BASE_URL = "https://pranix-aaria.onrender.com";
+//
+// get_warranty_status is closed-loop: once Aaria understands the intent, we
+// resolve it against the caller's own products and ask Aaria to speak the
+// answer back, rather than just returning the raw NLU result. See
+// components/products/WarrantySpeakCard.tsx for the entry point that uses
+// this end-to-end flow.
 
-interface AariaUnderstandResponse {
+interface AariaQueryResponse {
   intent: string;
   entities: Record<string, unknown>;
   confidence: number;
   engine_used: string;
+  spoken_text?: string;
+  audio_base64?: string;
+  matched_product?: { id: string; name: string; brand: string };
+}
+
+function extractProductHint(entities: Record<string, unknown>): string | null {
+  const candidateKeys = ["product", "product_name", "item", "name", "brand"];
+  for (const key of candidateKeys) {
+    const value = entities[key];
+    if (typeof value === "string" && value.trim()) return value.trim().toLowerCase();
+  }
+  return null;
 }
 
 export async function POST(req: NextRequest) {
@@ -33,30 +58,65 @@ export async function POST(req: NextRequest) {
 
   const langHint: string = typeof body?.lang_hint === "string" ? body.lang_hint : "en";
 
+  let understood: Awaited<ReturnType<typeof aariaUnderstand>>;
   try {
-    const res = await fetch(`${AARIA_BASE_URL}/api/voice/understand`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        text,
-        product: "QuickScanZ",
-        lang_hint: langHint,
-      }),
-    });
-
-    if (!res.ok) {
-      return NextResponse.json(
-        { error: `Aaria returned status ${res.status}` },
-        { status: 502 }
-      );
-    }
-
-    const data = (await res.json()) as AariaUnderstandResponse;
-    return NextResponse.json(data);
+    understood = await aariaUnderstand(text, { langHint, product: AARIA_PRODUCT });
   } catch (e) {
+    const status = e instanceof AariaClientError && e.status ? 502 : 502;
     return NextResponse.json(
       { error: e instanceof Error ? e.message : "Failed to reach Aaria" },
-      { status: 502 }
+      { status }
     );
   }
+
+  const response: AariaQueryResponse = { ...understood };
+
+  // Close the loop for warranty-status queries: resolve against the user's
+  // real products and have Aaria speak back a concrete answer.
+  if (understood.intent === "get_warranty_status") {
+    const hint = extractProductHint(understood.entities || {});
+    const products = await getProducts();
+
+    const match = hint
+      ? products.find(
+          (p) =>
+            p.name.toLowerCase().includes(hint) ||
+            p.brand.toLowerCase().includes(hint) ||
+            hint.includes(p.name.toLowerCase())
+        )
+      : products.length === 1
+      ? products[0]
+      : undefined;
+
+    let spokenText: string;
+    if (match) {
+      const status = getWarrantyStatus(match.expiry_date);
+      const countdown = formatWarrantyCountdown(match.expiry_date);
+      const statusPhrase =
+        status === "expired"
+          ? "has expired"
+          : status === "expiring_soon"
+          ? "is expiring soon"
+          : "is active";
+      spokenText = `Your ${match.brand} ${match.name} warranty ${statusPhrase}. ${countdown}.`;
+      response.matched_product = { id: match.id, name: match.name, brand: match.brand };
+    } else if (products.length === 0) {
+      spokenText = "You don't have any products tracked yet, so I can't check a warranty status.";
+    } else {
+      spokenText =
+        "I couldn't tell which product you meant. Try naming the product, like 'check warranty for my Samsung fridge'.";
+    }
+
+    response.spoken_text = spokenText;
+
+    try {
+      const speech = await aariaSpeak(spokenText, { lang: langHint, product: AARIA_PRODUCT });
+      response.audio_base64 = speech.audio_base64;
+    } catch {
+      // Speech synthesis is best-effort — the client still has spoken_text
+      // to render/read even if Aaria's TTS endpoint is unavailable.
+    }
+  }
+
+  return NextResponse.json(response);
 }
