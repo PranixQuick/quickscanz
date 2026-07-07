@@ -31,6 +31,7 @@ interface AariaQueryResponse {
   spoken_text?: string;
   audio_base64?: string;
   matched_product?: { id: string; name: string; brand: string };
+  visual_companion?: Record<string, unknown> | null;
 }
 
 function extractProductHint(entities: Record<string, unknown>): string | null {
