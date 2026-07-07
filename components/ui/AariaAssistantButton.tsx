@@ -9,11 +9,30 @@ import { useState } from "react";
 // (pranix-aaria) for intent understanding, e.g. "register_product" or
 // "get_warranty_status".
 
+interface AariaVisualCompanion {
+  avatar_state?: string;
+  expression?: string;
+  captions?: Array<Record<string, unknown>>;
+}
+
 interface AariaResult {
   intent: string;
   entities: Record<string, unknown>;
   confidence: number;
   engine_used: string;
+  spoken_text?: string;
+  visual_companion?: AariaVisualCompanion | null;
+}
+
+// Best-effort caption text extraction — tolerant of caption objects using
+// either a "word" or "text" key, since this is metadata from an external
+// service (pranix-aaria) that this UI does not control the exact shape of.
+function captionPreview(captions?: Array<Record<string, unknown>>): string | null {
+  if (!captions || captions.length === 0) return null;
+  const words = captions
+    .map((c) => (typeof c.word === "string" ? c.word : typeof c.text === "string" ? c.text : ""))
+    .filter(Boolean);
+  return words.length > 0 ? words.join(" ") : null;
 }
 
 export default function AariaAssistantButton() {
