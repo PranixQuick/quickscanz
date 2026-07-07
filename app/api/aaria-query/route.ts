@@ -7,6 +7,7 @@ import {
   aariaSpeak,
   AariaClientError,
   AARIA_PRODUCT,
+  type AariaVisualCompanion,
 } from "@/lib/aaria-client";
 
 // ── Aaria voice-control-plane integration ────────────────────────────────────
@@ -31,6 +32,7 @@ interface AariaQueryResponse {
   spoken_text?: string;
   audio_base64?: string;
   matched_product?: { id: string; name: string; brand: string };
+  visual_companion?: AariaVisualCompanion | null;
 }
 
 function extractProductHint(entities: Record<string, unknown>): string | null {
@@ -112,6 +114,7 @@ export async function POST(req: NextRequest) {
     try {
       const speech = await aariaSpeak(spokenText, { lang: langHint, product: AARIA_PRODUCT });
       response.audio_base64 = speech.audio_base64;
+      response.visual_companion = speech.visual_companion ?? null;
     } catch {
       // Speech synthesis is best-effort — the client still has spoken_text
       // to render/read even if Aaria's TTS endpoint is unavailable.
