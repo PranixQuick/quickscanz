@@ -113,6 +113,7 @@ export async function POST(req: NextRequest) {
     try {
       const speech = await aariaSpeak(spokenText, { lang: langHint, product: AARIA_PRODUCT });
       response.audio_base64 = speech.audio_base64;
+      response.visual_companion = speech.visual_companion ?? null;
     } catch {
       // Speech synthesis is best-effort — the client still has spoken_text
       // to render/read even if Aaria's TTS endpoint is unavailable.
