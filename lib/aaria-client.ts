@@ -19,10 +19,20 @@ export interface AariaUnderstandResponse {
   engine_used: string;
 }
 
+export interface AariaVisualCompanion {
+  avatar_state?: string;
+  expression?: string;
+  captions?: Array<Record<string, unknown>>;
+}
+
 export interface AariaSpeakResponse {
   audio_base64: string;
   lang: string;
   engine_used: string;
+  // Optional multi-modal companion metadata (avatar_state/expression/captions)
+  // returned by pranix-aaria's src/contracts/speak.py. Present on newer
+  // responses; may be absent/null on cache hits or older engine paths.
+  visual_companion?: AariaVisualCompanion | null;
 }
 
 export interface AariaHealthResponse {
