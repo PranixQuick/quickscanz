@@ -7,6 +7,7 @@ import {
   aariaSpeak,
   AariaClientError,
   AARIA_PRODUCT,
+  type AariaVisualCompanion,
 } from "@/lib/aaria-client";
 
 // ── Aaria voice-control-plane integration ────────────────────────────────────
