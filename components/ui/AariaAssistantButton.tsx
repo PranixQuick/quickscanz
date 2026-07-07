@@ -117,16 +117,7 @@ export default function AariaAssistantButton() {
             <p className="text-xs text-blush-500">{error}</p>
           )}
 
-          {result && (
-            <div className="rounded-xl bg-cream-100 p-3 text-xs text-ink-600 space-y-1">
-              <p><span className="font-semibold text-ink-900">Intent:</span> {result.intent}</p>
-              <p><span className="font-semibold text-ink-900">Confidence:</span> {(result.confidence * 100).toFixed(0)}%</p>
-              <p><span className="font-semibold text-ink-900">Engine:</span> {result.engine_used}</p>
-              {Object.keys(result.entities || {}).length > 0 && (
-                <p><span className="font-semibold text-ink-900">Entities:</span> {JSON.stringify(result.entities)}</p>
-              )}
-            </div>
-          )}
+PLACEHOLDER
         </div>
       )}
     </div>
