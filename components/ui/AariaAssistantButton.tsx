@@ -117,7 +117,37 @@ export default function AariaAssistantButton() {
             <p className="text-xs text-blush-500">{error}</p>
           )}
 
-PLACEHOLDER
+{result && (
+            <div className="rounded-xl bg-cream-100 p-3 text-xs text-ink-600 space-y-1">
+              <p><span className="font-semibold text-ink-900">Intent:</span> {result.intent}</p>
+              <p><span className="font-semibold text-ink-900">Confidence:</span> {(result.confidence * 100).toFixed(0)}%</p>
+              <p><span className="font-semibold text-ink-900">Engine:</span> {result.engine_used}</p>
+              {Object.keys(result.entities || {}).length > 0 && (
+                <p><span className="font-semibold text-ink-900">Entities:</span> {JSON.stringify(result.entities)}</p>
+              )}
+              {result.visual_companion && (
+                <div className="pt-2 mt-2 border-t border-cream-200 flex items-start gap-2">
+                  <span className="w-6 h-6 rounded-full bg-ink-900 text-cream-100 flex items-center justify-center flex-shrink-0 text-xs">
+                    {result.visual_companion.expression === "excited" ? "😊"
+                      : result.visual_companion.expression === "concerned" ? "😟"
+                      : result.visual_companion.expression === "curious" ? "🤔"
+                      : result.visual_companion.expression === "thinking" ? "💭"
+                      : "✦"}
+                  </span>
+                  <div>
+                    <p className="text-ink-400">
+                      <span className="font-semibold text-ink-900">Aaria</span>
+                      {result.visual_companion.avatar_state ? ` is ${result.visual_companion.avatar_state}` : ""}
+                      {result.visual_companion.expression ? ` (${result.visual_companion.expression})` : ""}
+                    </p>
+                    {captionPreview(result.visual_companion.captions) && (
+                      <p className="text-ink-600 mt-0.5">{captionPreview(result.visual_companion.captions)}</p>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
     </div>
