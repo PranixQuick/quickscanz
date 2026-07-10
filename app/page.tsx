@@ -20,6 +20,13 @@ export const metadata: Metadata = {
 };
 
 export default async function LandingPage() {
+  // If the visitor is already signed in, don't show the public marketing page —
+  // send them straight into the app. This is what makes the installed app open
+  // to the dashboard instead of the website homepage.
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (user) redirect("/dashboard");
+
   const t = await getT();
 
   return (
