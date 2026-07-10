@@ -9,6 +9,53 @@ import ProductSearchInput from "./ProductSearchInput";
 import { useT } from "@/lib/i18n/provider";
 import type { CatalogProduct } from "@/lib/actions/catalog";
 
+// Convert a picked file into a base64 payload for /api/ai/ocr.
+// Large phone photos are downscaled (max 1600px, JPEG) so the request stays
+// well under the serverless body limit; non-image files (e.g. PDF) are sent
+// as-is for the server to handle.
+async function fileToOcrPayload(file: File): Promise<{ image_base64: string; mime_type: string }> {
+  const readAsDataUrl = (f: File) =>
+    new Promise<string>((resolve, reject) => {
+      const r = new FileReader();
+      r.onload = () => resolve(String(r.result));
+      r.onerror = () => reject(new Error("read failed"));
+      r.readAsDataURL(f);
+    });
+
+  const dataUrl = await readAsDataUrl(file);
+
+  if (!file.type.startsWith("image/")) {
+    return { image_base64: dataUrl.split(",")[1] || "", mime_type: file.type || "application/octet-stream" };
+  }
+
+  try {
+    const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const i = new Image();
+      i.onload = () => resolve(i);
+      i.onerror = () => reject(new Error("decode failed"));
+      i.src = dataUrl;
+    });
+    const maxDim = 1600;
+    let { width, height } = img;
+    if (width > maxDim || height > maxDim) {
+      const scale = Math.min(maxDim / width, maxDim / height);
+      width = Math.round(width * scale);
+      height = Math.round(height * scale);
+    }
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) throw new Error("no canvas ctx");
+    ctx.drawImage(img, 0, 0, width, height);
+    const out = canvas.toDataURL("image/jpeg", 0.82);
+    return { image_base64: out.split(",")[1] || "", mime_type: "image/jpeg" };
+  } catch {
+    // Fall back to the raw image bytes if canvas processing fails.
+    return { image_base64: dataUrl.split(",")[1] || "", mime_type: file.type || "image/jpeg" };
+  }
+}
+
 // ---------- Bill OCR Modal ----------
 function ScanBillModal({ onResult, onClose, t }: {
   t: any;
@@ -22,19 +69,32 @@ function ScanBillModal({ onResult, onClose, t }: {
   async function processFile(file: File) {
     setStage("scanning");
     try {
-      const fd = new FormData();
-      fd.append("file", file);
-      const res = await fetch("/api/ai/ocr", { method: "POST", body: fd });
+      const { image_base64, mime_type } = await fileToOcrPayload(file);
+      if (!image_base64) throw new Error("empty file");
+      const res = await fetch("/api/ai/ocr", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ image_base64, mime_type }),
+      });
       if (!res.ok) throw new Error(await res.text());
       const json = await res.json();
+      const d = json?.data ?? {};
       const fields: Partial<FormState> = {};
-      if (json.brand)         fields.brand         = json.brand;
-      if (json.product_name)  fields.name          = json.product_name;
-      if (json.model_number)  fields.model_number  = json.model_number;
-      if (json.serial_number) fields.serial_number = json.serial_number;
-      if (json.store_name)    fields.store_name    = json.store_name;
-      if (json.price)         fields.price         = String(json.price);
-      if (json.purchase_date) fields.purchase_date = json.purchase_date;
+      if (d.brand)         fields.brand         = d.brand;
+      if (d.product_name)  fields.name          = d.product_name;
+      if (d.model_number)  fields.model_number  = d.model_number;
+      if (d.serial_number) fields.serial_number = d.serial_number;
+      if (d.store_name)    fields.store_name    = d.store_name;
+      if (d.price)         fields.price         = String(d.price);
+      if (d.purchase_date) fields.purchase_date = d.purchase_date;
+
+      // Don't show a misleading "details extracted" success when nothing
+      // could actually be read (e.g. AI key unset, or an unreadable/PDF bill).
+      if (Object.keys(fields).length === 0) {
+        setErrMsg(t("product.ocr_error"));
+        setStage("error");
+        return;
+      }
       setStage("done");
       setTimeout(() => { onResult(fields); onClose(); }, 800);
     } catch (e: any) {
