@@ -6,17 +6,29 @@ export function calculateExpiryDate(purchaseDate: string, warrantyMonths: number
   return addMonths(date, warrantyMonths).toISOString().split("T")[0];
 }
 
-export function getWarrantyStatus(expiryDate: string): WarrantyStatus {
-  const expiry = new Date(expiryDate);
-  const now = new Date();
-  const thirtyDaysFromNow = addDays(now, 30);
-  if (isPast(expiry)) return "expired";
-  if (isWithinInterval(expiry, { start: now, end: thirtyDaysFromNow })) return "expiring_soon";
-  return "active";
+// Parse a stored "yyyy-mm-dd" expiry as a LOCAL calendar date (not UTC midnight)
+// so day math lines up with the user's timezone (IST etc.).
+function startOfLocalDay(d: Date): Date {
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+}
+function parseExpiry(expiryDate: string): Date {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(expiryDate);
+  if (m) return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+  return startOfLocalDay(new Date(expiryDate));
 }
 
 export function getDaysRemaining(expiryDate: string): number {
-  return differenceInDays(new Date(expiryDate), new Date());
+  return differenceInCalendarDays(parseExpiry(expiryDate), startOfLocalDay(new Date()));
+}
+
+// Status is derived from the SAME day count as the countdown, so the two can
+// never disagree — previously a product could show an "Expired" badge and
+// "Expires today" text at once due to UTC-vs-local rounding.
+export function getWarrantyStatus(expiryDate: string): WarrantyStatus {
+  const days = getDaysRemaining(expiryDate);
+  if (days < 0) return "expired";
+  if (days <= 30) return "expiring_soon";
+  return "active";
 }
 
 export function getStatusConfig(status: WarrantyStatus) {
