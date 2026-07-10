@@ -9,6 +9,12 @@ const withPWA = require("@ducanh2912/next-pwa").default({
   disable: process.env.NODE_ENV === "development",
   workboxOptions: {
     disableDevLogs: true,
+    // Activate a newly deployed service worker immediately instead of leaving
+    // it "waiting" until every app window is closed. Without these, installed
+    // apps (PWA/TWA) keep running the OLD service worker — and old cached
+    // pages — indefinitely, so deployed fixes never appear on device.
+    skipWaiting: true,
+    clientsClaim: true,
     // ─── Runtime Caching Strategy ────────────────────────────────────────────
     // This is the key missing piece for offline support.
     // Without this, products don't load when offline.
