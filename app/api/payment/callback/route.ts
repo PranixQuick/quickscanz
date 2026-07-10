@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
   // was upserted (status=trial) at order time keyed by razorpay_order_id.
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
+    (process.env.SUPABASE_QUICKSCANZ_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY)!
   );
 
   // Resolve the plan: prefer the query plan_id, fall back to the row created at order time.
