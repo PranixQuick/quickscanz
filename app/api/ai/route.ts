@@ -96,25 +96,40 @@ export async function POST(req: NextRequest) {
   }
 
   // ── Try Anthropic (if key present) ───────────────────────────────────────
-  const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
-  if (ANTHROPIC_API_KEY) {
+  const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+  const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.0-flash";
+  if (GEMINI_API_KEY) {
     try {
-      // Force a valid model server-side regardless of what the client sent.
-      const response = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-api-key": ANTHROPIC_API_KEY,
-          "anthropic-version": "2023-06-01",
-        },
-        body: JSON.stringify({ ...body, model: AI_MODEL }),
-      });
+      // Convert the Anthropic-style messages to Gemini's format.
+      const geminiContents = (messages || []).map((m) => ({
+        role: m.role === "assistant" ? "model" : "user",
+        parts: [{ text: m.content }],
+      }));
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ...(body.system ? { systemInstruction: { parts: [{ text: String(body.system) }] } } : {}),
+            contents: geminiContents,
+            generationConfig: { temperature: 0.4, maxOutputTokens: body.max_tokens || 1024 },
+          }),
+        }
+      );
       if (response.ok) {
         const data = await response.json();
-        if (recordUsage) await recordUsage(); // charge only on a real answer
-        return NextResponse.json(data);
+        const text = (data?.candidates?.[0]?.content?.parts || [])
+          .map((p: any) => p?.text)
+          .filter(Boolean)
+          .join("");
+        if (text) {
+          if (recordUsage) await recordUsage(); // charge only on a real answer
+          // Return the Anthropic-shaped payload the client already understands.
+          return NextResponse.json({ content: [{ type: "text", text }], model: GEMINI_MODEL });
+        }
       }
-      // Non-OK response → fall through to rule-based (not charged)
+      // No usable answer → fall through to rule-based (not charged)
     } catch {
       // Network error → fall through to rule-based (not charged)
     }
