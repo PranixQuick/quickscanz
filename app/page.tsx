@@ -19,13 +19,24 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function LandingPage() {
+export default async function LandingPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ source?: string }> | { source?: string };
+}) {
   // If the visitor is already signed in, don't show the public marketing page —
   // send them straight into the app. This is what makes the installed app open
   // to the dashboard instead of the website homepage.
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (user) redirect("/dashboard");
+
+  // When opened from the installed app (its launch URL is "/?source=pwa"), a
+  // logged-out user should land on the login screen — not the public marketing
+  // page. Normal web visitors (no source=pwa) still get the marketing homepage,
+  // so browser landing / SEO is unaffected.
+  const sp = searchParams ? await searchParams : undefined;
+  if (sp?.source === "pwa") redirect("/login");
 
   const t = await getT();
 
