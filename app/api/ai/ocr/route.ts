@@ -94,9 +94,10 @@ export async function POST(req: NextRequest) {
   const { image_base64, mime_type = "image/jpeg" } = body;
   if (!image_base64) return NextResponse.json({ error: "image_base64 required" }, { status: 400 });
 
-  // ── Try Anthropic Vision (claude-3-5-sonnet) ──────────────────────────────
-  const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
-  if (ANTHROPIC_API_KEY) {
+  // ── Try Gemini Vision (free tier) ─────────────────────────────────────────
+  const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+  const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.0-flash";
+  if (GEMINI_API_KEY) {
     try {
       const prompt = `You are a receipt/invoice OCR assistant for an Indian warranty tracker app.
 Extract the following fields from this receipt/invoice image. Return ONLY valid JSON, no markdown.
