@@ -7,6 +7,11 @@ import { createClient } from "@/lib/supabase/server";
 const FREE_LIMIT = 5;
 const PAID_LIMIT = 100;
 
+// Valid Anthropic model, forced server-side. The client used to send an
+// invalid id ("claude-sonnet-4-6"), which made every AI call fail and silently
+// fall back to canned replies. Matches the model used by the OCR route.
+const AI_MODEL = "claude-3-5-sonnet-20241022";
+
 // ── Rule-based fallback (no external API required) ────────────────────────────
 function getRuleBasedResponse(messages: Array<{ role: string; content: string }>, productCtx: string): string {
   const last = messages.filter(m => m.role === "user").pop()?.content?.toLowerCase() || "";
@@ -48,6 +53,9 @@ export async function POST(req: NextRequest) {
   const messages: Array<{ role: string; content: string }> = body.messages || [];
 
   // ── Hard usage limit check (server-side) ─────────────────────────────────
+  // Set once we've confirmed the caller is under quota; called only after a
+  // successful AI answer so fallbacks aren't charged.
+  let recordUsage: (() => Promise<void>) | null = null;
   if (productId) {
     const { data: sub } = await supabase
       .from("user_subscriptions")
@@ -81,17 +89,22 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Increment usage atomically
-    await supabase.from("ai_usage").upsert(
-      { user_id: user.id, product_id: productId, message_count: currentCount + 1, last_used_at: new Date().toISOString() },
-      { onConflict: "user_id,product_id" }
-    );
+    // Charge the quota only once the real AI actually answers (see below).
+    // Previously this incremented eagerly, so failed calls and canned
+    // rule-based fallbacks still burned a user's free messages.
+    recordUsage = async () => {
+      await supabase.from("ai_usage").upsert(
+        { user_id: user.id, product_id: productId, message_count: currentCount + 1, last_used_at: new Date().toISOString() },
+        { onConflict: "user_id,product_id" }
+      );
+    };
   }
 
   // ── Try Anthropic (if key present) ───────────────────────────────────────
   const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
   if (ANTHROPIC_API_KEY) {
     try {
+      // Force a valid model server-side regardless of what the client sent.
       const response = await fetch("https://api.anthropic.com/v1/messages", {
         method: "POST",
         headers: {
@@ -99,15 +112,16 @@ export async function POST(req: NextRequest) {
           "x-api-key": ANTHROPIC_API_KEY,
           "anthropic-version": "2023-06-01",
         },
-        body: JSON.stringify(body),
+        body: JSON.stringify({ ...body, model: AI_MODEL }),
       });
       if (response.ok) {
         const data = await response.json();
+        if (recordUsage) await recordUsage(); // charge only on a real answer
         return NextResponse.json(data);
       }
-      // Non-OK response → fall through to rule-based
+      // Non-OK response → fall through to rule-based (not charged)
     } catch {
-      // Network error → fall through to rule-based
+      // Network error → fall through to rule-based (not charged)
     }
   }
 
