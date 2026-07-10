@@ -78,11 +78,14 @@ export async function POST(req: NextRequest) {
 
   // Close the loop for warranty-status queries: resolve against the user's
   // real products and have Aaria speak back a concrete answer.
-  if (understood.intent === "get_warranty_status") {
+  if (understood.intent === "get_warranty_status" || productId) {
     const hint = extractProductHint(understood.entities || {});
-    const products = await getProducts();
+    // Exclude demo/sample seed products so Aaria only speaks about real ones.
+    const products = (await getProducts()).filter((p) => !(p as any).is_demo);
 
-    const match = hint
+    const match = productId
+      ? products.find((p) => p.id === productId)
+      : hint
       ? products.find(
           (p) =>
             p.name.toLowerCase().includes(hint) ||
