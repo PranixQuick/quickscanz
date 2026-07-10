@@ -1,4 +1,4 @@
-import { addMonths, differenceInDays, isPast, isWithinInterval, addDays } from "date-fns";
+import { addMonths, differenceInCalendarDays, differenceInMonths } from "date-fns";
 import type { WarrantyStatus } from "./types";
 
 export function calculateExpiryDate(purchaseDate: string, warrantyMonths: number): string {
