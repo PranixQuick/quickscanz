@@ -53,6 +53,9 @@ export async function POST(req: NextRequest) {
   const messages: Array<{ role: string; content: string }> = body.messages || [];
 
   // ── Hard usage limit check (server-side) ─────────────────────────────────
+  // Set once we've confirmed the caller is under quota; called only after a
+  // successful AI answer so fallbacks aren't charged.
+  let recordUsage: (() => Promise<void>) | null = null;
   if (productId) {
     const { data: sub } = await supabase
       .from("user_subscriptions")
