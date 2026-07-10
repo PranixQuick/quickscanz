@@ -86,17 +86,22 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Increment usage atomically
-    await supabase.from("ai_usage").upsert(
-      { user_id: user.id, product_id: productId, message_count: currentCount + 1, last_used_at: new Date().toISOString() },
-      { onConflict: "user_id,product_id" }
-    );
+    // Charge the quota only once the real AI actually answers (see below).
+    // Previously this incremented eagerly, so failed calls and canned
+    // rule-based fallbacks still burned a user's free messages.
+    recordUsage = async () => {
+      await supabase.from("ai_usage").upsert(
+        { user_id: user.id, product_id: productId, message_count: currentCount + 1, last_used_at: new Date().toISOString() },
+        { onConflict: "user_id,product_id" }
+      );
+    };
   }
 
   // ── Try Anthropic (if key present) ───────────────────────────────────────
   const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
   if (ANTHROPIC_API_KEY) {
     try {
+      // Force a valid model server-side regardless of what the client sent.
       const response = await fetch("https://api.anthropic.com/v1/messages", {
         method: "POST",
         headers: {
@@ -104,15 +109,16 @@ export async function POST(req: NextRequest) {
           "x-api-key": ANTHROPIC_API_KEY,
           "anthropic-version": "2023-06-01",
         },
-        body: JSON.stringify(body),
+        body: JSON.stringify({ ...body, model: AI_MODEL }),
       });
       if (response.ok) {
         const data = await response.json();
+        if (recordUsage) await recordUsage(); // charge only on a real answer
         return NextResponse.json(data);
       }
-      // Non-OK response → fall through to rule-based
+      // Non-OK response → fall through to rule-based (not charged)
     } catch {
-      // Network error → fall through to rule-based
+      // Network error → fall through to rule-based (not charged)
     }
   }
 
