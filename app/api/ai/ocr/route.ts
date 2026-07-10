@@ -94,9 +94,10 @@ export async function POST(req: NextRequest) {
   const { image_base64, mime_type = "image/jpeg" } = body;
   if (!image_base64) return NextResponse.json({ error: "image_base64 required" }, { status: 400 });
 
-  // ── Try Anthropic Vision (claude-3-5-sonnet) ──────────────────────────────
-  const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
-  if (ANTHROPIC_API_KEY) {
+  // ── Try Gemini Vision (free tier) ─────────────────────────────────────────
+  const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+  const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.0-flash";
+  if (GEMINI_API_KEY) {
     try {
       const prompt = `You are a receipt/invoice OCR assistant for an Indian warranty tracker app.
 Extract the following fields from this receipt/invoice image. Return ONLY valid JSON, no markdown.
@@ -115,29 +116,30 @@ Fields to extract:
 Return null for any field not found. Example:
 {"brand":"Samsung","product_name":"Galaxy S24","model_number":"SM-S921B","serial_number":null,"purchase_date":"2024-11-14","price":"74999","store_name":"Reliance Digital","warranty_months":12,"confidence":"high"}`;
 
-      const response = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-api-key": ANTHROPIC_API_KEY,
-          "anthropic-version": "2023-06-01",
-        },
-        body: JSON.stringify({
-          model: "claude-3-5-sonnet-20241022",
-          max_tokens: 512,
-          messages: [{
-            role: "user",
-            content: [
-              { type: "image", source: { type: "base64", media_type: mime_type, data: image_base64 } },
-              { type: "text", text: prompt },
-            ],
-          }],
-        }),
-      });
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [{
+              parts: [
+                { text: prompt },
+                { inline_data: { mime_type, data: image_base64 } },
+              ],
+            }],
+            generationConfig: {
+              temperature: 0.2,
+              maxOutputTokens: 512,
+              responseMimeType: "application/json",
+            },
+          }),
+        }
+      );
 
       if (response.ok) {
         const data = await response.json();
-        const raw = data.content?.[0]?.text || "{}";
+        const raw = data?.candidates?.[0]?.content?.parts?.[0]?.text || "{}";
         try {
           const parsed = JSON.parse(raw) as OCRResult;
           return NextResponse.json({ ok: true, data: parsed, method: "vision" });
