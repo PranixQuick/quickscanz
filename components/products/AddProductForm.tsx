@@ -9,6 +9,53 @@ import ProductSearchInput from "./ProductSearchInput";
 import { useT } from "@/lib/i18n/provider";
 import type { CatalogProduct } from "@/lib/actions/catalog";
 
+// Convert a picked file into a base64 payload for /api/ai/ocr.
+// Large phone photos are downscaled (max 1600px, JPEG) so the request stays
+// well under the serverless body limit; non-image files (e.g. PDF) are sent
+// as-is for the server to handle.
+async function fileToOcrPayload(file: File): Promise<{ image_base64: string; mime_type: string }> {
+  const readAsDataUrl = (f: File) =>
+    new Promise<string>((resolve, reject) => {
+      const r = new FileReader();
+      r.onload = () => resolve(String(r.result));
+      r.onerror = () => reject(new Error("read failed"));
+      r.readAsDataURL(f);
+    });
+
+  const dataUrl = await readAsDataUrl(file);
+
+  if (!file.type.startsWith("image/")) {
+    return { image_base64: dataUrl.split(",")[1] || "", mime_type: file.type || "application/octet-stream" };
+  }
+
+  try {
+    const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const i = new Image();
+      i.onload = () => resolve(i);
+      i.onerror = () => reject(new Error("decode failed"));
+      i.src = dataUrl;
+    });
+    const maxDim = 1600;
+    let { width, height } = img;
+    if (width > maxDim || height > maxDim) {
+      const scale = Math.min(maxDim / width, maxDim / height);
+      width = Math.round(width * scale);
+      height = Math.round(height * scale);
+    }
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) throw new Error("no canvas ctx");
+    ctx.drawImage(img, 0, 0, width, height);
+    const out = canvas.toDataURL("image/jpeg", 0.82);
+    return { image_base64: out.split(",")[1] || "", mime_type: "image/jpeg" };
+  } catch {
+    // Fall back to the raw image bytes if canvas processing fails.
+    return { image_base64: dataUrl.split(",")[1] || "", mime_type: file.type || "image/jpeg" };
+  }
+}
+
 // ---------- Bill OCR Modal ----------
 function ScanBillModal({ onResult, onClose, t }: {
   t: any;
