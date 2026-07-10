@@ -116,9 +116,13 @@ export async function createRazorpayOrder(
   // client cannot insert this pending row. Write it with the service role instead:
   // user.id comes from the verified session above (cannot be forged), and the status
   // is fixed to 'trial' so this path can never self-grant an 'active' subscription.
-  const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  // Prefer the product-specific key. In the shared Doppler vault the plain
+  // SUPABASE_SERVICE_ROLE_KEY points at a DIFFERENT project (pranix-agents),
+  // while Quickscanz's real key is SUPABASE_QUICKSCANZ_SERVICE_ROLE_KEY.
+  const SERVICE_ROLE_KEY =
+    process.env.SUPABASE_QUICKSCANZ_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!SERVICE_ROLE_KEY) {
-    console.error("[Razorpay] SUPABASE_SERVICE_ROLE_KEY is not set in Vercel — cannot record the pending subscription.");
+    console.error("[Razorpay] No service-role key found (SUPABASE_QUICKSCANZ_SERVICE_ROLE_KEY / SUPABASE_SERVICE_ROLE_KEY) — cannot record the pending subscription.");
     return { error: "Payment not configured — please contact support" };
   }
   const admin = createAdminClient(
@@ -238,9 +242,13 @@ export async function createRazorpayRedirectUrl(
   // client cannot insert this pending row. Write it with the service role instead:
   // user.id comes from the verified session above (cannot be forged), and the status
   // is fixed to 'trial' so this path can never self-grant an 'active' subscription.
-  const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  // Prefer the product-specific key. In the shared Doppler vault the plain
+  // SUPABASE_SERVICE_ROLE_KEY points at a DIFFERENT project (pranix-agents),
+  // while Quickscanz's real key is SUPABASE_QUICKSCANZ_SERVICE_ROLE_KEY.
+  const SERVICE_ROLE_KEY =
+    process.env.SUPABASE_QUICKSCANZ_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!SERVICE_ROLE_KEY) {
-    console.error("[Razorpay] SUPABASE_SERVICE_ROLE_KEY is not set in Vercel — cannot record the pending subscription.");
+    console.error("[Razorpay] No service-role key found (SUPABASE_QUICKSCANZ_SERVICE_ROLE_KEY / SUPABASE_SERVICE_ROLE_KEY) — cannot record the pending subscription.");
     return { error: "Payment not configured — please contact support" };
   }
   const admin = createAdminClient(
