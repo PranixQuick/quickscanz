@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
   // is not available during the build-time page data collection phase.
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
+    (process.env.SUPABASE_QUICKSCANZ_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY)!
   );
 
   const WEBHOOK_SECRET = process.env.RAZORPAY_WEBHOOK_SECRET;
