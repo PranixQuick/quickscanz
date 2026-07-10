@@ -44,7 +44,10 @@ export async function POST(request: NextRequest) {
   // Parse payload correctly according to Supabase Auth Hook schema
   try {
     const body = JSON.parse(rawBody);
-    const phone = body.user?.phone;
+    // Supabase Send-SMS hook: on signup/login OTP the number is in user.phone,
+    // but on phone LINK/CHANGE (PUT /user) it arrives in user.phone_change
+    // while user.phone is still empty. Support both flows.
+    const phone = body.user?.phone_change || body.user?.new_phone || body.user?.phone;
     const code = body.sms?.otp;
 
     if (!phone || !code) {
