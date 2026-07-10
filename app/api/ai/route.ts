@@ -7,6 +7,11 @@ import { createClient } from "@/lib/supabase/server";
 const FREE_LIMIT = 5;
 const PAID_LIMIT = 100;
 
+// Valid Anthropic model, forced server-side. The client used to send an
+// invalid id ("claude-sonnet-4-6"), which made every AI call fail and silently
+// fall back to canned replies. Matches the model used by the OCR route.
+const AI_MODEL = "claude-3-5-sonnet-20241022";
+
 // ── Rule-based fallback (no external API required) ────────────────────────────
 function getRuleBasedResponse(messages: Array<{ role: string; content: string }>, productCtx: string): string {
   const last = messages.filter(m => m.role === "user").pop()?.content?.toLowerCase() || "";
