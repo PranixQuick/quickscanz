@@ -66,13 +66,19 @@ const withPWA = require("@ducanh2912/next-pwa").default({
           expiration: { maxAgeSeconds: 60 * 60 * 24 * 30, maxEntries: 100 },
         },
       },
-      // Page HTML — stale-while-revalidate for fast loads
+      // Page navigations (documents) — network-first so a fresh deploy is
+      // fetched whenever the device is online, falling back to cache only when
+      // offline or the network is slow. This covers "/", "/?source=pwa" (the
+      // PWA/TWA start_url) and every app route on both quickscanz.com and
+      // www.quickscanz.com. The previous StaleWhileRevalidate rule served the
+      // OLD page first, so fixes only appeared on a later visit.
       {
-        urlPattern: /^https:\/\/quickscanz\.com\/(?:dashboard|products|claim).*/,
-        handler: "StaleWhileRevalidate",
+        urlPattern: ({ request }) => request.mode === "navigate",
+        handler: "NetworkFirst",
         options: {
-          cacheName: "app-pages",
-          expiration: { maxAgeSeconds: 60 * 60 * 24, maxEntries: 20 },
+          cacheName: "pages",
+          networkTimeoutSeconds: 3,
+          expiration: { maxAgeSeconds: 60 * 60 * 24, maxEntries: 30 },
         },
       },
     ],
