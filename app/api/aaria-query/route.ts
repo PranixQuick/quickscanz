@@ -59,6 +59,9 @@ export async function POST(req: NextRequest) {
   }
 
   const langHint: string = typeof body?.lang_hint === "string" ? body.lang_hint : "en";
+  // Optional: the exact product the UI already resolved (e.g. WarrantySpeakCard).
+  // When present we answer for THIS product directly and skip NLU fuzzy matching.
+  const productId: string | null = typeof body?.product_id === "string" ? body.product_id : null;
 
   let understood: Awaited<ReturnType<typeof aariaUnderstand>>;
   try {
