@@ -69,19 +69,32 @@ function ScanBillModal({ onResult, onClose, t }: {
   async function processFile(file: File) {
     setStage("scanning");
     try {
-      const fd = new FormData();
-      fd.append("file", file);
-      const res = await fetch("/api/ai/ocr", { method: "POST", body: fd });
+      const { image_base64, mime_type } = await fileToOcrPayload(file);
+      if (!image_base64) throw new Error("empty file");
+      const res = await fetch("/api/ai/ocr", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ image_base64, mime_type }),
+      });
       if (!res.ok) throw new Error(await res.text());
       const json = await res.json();
+      const d = json?.data ?? {};
       const fields: Partial<FormState> = {};
-      if (json.brand)         fields.brand         = json.brand;
-      if (json.product_name)  fields.name          = json.product_name;
-      if (json.model_number)  fields.model_number  = json.model_number;
-      if (json.serial_number) fields.serial_number = json.serial_number;
-      if (json.store_name)    fields.store_name    = json.store_name;
-      if (json.price)         fields.price         = String(json.price);
-      if (json.purchase_date) fields.purchase_date = json.purchase_date;
+      if (d.brand)         fields.brand         = d.brand;
+      if (d.product_name)  fields.name          = d.product_name;
+      if (d.model_number)  fields.model_number  = d.model_number;
+      if (d.serial_number) fields.serial_number = d.serial_number;
+      if (d.store_name)    fields.store_name    = d.store_name;
+      if (d.price)         fields.price         = String(d.price);
+      if (d.purchase_date) fields.purchase_date = d.purchase_date;
+
+      // Don't show a misleading "details extracted" success when nothing
+      // could actually be read (e.g. AI key unset, or an unreadable/PDF bill).
+      if (Object.keys(fields).length === 0) {
+        setErrMsg(t("product.ocr_error"));
+        setStage("error");
+        return;
+      }
       setStage("done");
       setTimeout(() => { onResult(fields); onClose(); }, 800);
     } catch (e: any) {
