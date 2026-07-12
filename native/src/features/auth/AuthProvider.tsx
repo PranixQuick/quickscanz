@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { OneSignal } from "react-native-onesignal";
 import { supabase } from "../../lib/supabase";
-import { registerPush, setPushExternalId, clearPushExternalId } from "../../lib/push";
+import { registerPush } from "../../lib/push";
 
 type AuthContextValue = {
   session: Session | null;
