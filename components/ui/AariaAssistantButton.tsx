@@ -37,6 +37,7 @@ function captionPreview(captions?: Array<Record<string, unknown>>): string | nul
 }
 
 export default function AariaAssistantButton() {
+  const { locale } = useI18n();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
