@@ -60,7 +60,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   async function signOut() {
     registeredUserRef.current = null;
-    clearPushExternalId();
     try {
       OneSignal.logout();
     } catch {
