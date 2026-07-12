@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useI18n } from "@/lib/i18n/provider";
 
 // ── Aaria voice-control-plane entry point ────────────────────────────────────
 // Distinct from components/ui/VoiceSearchButton.tsx (local browser Web Speech
