@@ -11,7 +11,7 @@ Rationale: reuses your existing TypeScript, domain types, and the **same `@supab
 
 ## What is reused vs rebuilt
 - **Reused as-is:** Supabase (auth, DB, RLS, edge functions), business logic/types (`lib/types`, warranty math in `lib/utils`), the AI endpoints (OCR scan, Claims, Aaria) — called over HTTPS exactly as the web app does.
-- **Rebuilt native:** all screens/navigation/components (no web DOM), native camera for bill scan, native biometric, native push (Expo Notifications), native splash/status bar.
+,
 
 ## Zero/minimal-burn stack
 - **Expo SDK (managed)** — free; EAS Build free tier for AABs.
