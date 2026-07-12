@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { Volume2 } from "lucide-react";
 import type { Product } from "@/lib/types";
+import { useI18n } from "@/lib/i18n/provider";
 
 // ── Aaria voice-control-plane entry point (spoken warranty status) ──────────
 // Distinct from components/ui/AariaAssistantButton.tsx (free-text "Ask Aaria"
