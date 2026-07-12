@@ -98,7 +98,9 @@ export async function POST(req: NextRequest) {
   // Gemini API needs region-specific prepay (0 balance in IN), so OpenRouter is
   // the free path. Model overridable via OPENROUTER_MODEL.
   const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
-  const OPENROUTER_MODEL = process.env.OPENROUTER_MODEL || "google/gemini-2.0-flash-exp:free";
+  // Verified free + image-capable model on OpenRouter's live catalog.
+  // (google/gemini-2.0-flash-exp:free returned "No endpoints found".)
+  const OPENROUTER_MODEL = process.env.OPENROUTER_MODEL || "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free";
   if (OPENROUTER_API_KEY) {
     try {
       const orPrompt = `You are a receipt/invoice OCR assistant for an Indian warranty tracker app. Extract fields from the image and return ONLY valid minified JSON, no markdown:
