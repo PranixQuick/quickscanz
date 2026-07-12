@@ -19,6 +19,7 @@ interface Props {
 type State = "idle" | "loading" | "playing" | "error";
 
 export default function WarrantySpeakCard({ product }: Props) {
+  const { locale } = useI18n();
   const [state, setState] = useState<State>("idle");
   const [spokenText, setSpokenText] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
