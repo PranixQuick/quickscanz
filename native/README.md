@@ -69,9 +69,7 @@ redirect URL in Supabase Dashboard → Authentication → URL Configuration
   documents which routes are confirmed vs. assumed to accept it
 - `src/lib/locale.ts` *(M3)* — AsyncStorage-backed voice-language preference
   (`en`/`hi`/`te`/`ta`/`kn`/`ml`), set from the Account screen
-- `src/lib/push.ts` *(M3)* — `expo-notifications` permission request + Expo
-  push token registration, best-effort persisted to `push_subscriptions`
-  (see the file's doc comment for the delivery-pipeline gap vs. OneSignal)
+,
 - `src/features/auth/AuthProvider.tsx` — session context via
   `supabase.auth.onAuthStateChange`, exposes `user` / `session` / `loading` /
   `signOut`; now also triggers push registration once per signed-in user (M3)
