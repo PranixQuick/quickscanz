@@ -99,7 +99,7 @@ export default function PhoneBindingOverlay({ userId, onSuccess }: Props) {
           <form onSubmit={handleSendOTP} className="space-y-5">
             <div className="text-center">
               <div className="w-14 h-14 rounded-2xl bg-sand-100 flex items-center justify-center mx-auto mb-4 text-2xl">
-                ??
+                📱
               </div>
               <h2 className="font-display text-xl font-light text-ink-900">Verify Mobile Number</h2>
               <p className="text-xs text-ink-400 mt-1 max-w-xs mx-auto">
