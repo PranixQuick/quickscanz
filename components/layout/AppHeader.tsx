@@ -28,7 +28,7 @@ export default function AppHeader({ userName }: AppHeaderProps) {
     setSigningOut(true);
     const supabase = createClient();
     await supabase.auth.signOut();
-    toast.success("Signed out");
+    toast.success(t("account.signed_out_toast"));
     router.push("/login");
     router.refresh();
   };
