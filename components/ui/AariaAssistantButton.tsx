@@ -56,7 +56,7 @@ export default function AariaAssistantButton() {
       const res = await fetch("/api/aaria-query", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text, lang_hint: "en" }),
+        body: JSON.stringify({ text, lang_hint: locale }),
       });
 
       const data = await res.json();
