@@ -1,0 +1,56 @@
+{
+  "expo": {
+    "name": "QuickScanZ Premium",
+    "slug": "quickscanz-premium",
+    "scheme": "quickscanz",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0B1120"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.quickscanz.premium",
+      "infoPlist": {
+        "NSCameraUsageDescription": "QuickScanZ uses your camera to scan bills and warranty cards.",
+        "NSFaceIDUsageDescription": "QuickScanZ uses Face ID to unlock your account quickly and securely."
+      }
+    },
+    "android": {
+      "package": "com.quickscanz.premium",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0B1120"
+      },
+      "permissions": ["CAMERA", "USE_BIOMETRIC", "USE_FINGERPRINT"]
+    },
+    "plugins": [
+      "expo-router",
+      "expo-local-authentication",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow QuickScanZ to access your camera to scan bills and warranty cards."
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#0B1120"
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "REPLACE_WITH_EAS_PROJECT_ID"
+      }
+    }
+  }
+}
