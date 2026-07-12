@@ -62,7 +62,7 @@ export default function AppHeader({ userName }: AppHeaderProps) {
           <div className="relative">
             <button
               onClick={() => setLangOpen(!langOpen)}
-              aria-label="Change language"
+              aria-label={t("app.change_language")}
               aria-expanded={langOpen}
               className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium text-ink-600 hover:bg-cream-200 hover:text-ink-900 transition-colors"
             >
