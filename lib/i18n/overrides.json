@@ -16,6 +16,7 @@
     "claim.fallback_step2": "Call {brand} customer care \u2014 search \"{brand} India toll free\" on Google for the latest number."
   },
   "hi": {
+    "product.ocr_autofill_toast": "अपने बिल से स्वतः भरे {count} फ़ील्ड!",
     "nav.home": "होम",
     "nav.claim": "क्लेम AI",
     "tile.buying_assistant": "खरीद सहायक",
