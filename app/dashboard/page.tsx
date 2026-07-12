@@ -35,9 +35,13 @@ export default async function DashboardPage() {
     .eq("id", user.id)
     .single();
 
+  // Phone verification is OPTIONAL — Google/email sign-in goes straight into the app.
+  // Default (env unset) = non-blocking. Set NEXT_PUBLIC_FORCE_PHONE_BINDING="true"
+  // only if you ever want to hard-require a verified phone before dashboard access.
+  const forcePhoneBinding = process.env.NEXT_PUBLIC_FORCE_PHONE_BINDING === "true";
   const otpEnabled = process.env.NEXT_PUBLIC_OTP_ENABLED !== "false";
   const isDemoAccount = !!user.email && DEMO_LOGIN_ALLOWLIST.includes(user.email.toLowerCase());
-  const needsPhoneBinding = otpEnabled && !profile?.phone && !isDemoAccount;
+  const needsPhoneBinding = forcePhoneBinding && otpEnabled && !profile?.phone && !isDemoAccount;
 
   if (needsPhoneBinding) {
     return <PhoneBindingOverlay userId={user.id} />;
