@@ -1,7 +1,8 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "../../lib/supabase";
+import { registerForPushNotifications } from "../../lib/push";
 
 type AuthContextValue = {
   session: Session | null;
@@ -15,6 +16,7 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const registeredUserRef = useRef<string | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -37,7 +39,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
+  // Register for push once per signed-in user (M3) — fire-and-forget, never
+  // blocks the auth flow. See src/lib/push.ts for the known gap between an
+  // Expo push token and the OneSignal-based send-push-notifications
+  // function that actually delivers notifications today.
+  useEffect(() => {
+    const userId = session?.user?.id ?? null;
+    if (!userId || registeredUserRef.current === userId) return;
+    registeredUserRef.current = userId;
+    registerForPushNotifications(userId).catch(() => {});
+  }, [session?.user?.id]);
+
   async function signOut() {
+    registeredUserRef.current = null;
     await supabase.auth.signOut();
   }
 
