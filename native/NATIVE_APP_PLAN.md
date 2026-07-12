@@ -18,7 +18,7 @@ Rationale: reuses your existing TypeScript, domain types, and the **same `@supab
 - **supabase-js** — same keys/project, no new backend.
 - **expo-local-authentication** — fingerprint/Face unlock (the missing "fingerprint" feature).
 - **expo-camera** — native bill capture -> existing `/api/ai/ocr`.
-- **expo-notifications** — native push (M3: token registration is wired; delivery pipeline is a follow-up, see below).
+,
 - **expo-av** / **expo-file-system** — Aaria "read aloud" audio playback (M3).
 - **expo-web-browser** — native bill capture UX and, as of M3, the pricing screen's web-checkout handoff.
 - **@react-navigation** (native-stack + bottom-tabs, via expo-router) — native transitions/tab bar.
