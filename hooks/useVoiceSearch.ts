@@ -1,6 +1,19 @@
 "use client";
 
 import { useState, useRef, useCallback } from "react";
+import { useI18n } from "@/lib/i18n/provider";
+
+// Maps QuickScanZ's app locale codes (lib/i18n/provider.tsx, Locale =
+// 'en' | 'hi' | 'te' | 'ta' | 'kn' | 'ml') to the BCP-47 codes the browser's
+// Web Speech API (SpeechRecognition.lang) expects.
+const VOICE_SEARCH_BCP47: Record<string, string> = {
+  en: "en-IN",
+  hi: "hi-IN",
+  te: "te-IN",
+  ta: "ta-IN",
+  kn: "kn-IN",
+  ml: "ml-IN",
+};
 
 interface UseVoiceSearchReturn {
   isListening: boolean;
