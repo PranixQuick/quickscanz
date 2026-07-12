@@ -97,7 +97,9 @@ export async function POST(req: NextRequest) {
 
   // ── Try Anthropic (if key present) ───────────────────────────────────────
   const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-  const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.0-flash";
+  // gemini-2.0-flash has free_tier limit=0 on this key's project (429). Default
+  // to gemini-1.5-flash which has a free tier. Overridable via GEMINI_MODEL.
+  const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-1.5-flash";
   if (GEMINI_API_KEY) {
     try {
       // Convert the Anthropic-style messages to Gemini's format.
