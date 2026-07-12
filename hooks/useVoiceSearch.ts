@@ -26,6 +26,7 @@ interface UseVoiceSearchReturn {
 }
 
 export function useVoiceSearch(onResult?: (text: string) => void): UseVoiceSearchReturn {
+  const { locale } = useI18n();
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState("");
   const [error, setError] = useState<string | null>(null);
