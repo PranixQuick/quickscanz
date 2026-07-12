@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { createClient as createSupabaseJsClient } from "@supabase/supabase-js";
 
 // ── Usage limits (enforced server-side, cannot be bypassed) ──────────────────
 // DATA COLLECTED: message_count per user per product, stored in ai_usage table
