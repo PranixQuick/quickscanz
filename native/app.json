@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "QuickScanZ Premium",
-    "slug": "quickscanz-premium",
+    "slug": "pranixquick",
     "scheme": "quickscanz",
     "version": "0.1.0",
     "orientation": "portrait",
@@ -13,7 +13,9 @@
       "resizeMode": "contain",
       "backgroundColor": "#0B1120"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.quickscanz.premium",
@@ -28,7 +30,15 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#0B1120"
       },
-      "permissions": ["CAMERA", "USE_BIOMETRIC", "USE_FINGERPRINT"]
+      "permissions": [
+        "CAMERA",
+        "USE_BIOMETRIC",
+        "USE_FINGERPRINT",
+        "android.permission.USE_BIOMETRIC",
+        "android.permission.USE_FINGERPRINT",
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "plugins": [
       "expo-router",
@@ -51,6 +61,6 @@
         "projectId": "2ea64344-9f20-404d-8052-53eeabf832bc"
       }
     },
-    "owner": "pranixquick"
+    "owner": "pranixquicks-team"
   }
 }
