@@ -115,7 +115,7 @@ export async function aariaSpeak(
 ): Promise<AariaSpeakResponse> {
   return aariaFetch<AariaSpeakResponse>("/api/voice/speak", {
     text,
-    lang: opts.lang || "en",
+    lang: toAariaLang(opts.lang),
     product: opts.product || AARIA_PRODUCT,
     quality_tier: opts.qualityTier || "standard",
   });
