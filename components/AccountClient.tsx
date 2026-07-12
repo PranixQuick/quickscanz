@@ -70,6 +70,9 @@ export default function AccountClient({
         </div>
       </div>
 
+      {/* Linked sign-in methods — opt-in, additive only; see docs/UNIFIED_AUTH_PLAN.md */}
+      <LinkedMethods userId={userId} />
+
       {/* Upgrade CTA */}
       {!isPro && (
         <Link href="/pricing" className="block card p-4 bg-gradient-to-r from-sand-100 to-cream-100 border-sand-200 group hover:border-sand-300 transition-all">
