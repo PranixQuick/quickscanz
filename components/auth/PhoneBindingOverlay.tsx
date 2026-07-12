@@ -99,7 +99,7 @@ export default function PhoneBindingOverlay({ userId, onSuccess }: Props) {
           <form onSubmit={handleSendOTP} className="space-y-5">
             <div className="text-center">
               <div className="w-14 h-14 rounded-2xl bg-sand-100 flex items-center justify-center mx-auto mb-4 text-2xl">
-                ??
+                📱
               </div>
               <h2 className="font-display text-xl font-light text-ink-900">Verify Mobile Number</h2>
               <p className="text-xs text-ink-400 mt-1 max-w-xs mx-auto">
@@ -110,7 +110,7 @@ export default function PhoneBindingOverlay({ userId, onSuccess }: Props) {
             <div>
               <div className="flex items-center gap-2">
                 <div className="flex items-center gap-1 px-3 py-3.5 bg-cream-200 border border-cream-200 rounded-xl text-sm font-medium text-ink-700 flex-shrink-0">
-                  ???? +91
+                  🇮🇳 +91
                 </div>
                 <input
                   type="tel"
@@ -137,14 +137,14 @@ export default function PhoneBindingOverlay({ userId, onSuccess }: Props) {
               disabled={isPending || phone.length < 10}
               className="w-full btn-primary py-4 text-base font-semibold disabled:opacity-40 rounded-2xl transition-all"
             >
-              {isPending ? "Sending OTP." : "Send Verification OTP ?"}
+              {isPending ? "Sending OTP…" : "Send Verification OTP →"}
             </button>
           </form>
         ) : (
           <form onSubmit={handleVerifyOTP} className="space-y-5">
             <div className="text-center">
               <div className="w-14 h-14 rounded-2xl bg-sage-50 border border-sage-200 flex items-center justify-center mx-auto mb-4 text-2xl">
-                ??
+                🔐
               </div>
               <h2 className="font-display text-xl font-light text-ink-900">Enter Verification Code</h2>
               <p className="text-xs text-ink-400 mt-1 max-w-xs mx-auto">
