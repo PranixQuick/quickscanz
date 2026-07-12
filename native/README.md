@@ -37,10 +37,7 @@ npx expo start
 | `EXPO_PUBLIC_SUPABASE_URL` | Same Supabase project URL as the web app's `NEXT_PUBLIC_SUPABASE_URL` |
 | `EXPO_PUBLIC_SUPABASE_ANON_KEY` | Same anon key as the web app's `NEXT_PUBLIC_SUPABASE_ANON_KEY` |
 | `EXPO_PUBLIC_API_BASE_URL` *(optional, M2/M3)* | Base URL of the existing Next.js API (e.g. `https://www.quickscanz.com`) for calling `/api/ai/ocr`, `/api/ai`, and opening `/pricing` |
-| `EXPO_PUBLIC_AARIA_BASE_URL` *(optional, M3)* | Base URL of pranix-aaria; defaults to the same public Render URL the web app falls back to. No auth needed. |
-
-`EXPO_PUBLIC_*` vars are inlined at build time by Expo (the RN equivalent of
-Next's `NEXT_PUBLIC_*`). Never put a service-role key here.
+,
 
 For Google sign-in to work, add `quickscanz://auth/callback` as an allowed
 redirect URL in Supabase Dashboard → Authentication → URL Configuration
