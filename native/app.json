@@ -40,17 +40,17 @@
         }
       ],
       [
-        "expo-notifications",
+        "onesignal-expo-plugin",
         {
-          "icon": "./assets/notification-icon.png",
-          "color": "#0B1120"
+          "mode": "development"
         }
       ]
     ],
     "extra": {
       "eas": {
-        "projectId": "REPLACE_WITH_EAS_PROJECT_ID"
+        "projectId": "2ea64344-9f20-404d-8052-53eeabf832bc"
       }
-    }
+    },
+    "owner": "TODO_expo_username"
   }
 }
