@@ -144,11 +144,17 @@ Return null for any field not found. Example:
           const parsed = JSON.parse(raw) as OCRResult;
           return NextResponse.json({ ok: true, data: parsed, method: "vision" });
         } catch {
+          console.error("[ocr] Gemini returned non-JSON text:", String(raw).slice(0, 200));
           // JSON parse failed — fall through to regex
         }
+      } else {
+        // Diagnostic: surface WHY Gemini failed (403 API disabled, 404 model,
+        // 400 bad request, 429 quota, etc.) instead of silently falling back.
+        const errTxt = await response.text().catch(() => "");
+        console.error(`[ocr] Gemini non-OK status=${response.status} model=${GEMINI_MODEL} body=${errTxt.slice(0, 400)}`);
       }
-    } catch {
-      // Network failure — fall through
+    } catch (e) {
+      console.error("[ocr] Gemini fetch threw:", String(e));
     }
   }
 
