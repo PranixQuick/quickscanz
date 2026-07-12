@@ -1,10 +1,11 @@
 # QuickScanZ Premium — Native App (Expo)
 
-**Status:** M0 (foundation) + M1 (auth/shell) scaffolded on the isolated branch
+**Status:** M0 (foundation) + M1 (auth/shell) + M2 (wallet/scan) + M3
+(claims/Aaria voice/pricing/push) scaffolded on the isolated branch
 `native/expo-premium`. Nothing here touches `main` or the live TWA
 (Play Store `com.quickscanz.warranty`). See
 [`../NATIVE_APP_PLAN.md`](../NATIVE_APP_PLAN.md) for the full architecture and
-milestone plan.
+milestone plan, including the M3 follow-ups list.
 
 ## Stack
 
@@ -25,7 +26,7 @@ backend, no schema changes.
 cd native
 npm install
 npx expo install --fix   # aligns native module versions to the installed Expo SDK
-cp .env.example .env     # then fill in the two Supabase values below
+cp .env.example .env     # then fill in the values below
 npx expo start
 ```
 
@@ -35,7 +36,8 @@ npx expo start
 |---|---|
 | `EXPO_PUBLIC_SUPABASE_URL` | Same Supabase project URL as the web app's `NEXT_PUBLIC_SUPABASE_URL` |
 | `EXPO_PUBLIC_SUPABASE_ANON_KEY` | Same anon key as the web app's `NEXT_PUBLIC_SUPABASE_ANON_KEY` |
-| `EXPO_PUBLIC_API_BASE_URL` *(optional, M2)* | Base URL of the existing Next.js API (e.g. `https://www.quickscanz.com`) for calling `/api/ai/ocr` etc. |
+| `EXPO_PUBLIC_API_BASE_URL` *(optional, M2/M3)* | Base URL of the existing Next.js API (e.g. `https://www.quickscanz.com`) for calling `/api/ai/ocr`, `/api/ai`, and opening `/pricing` |
+| `EXPO_PUBLIC_AARIA_BASE_URL` *(optional, M3)* | Base URL of pranix-aaria; defaults to the same public Render URL the web app falls back to. No auth needed. |
 
 `EXPO_PUBLIC_*` vars are inlined at build time by Expo (the RN equivalent of
 Next's `NEXT_PUBLIC_*`). Never put a service-role key here.
@@ -50,7 +52,9 @@ redirect URL in Supabase Dashboard → Authentication → URL Configuration
 `./assets/adaptive-icon.png`, and `./assets/notification-icon.png`. These
 binary files are **not committed yet** — drop real artwork at those paths
 before an EAS build. `expo start` against Expo Go will still run without them
-(with a warning).
+(with a warning). `app.json`'s `extra.eas.projectId` is also still the
+scaffold placeholder — it needs a real EAS project id before Expo push tokens
+(`native/src/lib/push.ts`) will resolve outside Expo Go.
 
 ## Scripts
 
@@ -60,7 +64,7 @@ before an EAS build. `expo start` against Expo Go will still run without them
   APK, separate `com.quickscanz.premium` package — installs side-by-side with
   the live app)
 
-## What's implemented (M0 + M1)
+## What's implemented (M0–M3)
 
 - Expo + expo-router + TypeScript + nativewind scaffold (`app.json`,
   `eas.json`, `babel.config.js`, `metro.config.js`, `tailwind.config.js`)
@@ -70,78 +74,79 @@ before an EAS build. `expo start` against Expo Go will still run without them
 - `src/lib/biometric.ts` — `expo-local-authentication` + `expo-secure-store`
   helpers: `saveSession`, `getSessionWithBiometric`, `hasBiometric`,
   `clearSavedSession`
+- `src/lib/calculations.ts` — ported warranty-status/countdown math
+- `src/lib/api.ts` *(M3)* — shared `apiFetch` wrapper that attaches
+  `Authorization: Bearer <access_token>` to calls against the Next.js API;
+  documents which routes are confirmed vs. assumed to accept it
+- `src/lib/locale.ts` *(M3)* — AsyncStorage-backed voice-language preference
+  (`en`/`hi`/`te`/`ta`/`kn`/`ml`), set from the Account screen
+- `src/lib/push.ts` *(M3)* — `expo-notifications` permission request + Expo
+  push token registration, best-effort persisted to `push_subscriptions`
+  (see the file's doc comment for the delivery-pipeline gap vs. OneSignal)
 - `src/features/auth/AuthProvider.tsx` — session context via
   `supabase.auth.onAuthStateChange`, exposes `user` / `session` / `loading` /
-  `signOut`
+  `signOut`; now also triggers push registration once per signed-in user (M3)
+- `src/features/aaria/aariaClient.ts` *(M3)* — native port of
+  `lib/aaria-client.ts` (`aariaUnderstand`/`aariaSpeak`), called directly
+  since pranix-aaria needs no auth
+- `src/features/aaria/useAariaSpeech.ts` *(M3)* — `expo-av` playback of
+  Aaria's speak response (via a temp file written through
+  `expo-file-system`) plus an understand-then-speak `ask()` helper
 - `app/(auth)/login.tsx` — email/password + Google (native PKCE OAuth via
   `expo-web-browser`) + **optional, collapsed** phone OTP — no forced phone
   step, matching the fixed web flow
 - `app/(auth)/unlock.tsx` — biometric unlock screen
 - `app/(tabs)/_layout.tsx` — native tab bar: Home, Wallet, Scan, Claims, Account
 - `app/(tabs)/index.tsx` — dashboard placeholder, live product count from Supabase
-- `app/(tabs)/wallet.tsx` — product list from the `products` table, pull-to-refresh
-- `app/(tabs)/scan.tsx` — `expo-camera` capture placeholder (OCR wiring is M2)
-- `app/(tabs)/claims.tsx` — placeholder (Aaria claim flow is M3)
-- `app/(tabs)/account.tsx` — shows signed-in email, sign out (also clears the
-  biometric-gated session copy)
+- `app/(tabs)/wallet.tsx` — product list from the `products` table, grouped by
+  warranty status, pull-to-refresh
+- `app/(tabs)/scan.tsx` — `expo-camera` capture -> `POST /api/ai/ocr` -> prefilled add-product form
+- `app/(tabs)/claims.tsx` *(M3)* — product picker + quick-issue chips +
+  free-text chat, `POST /api/ai` for AI guidance with a graceful local
+  fallback on auth/network failure, `claim_sessions` persisted via the
+  native supabase client
+- `app/(tabs)/account.tsx` — signed-in email, sign out (also clears the
+  biometric-gated session copy), *(M3)* Upgrade-to-Pro link + Aaria voice
+  language picker
+- `app/product/[id].tsx` — product detail, *(M3)* "Read aloud" (speaks the
+  warranty status via Aaria) and "Ask Aaria" (typed question -> Aaria
+  understand -> spoken answer) actions
+- `app/product/add.tsx` — manual/OCR-prefilled add-product form
+- `app/pricing.tsx` *(M3)* — reads `subscription_plans` +
+  `user_subscriptions`, highlights the current plan, opens the existing web
+  `/pricing` checkout in an in-app browser for upgrades
 - `app/_layout.tsx` — root `Stack`, auth-state redirect gate between
   `(auth)` and `(tabs)`
 
-### Known M1 gap
+### Known gaps
 
-The root layout gates purely on "is there a live Supabase session" — it does
-**not** yet force the `/unlock` biometric screen on cold start/resume. Wiring
-that in means: bootstrap from `SecureStore` (via `src/lib/biometric.ts`)
-*before* trusting the AsyncStorage-persisted session, and require a successful
-`getSessionWithBiometric()` call before rendering `(tabs)`. Left as a
-follow-up so M1 ships a working, testable auth shell first.
+- The root layout gates purely on "is there a live Supabase session" — it
+  does **not** yet force the `/unlock` biometric screen on cold start/resume
+  (M1 gap, still open).
+- `POST /api/ai` (claims) and `POST /api/ai/ocr` (scan) both assume/require a
+  Bearer-token auth fallback on the Next.js route that isn't confirmed to
+  exist on `main` — see `src/lib/api.ts`'s doc comment and
+  `../NATIVE_APP_PLAN.md`'s M3 follow-ups. Claims degrades gracefully to
+  local guidance when this 401s; scan will show a hard error.
+- Push notifications register a real Expo token but nothing currently
+  delivers to it — the send pipeline is OneSignal-based and doesn't read the
+  table this writes to. See `src/lib/push.ts`.
+- Pricing has no native checkout — it hands off to the web `/pricing` page in
+  a separate (non-SSO'd) browser session.
+- No production EAS project id yet (`app.json`'s `extra.eas.projectId` is a
+  placeholder) — required for real Expo push tokens and any EAS build.
 
 ## Not implemented yet
 
-- Native bill scan → OCR wiring (M2)
-- Warranty Wallet detail screens, add-product flow (M2)
 - Forced biometric gate on resume (see gap above)
-- Claims/Aaria, push notifications, subscriptions (M3)
+- Full i18n provider reading the shared `messages.json` catalog (Aaria's
+  language picker is a narrower, standalone preference — see
+  `src/lib/locale.ts`)
+- Native Razorpay checkout, `/api/ai*` Bearer-auth backend support, and a
+  working push-notification send path (all M3 follow-ups, tracked in
+  `../NATIVE_APP_PLAN.md`)
 - Splash/transition polish, empty states, device QA (M4)
 - EAS production build + Play internal track (M5)
-
-## M2 — next steps (wallet + native scan → OCR)
-
-1. **Wallet detail + add-product.** Build `app/(tabs)/wallet/[id].tsx` and an
-   add-product flow. Mirror the `Product` shape from the web app's
-   `lib/types.ts` into `native/src/lib/types.ts` (or generate types from the
-   Supabase schema with `supabase gen types typescript`).
-
-2. **Wire `scan.tsx` to `/api/ai/ocr`.** The existing route
-   (`app/api/ai/ocr/route.ts` on `main`) authenticates via `createClient()`
-   from `lib/supabase/server.ts`, which reads the **Supabase SSR cookie** set
-   by `@supabase/ssr` in a browser. React Native's `fetch` has no shared
-   cookie jar with that session, so calling this endpoint as-is from the
-   native app will 401.
-   - **Required backend change (separate PR, not this branch):** add an
-     `Authorization: Bearer <access_token>` fallback to
-     `app/api/ai/ocr/route.ts` (and any other `/api/*` route the app will
-     call) — e.g. call `supabase.auth.getUser(bearerToken)` when no cookie
-     session is present. This is additive and does not change existing
-     cookie-based web behavior.
-   - **Native side:** after
-     `cameraRef.current.takePictureAsync({ base64: true })`, `POST` to
-     `${EXPO_PUBLIC_API_BASE_URL}/api/ai/ocr` with
-     `{ image_base64, mime_type }` and header
-     `Authorization: Bearer ${session.access_token}` (session from
-     `useAuth()`).
-
-3. **Save the scanned product.** After OCR returns fields, prefill an
-   add-product form and insert into `products` via
-   `supabase.from("products").insert(...)` — reuses the same RLS-protected
-   table the web app uses, no schema changes needed.
-
-4. **Wallet list polish.** Replace the flat list in `wallet.tsx` with
-   warranty-status grouping (active / expiring / expired) by porting the pure
-   functions from the web app's `lib/calculations.ts` into
-   `native/src/lib/calculations.ts`.
-
-5. Update `../NATIVE_APP_PLAN.md`'s milestone table once M2 lands.
 
 ## Safety
 
@@ -149,4 +154,4 @@ follow-up so M1 ships a working, testable auth shell first.
   package from the live `com.quickscanz.warranty`, so it installs side-by-side
   without collision.
 - No changes were made to `main`, the live TWA, or the Supabase schema to
-  produce this scaffold.
+  produce this scaffold (or any milestone since).
