@@ -43,15 +43,7 @@ For Google sign-in to work, add `quickscanz://auth/callback` as an allowed
 redirect URL in Supabase Dashboard → Authentication → URL Configuration
 (additive — the existing web callback URL stays untouched).
 
-## Assets (placeholders)
-
-`app.json` references `./assets/icon.png`, `./assets/splash.png`,
-`./assets/adaptive-icon.png`, and `./assets/notification-icon.png`. These
-binary files are **not committed yet** — drop real artwork at those paths
-before an EAS build. `expo start` against Expo Go will still run without them
-(with a warning). `app.json`'s `extra.eas.projectId` is also still the
-scaffold placeholder — it needs a real EAS project id before Expo push tokens
-(`native/src/lib/push.ts`) will resolve outside Expo Go.
+,
 
 ## Scripts
 
