@@ -55,7 +55,7 @@ Native path: on first login (Supabase email/Google), persist the session securel
 
 ### M3 follow-ups (tracked, not blocking this branch from progressing to M4)
 - **`/api/ai` Bearer auth (backend, separate PR):** `app/api/ai/route.ts` on `main` authenticates purely via the Supabase SSR cookie (`createClient()` from `lib/supabase/server.ts`), with no `Authorization: Bearer` fallback. `native/app/(tabs)/claims.tsx` sends the header and degrades to local rule-based guidance on a 401 — real AI claim replies won't reach the app until that route gets the same additive fallback already assumed (but itself unconfirmed) for `/api/ai/ocr`.
-- **Push delivery pipeline mismatch (backend, separate PR):** `native/src/lib/push.ts` registers a real Expo push token and best-effort-persists it into `push_subscriptions` (a Web Push/VAPID-shaped table), but the actual send path (`supabase/functions/send-push-notifications`) delivers via OneSignal `external_user_id`, which never reads that table. No push will actually reach a device until either an Expo Push API sender is added, or native switches to the OneSignal Expo SDK so tokens land where the existing function already looks.
+,
 - **Native Razorpay checkout:** `native/app/pricing.tsx` reads real plans/subscription state but hands off upgrades to the existing web `/pricing` checkout via `expo-web-browser` (separate browser session — no SSO with the native app's Supabase session yet). Full native checkout (`react-native-razorpay` + Bearer-auth order/verify routes) is future work.
 - **Full i18n:** the Aaria language picker is a standalone locale preference, not the shared `messages.json` provider described above — still to build if native screens need full localized copy.
 
