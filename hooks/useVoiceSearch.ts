@@ -48,7 +48,7 @@ export function useVoiceSearch(onResult?: (text: string) => void): UseVoiceSearc
     const SpeechRecognitionAPI = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     const recognition = new SpeechRecognitionAPI();
 
-    recognition.lang = "en-IN";
+    recognition.lang = VOICE_SEARCH_BCP47[locale] || "en-IN";
     recognition.interimResults = true;
     recognition.maxAlternatives = 1;
     recognition.continuous = false;
