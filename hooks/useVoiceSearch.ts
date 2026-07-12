@@ -80,7 +80,7 @@ export function useVoiceSearch(onResult?: (text: string) => void): UseVoiceSearc
 
     recognitionRef.current = recognition;
     recognition.start();
-  }, [isSupported, onResult]);
+  }, [isSupported, onResult, locale]);
 
   const stopListening = useCallback(() => {
     recognitionRef.current?.stop();
