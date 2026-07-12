@@ -53,7 +53,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     registerPush()
       .then(() => {
-        setPushExternalId(userId);
         OneSignal.login(userId);
       })
       .catch(() => {});
