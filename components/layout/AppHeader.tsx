@@ -113,7 +113,7 @@ export default function AppHeader({ userName }: AppHeaderProps) {
             onClick={handleSignOut}
             disabled={signingOut}
             className="btn-ghost text-xs px-3 py-2 ml-1"
-            title="Sign out"
+            title={t("account.sign_out_btn")}
           >
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
               <path d="M5 2H2a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h3M9 10l3-3-3-3M5 7h7" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
