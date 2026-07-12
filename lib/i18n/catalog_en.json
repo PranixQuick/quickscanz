@@ -322,5 +322,25 @@
   "subcategory.sofa": "Sofa",
   "subcategory.bed": "Bed",
   "subcategory.wardrobe": "Wardrobe",
-  "subcategory.other": "Other"
+  "subcategory.other": "Other",
+
+  "app.change_language": "Change language",
+  "app.brand_name": "QuickScanZ",
+  "account.sign_out_btn": "Sign out",
+  "account.signed_out_toast": "Signed out",
+
+  "onboarding_flow.welcome_title": "Your warranty manager",
+  "onboarding_flow.welcome_body": "QuickScanZ tracks every product you own — so you never miss a warranty claim or service reminder.",
+  "onboarding_flow.welcome_cta": "Let's go",
+  "onboarding_flow.scan_title": "Scan any bill in seconds",
+  "onboarding_flow.scan_body": "Point your camera at a paper receipt, Amazon invoice, or Flipkart order. AI fills in brand, serial number, and purchase date automatically.",
+  "onboarding_flow.scan_cta": "Scan my first bill",
+  "onboarding_flow.scan_skip": "I'll do it later",
+  "onboarding_flow.notify_title": "Never miss an expiry",
+  "onboarding_flow.notify_body": "Get a push notification 30 days, 7 days, and 1 day before your warranty runs out — even when the app is closed.",
+  "onboarding_flow.notify_cta": "Enable notifications",
+  "onboarding_flow.notify_skip": "Maybe later",
+  "onboarding_flow.notify_granted": "Notifications enabled!",
+  "onboarding_flow.notify_denied": "You can enable notifications later in your browser settings.",
+  "onboarding_flow.requesting": "Requesting…"
 }
