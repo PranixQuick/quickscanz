@@ -94,6 +94,57 @@ export async function POST(req: NextRequest) {
   const { image_base64, mime_type = "image/jpeg" } = body;
   if (!image_base64) return NextResponse.json({ error: "image_base64 required" }, { status: 400 });
 
+  // ── Try OpenRouter Vision (genuinely free model; no Google prepay) ─────────
+  // Gemini API needs region-specific prepay (0 balance in IN), so OpenRouter is
+  // the free path. Model overridable via OPENROUTER_MODEL.
+  const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
+  const OPENROUTER_MODEL = process.env.OPENROUTER_MODEL || "google/gemini-2.0-flash-exp:free";
+  if (OPENROUTER_API_KEY) {
+    try {
+      const orPrompt = `You are a receipt/invoice OCR assistant for an Indian warranty tracker app. Extract fields from the image and return ONLY valid minified JSON, no markdown:
+{"brand":string|null,"product_name":string|null,"model_number":string|null,"serial_number":string|null,"purchase_date":"yyyy-mm-dd"|null,"price":string|null,"store_name":string|null,"warranty_months":number|null,"confidence":"high"|"medium"|"low"}
+Parse Indian DD/MM/YYYY dates to yyyy-mm-dd. price = numeric INR string without symbol/commas. Use null for anything not found.`;
+      const orRes = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
+          "Content-Type": "application/json",
+          "HTTP-Referer": "https://www.quickscanz.com",
+          "X-Title": "QuickScanZ",
+        },
+        body: JSON.stringify({
+          model: OPENROUTER_MODEL,
+          messages: [{
+            role: "user",
+            content: [
+              { type: "text", text: orPrompt },
+              { type: "image_url", image_url: { url: `data:${mime_type};base64,${image_base64}` } },
+            ],
+          }],
+          response_format: { type: "json_object" },
+          max_tokens: 512,
+          temperature: 0.2,
+        }),
+      });
+      if (orRes.ok) {
+        const d = await orRes.json();
+        let raw: string = d?.choices?.[0]?.message?.content || "{}";
+        raw = raw.replace(/^```(?:json)?/i, "").replace(/```$/, "").trim();
+        try {
+          const parsed = JSON.parse(raw) as OCRResult;
+          return NextResponse.json({ ok: true, data: parsed, method: "vision-openrouter" });
+        } catch {
+          console.error("[ocr] OpenRouter non-JSON:", String(raw).slice(0, 200));
+        }
+      } else {
+        const errTxt = await orRes.text().catch(() => "");
+        console.error(`[ocr] OpenRouter non-OK status=${orRes.status} model=${OPENROUTER_MODEL} body=${errTxt.slice(0, 400)}`);
+      }
+    } catch (e) {
+      console.error("[ocr] OpenRouter fetch threw:", String(e));
+    }
+  }
+
   // ── Try Gemini Vision (free tier) ─────────────────────────────────────────
   const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
   // gemini-1.5-flash is retired (404). Use gemini-2.0-flash, which works once
