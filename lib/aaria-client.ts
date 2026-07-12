@@ -12,6 +12,26 @@ const AARIA_BASE_URL = process.env.AARIA_BASE_URL || "https://pranix-aaria.onren
 
 export const AARIA_PRODUCT = "QuickScanZ";
 
+// Maps QuickScanZ's app locale codes (lib/i18n/provider.tsx + lib/i18n/server.ts,
+// Locale = 'en' | 'hi' | 'te' | 'ta' | 'kn' | 'ml') to the language codes Aaria's
+// /api/voice/understand and /api/voice/speak endpoints expect (pranix-aaria's
+// src/contracts/understand.py + speak.py take a bare "en"/"hi"/"te"-style code,
+// not BCP-47). Kept as an explicit map so an unrecognized locale falls back to
+// "en" instead of being forwarded to Aaria as-is.
+const AARIA_LANG_MAP: Record<string, string> = {
+  en: "en",
+  hi: "hi",
+  te: "te",
+  ta: "ta",
+  kn: "kn",
+  ml: "ml",
+};
+
+export function toAariaLang(locale?: string | null): string {
+  if (!locale) return "en";
+  return AARIA_LANG_MAP[locale] ?? "en";
+}
+
 export interface AariaUnderstandResponse {
   intent: string;
   entities: Record<string, unknown>;
@@ -82,7 +102,7 @@ export async function aariaUnderstand(
   return aariaFetch<AariaUnderstandResponse>("/api/voice/understand", {
     text,
     product: opts.product || AARIA_PRODUCT,
-    lang_hint: opts.langHint || "en",
+    lang_hint: toAariaLang(opts.langHint),
   });
 }
 
@@ -95,7 +115,7 @@ export async function aariaSpeak(
 ): Promise<AariaSpeakResponse> {
   return aariaFetch<AariaSpeakResponse>("/api/voice/speak", {
     text,
-    lang: opts.lang || "en",
+    lang: toAariaLang(opts.lang),
     product: opts.product || AARIA_PRODUCT,
     quality_tier: opts.qualityTier || "standard",
   });
