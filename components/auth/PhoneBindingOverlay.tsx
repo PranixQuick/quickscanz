@@ -137,7 +137,7 @@ export default function PhoneBindingOverlay({ userId, onSuccess }: Props) {
               disabled={isPending || phone.length < 10}
               className="w-full btn-primary py-4 text-base font-semibold disabled:opacity-40 rounded-2xl transition-all"
             >
-              {isPending ? "Sending OTP." : "Send Verification OTP ?"}
+              {isPending ? "Sending OTP…" : "Send Verification OTP →"}
             </button>
           </form>
         ) : (
