@@ -52,7 +52,7 @@ export default function AppHeader({ userName }: AppHeaderProps) {
             </svg>
           </div>
           <span className="font-display text-base font-medium text-ink-900 tracking-tight">
-            QuickScanZ
+            {t("app.brand_name")}
           </span>
         </Link>
 
