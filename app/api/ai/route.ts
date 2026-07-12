@@ -97,9 +97,9 @@ export async function POST(req: NextRequest) {
 
   // ── Try Anthropic (if key present) ───────────────────────────────────────
   const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-  // gemini-2.0-flash has free_tier limit=0 on this key's project (429). Default
-  // to gemini-1.5-flash which has a free tier. Overridable via GEMINI_MODEL.
-  const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-1.5-flash";
+  // gemini-1.5-flash is retired (404). Use gemini-2.0-flash, which works once
+  // billing is enabled on the key's Google Cloud project. Overridable via GEMINI_MODEL.
+  const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.0-flash";
   if (GEMINI_API_KEY) {
     try {
       // Convert the Anthropic-style messages to Gemini's format.
