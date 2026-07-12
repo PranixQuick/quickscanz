@@ -1,9 +1,11 @@
-import { useCallback, useState } from "react";
-import { View, Text, ScrollView, ActivityIndicator, Pressable } from "react-native";
+import { useCallback, useEffect, useState } from "react";
+import { View, Text, ScrollView, ActivityIndicator, Pressable, TextInput } from "react-native";
 import { useFocusEffect, useLocalSearchParams, useRouter, Stack } from "expo-router";
 import { supabase } from "../../src/lib/supabase";
 import { getStatusConfig, getWarrantyStatus, formatWarrantyCountdown } from "../../src/lib/calculations";
 import type { Product } from "../../src/lib/types";
+import { getLocale, type Locale } from "../../src/lib/locale";
+import { useAariaSpeech } from "../../src/features/aaria/useAariaSpeech";
 
 function Row({ label, value }: { label: string; value: string | number | null | undefined }) {
   if (value === null || value === undefined || value === "") return null;
@@ -15,12 +17,28 @@ function Row({ label, value }: { label: string; value: string | number | null | 
   );
 }
 
+function statusPhrase(status: ReturnType<typeof getWarrantyStatus>): string {
+  if (status === "expired") return "has expired";
+  if (status === "expiring_soon") return "is expiring soon";
+  return "is active";
+}
+
 export default function ProductDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [locale, setLocaleState] = useState<Locale>("en");
+  const [asking, setAsking] = useState(false);
+  const [question, setQuestion] = useState("");
+  const [answer, setAnswer] = useState<string | null>(null);
+
+  const aaria = useAariaSpeech(locale);
+
+  useEffect(() => {
+    getLocale().then(setLocaleState);
+  }, []);
 
   const load = useCallback(async () => {
     if (!id) return;
@@ -58,6 +76,32 @@ export default function ProductDetailScreen() {
 
   const status = getWarrantyStatus(product.expiry_date);
   const config = getStatusConfig(status);
+  // Same phrasing app/api/aaria-query/route.ts builds server-side for
+  // `get_warranty_status` — kept in sync so the spoken answer sounds the
+  // same whether it came from the web's closed-loop flow or here.
+  const spokenSummary = `Your ${product.brand} ${product.name} warranty ${statusPhrase(status)}. ${formatWarrantyCountdown(
+    product.expiry_date
+  )}.`;
+
+  async function handleReadAloud() {
+    await aaria.speak(spokenSummary);
+  }
+
+  async function handleAsk() {
+    if (!question.trim()) return;
+    const q = question.trim();
+    setQuestion("");
+    setAnswer(null);
+    const said = await aaria.ask(q, (understood) => {
+      // This screen is already scoped to one product, so any
+      // warranty-status-shaped question resolves against it directly
+      // instead of doing the server-side product-search round trip
+      // app/api/aaria-query/route.ts does for ambiguous multi-product asks.
+      if (understood.intent === "get_warranty_status") return spokenSummary;
+      return `I understood this as "${understood.intent.replace(/_/g, " ")}", but I can only answer warranty-status questions here for now. Try "is my warranty still active?"`;
+    });
+    setAnswer(said);
+  }
 
   return (
     <ScrollView className="flex-1 bg-cream-100" contentContainerStyle={{ padding: 24, paddingTop: 56 }}>
@@ -76,6 +120,51 @@ export default function ProductDetailScreen() {
         <Text className={`text-sm font-medium ${config.text}`}>{config.label}</Text>
       </View>
       <Text className="mt-2 text-sm text-ink-500">{formatWarrantyCountdown(product.expiry_date)}</Text>
+
+      {/* Aaria voice actions (M3) — language follows the Account screen's
+          "Voice assistant language" picker (native/src/lib/locale.ts). */}
+      <View className="mt-4 flex-row gap-2">
+        <Pressable
+          onPress={handleReadAloud}
+          disabled={aaria.speaking}
+          className="flex-1 flex-row items-center justify-center gap-2 rounded-2xl border border-brand-500 bg-white py-3 active:opacity-80 disabled:opacity-50"
+        >
+          {aaria.speaking ? <ActivityIndicator size="small" /> : <Text>🔊</Text>}
+          <Text className="text-sm font-medium text-brand-600">Read aloud</Text>
+        </Pressable>
+        <Pressable
+          onPress={() => setAsking((v) => !v)}
+          className="flex-1 flex-row items-center justify-center gap-2 rounded-2xl border border-cream-300 bg-white py-3 active:opacity-80"
+        >
+          <Text>🎙️</Text>
+          <Text className="text-sm font-medium text-ink-700">Ask Aaria</Text>
+        </Pressable>
+      </View>
+
+      {asking && (
+        <View className="mt-3 gap-2 rounded-2xl border border-cream-300 bg-white p-3">
+          <TextInput
+            value={question}
+            onChangeText={setQuestion}
+            placeholder="e.g. Is my warranty still active?"
+            placeholderTextColor="#9ca3af"
+            className="rounded-xl border border-cream-200 px-3 py-2 text-ink-700"
+          />
+          <Pressable
+            onPress={handleAsk}
+            disabled={!question.trim() || aaria.speaking}
+            className="items-center rounded-xl bg-ink-700 py-2.5 active:opacity-90 disabled:opacity-40"
+          >
+            <Text className="font-semibold text-white">{aaria.speaking ? "Asking…" : "Ask"}</Text>
+          </Pressable>
+        </View>
+      )}
+
+      {(answer || aaria.error) && (
+        <View className="mt-3 rounded-2xl bg-cream-200 p-3">
+          <Text className="text-sm text-ink-700">{aaria.error ? `Aaria error: ${aaria.error}` : answer}</Text>
+        </View>
+      )}
 
       <View className="mt-6 rounded-2xl border border-cream-300 bg-white px-4">
         <Row label="Purchase date" value={product.purchase_date} />
