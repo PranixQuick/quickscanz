@@ -110,7 +110,7 @@ export default function PhoneBindingOverlay({ userId, onSuccess }: Props) {
             <div>
               <div className="flex items-center gap-2">
                 <div className="flex items-center gap-1 px-3 py-3.5 bg-cream-200 border border-cream-200 rounded-xl text-sm font-medium text-ink-700 flex-shrink-0">
-                  ???? +91
+                  🇮🇳 +91
                 </div>
                 <input
                   type="tel"
