@@ -38,7 +38,29 @@ function getRuleBasedResponse(messages: Array<{ role: string; content: string }>
 
 export async function POST(req: NextRequest) {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  let { data: { user } } = await supabase.auth.getUser();
+
+  // Non-breaking fallback: native clients (Expo/React Native) have no cookie jar,
+  // so they can never satisfy the SSR cookie-based session lookup above. If — and
+  // only if — that lookup found nobody, fall back to validating a bearer token
+  // sent in the Authorization header. Existing (cookie-based) web callers are
+  // completely unaffected: this block never runs when a cookie session exists.
+  if (!user) {
+    const authHeader = req.headers.get("authorization") ?? req.headers.get("Authorization");
+    const bearerToken = authHeader?.toLowerCase().startsWith("bearer ")
+      ? authHeader.slice(7).trim()
+      : null;
+
+    if (bearerToken) {
+      const bearerClient = createSupabaseJsClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      );
+      const { data: bearerData } = await bearerClient.auth.getUser(bearerToken);
+      user = bearerData.user;
+    }
+  }
+
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   let body: any;
