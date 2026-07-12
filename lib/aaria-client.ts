@@ -102,7 +102,7 @@ export async function aariaUnderstand(
   return aariaFetch<AariaUnderstandResponse>("/api/voice/understand", {
     text,
     product: opts.product || AARIA_PRODUCT,
-    lang_hint: opts.langHint || "en",
+    lang_hint: toAariaLang(opts.langHint),
   });
 }
 
