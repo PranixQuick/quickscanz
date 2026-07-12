@@ -54,3 +54,54 @@ export interface ProductFormValues {
   store_name: string;
   notes: string;
 }
+
+// ── M3: Claims ────────────────────────────────────────────────────────────
+// Mirrors lib/actions/claim.ts's ClaimMessage/ClaimSession (web). The native
+// claims screen writes/reads `claim_sessions` directly via the native
+// supabase client (RLS-scoped to `user_id = auth.uid()`, matching the
+// pattern every other user-owned table in this codebase uses — the exact RLS
+// policy text for claim_sessions wasn't in a migration file readable from
+// this branch, so this is an assumption consistent with the rest of the
+// schema, not a confirmed read).
+export interface ClaimMessage {
+  role: "user" | "assistant";
+  content: string;
+}
+
+export interface ClaimSession {
+  id: string;
+  product_id: string;
+  issue: string;
+  messages: ClaimMessage[];
+  status: "open" | "resolved" | "escalated";
+  created_at: string;
+}
+
+// ── M3: Subscriptions/Pricing ────────────────────────────────────────────
+// Mirrors lib/actions/subscriptions.ts's SubscriptionPlan/UserSubscription
+// (web). Plan ids seeded in supabase/migrations/20260612_bootstrap_
+// quickscanz_schema.sql: "free", "pro_monthly", "pro_yearly".
+export interface SubscriptionPlan {
+  id: string;
+  name: string;
+  description: string;
+  price_inr: number;
+  interval: "monthly" | "yearly" | "lifetime";
+  product_limit: number;
+  features: string[];
+  razorpay_plan_id?: string | null;
+}
+
+export interface UserSubscription {
+  id: string;
+  plan_id: string;
+  status: "active" | "cancelled" | "expired" | "trial";
+  // current_period_end/cancel_at_period_end are read by lib/actions/
+  // subscriptions.ts on the web but aren't part of the bootstrap migration's
+  // create-table statement readable from this branch (likely added via a
+  // later, untracked migration/dashboard change) — kept optional here so a
+  // missing column doesn't break the native pricing screen.
+  current_period_end?: string | null;
+  cancel_at_period_end?: boolean;
+  plan?: SubscriptionPlan;
+}
