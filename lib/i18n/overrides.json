@@ -42,6 +42,7 @@
     "claim.fallback_step2": "{brand} कस्टमर केयर को कॉल करें \u2014 ताज़ा नंबर के लिए Google पर \"{brand} India toll free\" खोजें।"
   },
   "te": {
+    "product.ocr_autofill_toast": "మీ బిల్లు నుండి స్వయంచాలకంగా నింపబడిన {count} ఖాళీలను!",
     "dashboard.hello": "నమస్కారం",
     "tile.smart_devices_sub": "IoT సర్వీస్ హెచ్చరికలు",
     "login.otp_sent": "OTP పంపబడింది",
