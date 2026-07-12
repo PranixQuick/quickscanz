@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import NotificationSettings from "@/components/notifications/NotificationSettings";
 import AariaAssistantButton from "@/components/ui/AariaAssistantButton";
+import LinkedMethods from "@/components/auth/LinkedMethods";
 import Link from "next/link";
 import toast from "react-hot-toast";
 
@@ -68,6 +69,9 @@ export default function AccountClient({
           ))}
         </div>
       </div>
+
+      {/* Linked sign-in methods — opt-in, additive only; see docs/UNIFIED_AUTH_PLAN.md */}
+      <LinkedMethods userId={userId} />
 
       {/* Upgrade CTA */}
       {!isPro && (
