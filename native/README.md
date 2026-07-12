@@ -45,13 +45,7 @@ redirect URL in Supabase Dashboard → Authentication → URL Configuration
 
 ,
 
-## Scripts
-
-- `npm start` — Expo dev server (Expo Go / dev client)
-- `npm run android` / `npm run ios` — open directly on a connected device/simulator
-- `npm run build` — `eas build --platform android --profile preview` (internal
-  APK, separate `com.quickscanz.premium` package — installs side-by-side with
-  the live app)
+,
 
 ## What's implemented (M0–M3)
 
