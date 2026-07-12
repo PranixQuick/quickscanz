@@ -36,7 +36,7 @@ export default function WarrantySpeakCard({ product }: Props) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           text: `What's the warranty status for my ${product.brand} ${product.name}?`,
-          lang_hint: "en",
+          lang_hint: locale,
           product_id: product.id,
         }),
       });
