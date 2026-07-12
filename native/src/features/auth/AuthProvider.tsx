@@ -1,8 +1,9 @@
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import type { Session, User } from "@supabase/supabase-js";
+import { OneSignal } from "react-native-onesignal";
 import { supabase } from "../../lib/supabase";
-import { registerForPushNotifications } from "../../lib/push";
+import { registerPush, setPushExternalId, clearPushExternalId } from "../../lib/push";
 
 type AuthContextValue = {
   session: Session | null;
@@ -39,19 +40,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  // Register for push once per signed-in user (M3) — fire-and-forget, never
-  // blocks the auth flow. See src/lib/push.ts for the known gap between an
-  // Expo push token and the OneSignal-based send-push-notifications
-  // function that actually delivers notifications today.
+  // Register for push + tag the OneSignal subscription with the Supabase
+  // user id once per signed-in user — fire-and-forget, never blocks the
+  // auth flow. OneSignal.login(user.id) sets the "external_id" that
+  // supabase/functions/send-push-notifications/index.ts already targets
+  // via `include_external_user_ids`, so no backend change is needed for
+  // this device to start receiving pushes. See src/lib/push.ts.
   useEffect(() => {
     const userId = session?.user?.id ?? null;
     if (!userId || registeredUserRef.current === userId) return;
     registeredUserRef.current = userId;
-    registerForPushNotifications(userId).catch(() => {});
+
+    registerPush()
+      .then(() => {
+        setPushExternalId(userId);
+        OneSignal.login(userId);
+      })
+      .catch(() => {});
   }, [session?.user?.id]);
 
   async function signOut() {
     registeredUserRef.current = null;
+    clearPushExternalId();
+    try {
+      OneSignal.logout();
+    } catch {
+      // defensive: OneSignal may not be initialized (e.g. missing App ID)
+    }
     await supabase.auth.signOut();
   }
 
