@@ -80,6 +80,7 @@
     "claim.fallback_step2": "{brand} வாடிக்கையாளர் சேவையை அழைக்கவும் \u2014 சமீபத்திய எண்ணுக்கு Googleல் \"{brand} India toll free\" எனத் தேடுங்கள்."
   },
   "kn": {
+    "product.ocr_autofill_toast": "ನಿಮ್ಮ ಬಿಲ್‌ನಿಂದ ಸ್ವಯಂಚಾಲಿತವಾಗಿ ತುಂಬಿದ {count} ಕ್ಷೇತ್ರಗಳು!",
     "tile.smart_devices_sub": "IoT ಸೇವಾ ಎಚ್ಚರಿಕೆಗಳು",
     "login.otp_sent": "OTP ಕಳುಹಿಸಲಾಗಿದೆ",
     "nav.claim": "ಕ್ಲೈಮ್ AI",
