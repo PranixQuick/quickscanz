@@ -5,6 +5,7 @@
     "placeholder_note": "Template keys contain literal slot tokens the component fills at render time; translators MUST keep tokens intact and place them in natural word order. Tokens: {product} = `${brand} ${name}` (e.g. 'Samsung Galaxy S24'); {brand} = brand only; {date} = formatted expiry/purchase date; {issue} = the chosen/typed issue text. claim.greeting_* = AI-mode opening; claim.fallback_* = shown when AI is unavailable; claim.initial_user_msg = the message posted as the user when an issue is picked."
   },
   "en": {
+    "product.ocr_autofill_toast": "Auto-filled {count} fields from your bill!",
     "claim.greeting_active": "Your {product} is under warranty until {date}. Tell me what's wrong and I'll guide you through the claim process.",
     "claim.greeting_expired": "Your {product}'s warranty expired on {date}, but I can still help you understand your out-of-warranty options.",
     "claim.initial_user_msg": "I need help with my {product}. Issue: {issue}",
