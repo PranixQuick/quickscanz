@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import NotificationSettings from "@/components/notifications/NotificationSettings";
 import AariaAssistantButton from "@/components/ui/AariaAssistantButton";
+import LinkedMethods from "@/components/auth/LinkedMethods";
 import Link from "next/link";
 import toast from "react-hot-toast";
 
