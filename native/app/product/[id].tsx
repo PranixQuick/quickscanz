@@ -6,6 +6,7 @@ import { getStatusConfig, getWarrantyStatus, formatWarrantyCountdown } from "../
 import type { Product } from "../../src/lib/types";
 import { getLocale, type Locale } from "../../src/lib/locale";
 import { useAariaSpeech } from "../../src/features/aaria/useAariaSpeech";
+import { useI18n } from "../../src/i18n";
 
 function Row({ label, value }: { label: string; value: string | number | null | undefined }) {
   if (value === null || value === undefined || value === "") return null;
@@ -26,6 +27,7 @@ function statusPhrase(status: ReturnType<typeof getWarrantyStatus>): string {
 export default function ProductDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const { t } = useI18n();
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -76,11 +78,18 @@ export default function ProductDetailScreen() {
 
   const status = getWarrantyStatus(product.expiry_date);
   const config = getStatusConfig(status);
+  const statusLabel =
+    status === "active"
+      ? t("dashboard.stats_active")
+      : status === "expiring_soon"
+      ? t("dashboard.stats_expiring")
+      : t("dashboard.stats_expired");
   // Same phrasing app/api/aaria-query/route.ts builds server-side for
   // `get_warranty_status` — kept in sync so the spoken answer sounds the
   // same whether it came from the web's closed-loop flow or here.
   const spokenSummary = `Your ${product.brand} ${product.name} warranty ${statusPhrase(status)}. ${formatWarrantyCountdown(
-    product.expiry_date
+    product.expiry_date,
+    t
   )}.`;
 
   async function handleReadAloud() {
@@ -114,9 +123,9 @@ export default function ProductDetailScreen() {
         className={`mt-4 flex-row items-center gap-2 self-start rounded-full border px-3 py-1.5 ${config.bg} ${config.border}`}
       >
         <View className={`h-2 w-2 rounded-full ${config.dot}`} />
-        <Text className={`text-sm font-medium ${config.text}`}>{config.label}</Text>
+        <Text className={`text-sm font-medium ${config.text}`}>{statusLabel}</Text>
       </View>
-      <Text className="mt-2 text-sm text-ink-500">{formatWarrantyCountdown(product.expiry_date)}</Text>
+      <Text className="mt-2 text-sm text-ink-500">{formatWarrantyCountdown(product.expiry_date, t)}</Text>
 
       {/* Aaria voice actions (M3) — language follows the Account screen's
           "Voice assistant language" picker (native/src/lib/locale.ts). */}
@@ -127,14 +136,14 @@ export default function ProductDetailScreen() {
           className="flex-1 flex-row items-center justify-center gap-2 rounded-2xl border border-brand-500 bg-white py-3 active:opacity-80 disabled:opacity-50"
         >
           {aaria.speaking ? <ActivityIndicator size="small" /> : <Text>🔊</Text>}
-          <Text className="text-sm font-medium text-brand-600">Read aloud</Text>
+          <Text className="text-sm font-medium text-brand-600">{t("product.read_aloud") || "Read aloud"}</Text>
         </Pressable>
         <Pressable
           onPress={() => setAsking((v) => !v)}
           className="flex-1 flex-row items-center justify-center gap-2 rounded-2xl border border-cream-300 bg-white py-3 active:opacity-80"
         >
           <Text>🎙️</Text>
-          <Text className="text-sm font-medium text-ink-700">Ask Aaria</Text>
+          <Text className="text-sm font-medium text-ink-700">{t("product.ask_aaria") || "Ask Aaria"}</Text>
         </Pressable>
       </View>
 
@@ -143,7 +152,7 @@ export default function ProductDetailScreen() {
           <TextInput
             value={question}
             onChangeText={setQuestion}
-            placeholder="e.g. Is my warranty still active?"
+            placeholder={t("product.ask_placeholder") || "e.g. Is my warranty still active?"}
             placeholderTextColor="#9ca3af"
             className="rounded-xl border border-cream-200 px-3 py-2 text-ink-700"
           />
@@ -152,7 +161,7 @@ export default function ProductDetailScreen() {
             disabled={!question.trim() || aaria.speaking}
             className="items-center rounded-xl bg-ink-700 py-2.5 active:opacity-90 disabled:opacity-40"
           >
-            <Text className="font-semibold text-white">{aaria.speaking ? "Asking…" : "Ask"}</Text>
+            <Text className="font-semibold text-white">{aaria.speaking ? (t("product.asking") || "Asking…") : (t("product.ask_btn") || "Ask")}</Text>
           </Pressable>
         </View>
       )}
@@ -164,15 +173,15 @@ export default function ProductDetailScreen() {
       )}
 
       <View className="mt-6 rounded-2xl border border-cream-300 bg-white px-4">
-        <Row label="Purchase date" value={product.purchase_date} />
-        <Row label="Warranty" value={`${product.warranty_months} months`} />
-        <Row label="Expires" value={product.expiry_date} />
-        <Row label="Price" value={product.price != null ? `₹${product.price}` : null} />
-        <Row label="Category" value={product.category} />
-        <Row label="Model number" value={product.model_number} />
-        <Row label="Serial number" value={product.serial_number} />
-        <Row label="Store" value={product.store_name} />
-        <Row label="Notes" value={product.notes} />
+        <Row label={t("product.purchase_date") || "Purchase date"} value={product.purchase_date} />
+        <Row label={t("product.warranty") || "Warranty"} value={`${product.warranty_months} ${t("product.months") || "months"}`} />
+        <Row label={t("product.expires") || "Expires"} value={product.expiry_date} />
+        <Row label={t("product.price") || "Price"} value={product.price != null ? `₹${product.price}` : null} />
+        <Row label={t("product.category") || "Category"} value={product.category} />
+        <Row label={t("product.model_number") || "Model number"} value={product.model_number} />
+        <Row label={t("product.serial_number") || "Serial number"} value={product.serial_number} />
+        <Row label={t("product.store") || "Store"} value={product.store_name} />
+        <Row label={t("product.notes") || "Notes"} value={product.notes} />
       </View>
     </ScrollView>
   );

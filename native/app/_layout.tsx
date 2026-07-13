@@ -131,6 +131,7 @@ function RootNavigation() {
       <Stack.Screen name="pricing" options={{ title: "Upgrade" }} />
       <Stack.Screen name="product/[id]" options={{ title: "Product Details" }} />
       <Stack.Screen name="product/add" options={{ title: "Add Product" }} />
+      <Stack.Screen name="webview" options={{ title: "QuickScanZ" }} />
     </Stack>
   );
 }

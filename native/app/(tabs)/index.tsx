@@ -193,38 +193,40 @@ export default function HomeScreen() {
   }, [products]);
 
   const greetingSubText = useMemo(() => {
-    const trackedText = `${counts.total} products tracked`;
+    const trackedText = `${counts.total} ${t("dashboard.products_tracked")}`;
     const statusText =
       counts.expiring_soon > 0
-        ? ` · ${counts.expiring_soon} expiring soon`
-        : ` · All looking good`;
+        ? ` · ${counts.expiring_soon} ${t("dashboard.expiring_soon")}`
+        : ` · ${t("dashboard.all_looking_good")}`;
     return `${trackedText}${statusText}`;
-  }, [counts]);
+  }, [counts, t]);
 
   const capitalizedUserName = useMemo(() => {
     if (profile?.display_name) {
       return profile.display_name;
     }
-    return "Friend (Tap to add name)";
-  }, [profile]);
+    return t("onboarding.name_placeholder") || "Friend (Tap to add name)";
+  }, [profile, t]);
 
-  async function openWebTool(path: string) {
-    try {
-      await WebBrowser.openBrowserAsync(`${API_BASE_URL}${path}`);
-    } catch {
-      Alert.alert("Error", "Could not open tool in browser.");
-    }
+  function openWebTool(path: string, title: string) {
+    router.push({
+      pathname: "/webview",
+      params: {
+        url: `${API_BASE_URL}${path}`,
+        title: title,
+      },
+    });
   }
 
   const exploreTools = [
-    { label: "Lifecycle", icon: "📊", action: () => openWebTool("/products/lifecycle"), desc: "Product lifespans" },
-    { label: "Compare", icon: "⚖️", action: () => openWebTool("/compare"), desc: "Compare items" },
-    { label: "Buying Assistant", icon: "🛒", action: () => openWebTool("/buying-assistant"), desc: "Smart shopping" },
-    { label: "Smart Home", icon: "🏠", action: () => openWebTool("/smart-devices"), desc: "Matter & IoT Hub" },
-    { label: "Energy Monitor", icon: "⚡", action: () => openWebTool("/energy"), desc: "Consumption stats" },
-    { label: "Family Vault", icon: "👥", action: () => openWebTool("/family"), desc: "Shared warranties" },
-    { label: "Upgrade Plan", icon: "⭐", action: () => router.push("/pricing"), desc: "Unlock premium" },
-    { label: "Add Product", icon: "➕", action: () => router.push("/product/add"), desc: "Add to wallet" },
+    { label: t("explore.lifecycle"), icon: "📊", action: () => openWebTool("/products/lifecycle", t("explore.lifecycle")), desc: t("explore.lifecycle_desc") },
+    { label: t("explore.compare"), icon: "⚖️", action: () => openWebTool("/compare", t("explore.compare")), desc: t("explore.compare_desc") },
+    { label: t("explore.buying_assistant"), icon: "🛒", action: () => openWebTool("/buying-assistant", t("explore.buying_assistant")), desc: t("explore.buying_assistant_desc") },
+    { label: t("explore.smart_home"), icon: "🏠", action: () => openWebTool("/smart-devices", t("explore.smart_home")), desc: t("explore.smart_home_desc") },
+    { label: t("explore.energy_monitor"), icon: "⚡", action: () => openWebTool("/energy", t("explore.energy_monitor")), desc: t("explore.energy_monitor_desc") },
+    { label: t("explore.family_vault"), icon: "👥", action: () => openWebTool("/family", t("explore.family_vault")), desc: t("explore.family_vault_desc") },
+    { label: t("explore.upgrade"), icon: "⭐", action: () => router.push("/pricing"), desc: t("explore.upgrade_desc") },
+    { label: t("explore.add_product"), icon: "➕", action: () => router.push("/product/add"), desc: t("explore.add_product_desc") },
   ];
 
   if (loading && products.length === 0) {
@@ -313,7 +315,7 @@ export default function HomeScreen() {
 
         {/* 5 Stats Cards Grid */}
         <Text className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-3 px-1">
-          Metrics Overview
+          {t("dashboard.metrics_overview")}
         </Text>
         <View className="mb-6">
           {/* Total (Full Width) */}
@@ -323,7 +325,7 @@ export default function HomeScreen() {
           >
             <View className="flex-row items-center justify-between">
               <View>
-                <Text className="text-xs font-semibold text-ink-400 uppercase tracking-wider">Total Products</Text>
+                <Text className="text-xs font-semibold text-ink-400 uppercase tracking-wider">{t("dashboard.stats_total")}</Text>
                 <Text className="text-4xl font-light text-ink-900 mt-1 leading-none">{counts.total}</Text>
               </View>
               <View className="w-12 h-12 rounded-2xl bg-ink-900 items-center justify-center">
@@ -338,18 +340,18 @@ export default function HomeScreen() {
               onPress={() => router.push("/(tabs)/wallet")}
               className="flex-1 bg-white border border-cream-200 rounded-3xl p-4 shadow-sm active:opacity-90"
             >
-              <Text className="text-[10px] font-semibold text-ink-400 uppercase tracking-wider">Active</Text>
+              <Text className="text-[10px] font-semibold text-ink-400 uppercase tracking-wider">{t("dashboard.stats_active")}</Text>
               <Text className="text-2xl font-bold text-green-600 mt-1">{counts.active}</Text>
-              <Text className="text-[9px] text-ink-300 mt-1">coverage active</Text>
+              <Text className="text-[9px] text-ink-300 mt-1">{t("dashboard.stats_sub_active")}</Text>
             </Pressable>
 
             <Pressable
               onPress={() => router.push("/(tabs)/wallet")}
               className="flex-1 bg-white border border-cream-200 rounded-3xl p-4 shadow-sm active:opacity-90"
             >
-              <Text className="text-[10px] font-semibold text-ink-400 uppercase tracking-wider">Expiring</Text>
+              <Text className="text-[10px] font-semibold text-ink-400 uppercase tracking-wider">{t("dashboard.stats_expiring")}</Text>
               <Text className="text-2xl font-bold text-amber-600 mt-1">{counts.expiring_soon}</Text>
-              <Text className="text-[9px] text-ink-300 mt-1">within 30 days</Text>
+              <Text className="text-[9px] text-ink-300 mt-1">{t("dashboard.stats_sub_within_30d")}</Text>
             </Pressable>
           </View>
 
@@ -359,25 +361,25 @@ export default function HomeScreen() {
               onPress={() => router.push("/(tabs)/wallet")}
               className="flex-1 bg-white border border-cream-200 rounded-3xl p-4 shadow-sm active:opacity-90"
             >
-              <Text className="text-[10px] font-semibold text-ink-400 uppercase tracking-wider">Expired</Text>
+              <Text className="text-[10px] font-semibold text-ink-400 uppercase tracking-wider">{t("dashboard.stats_expired")}</Text>
               <Text className="text-2xl font-bold text-red-600 mt-1">{counts.expired}</Text>
-              <Text className="text-[9px] text-ink-300 mt-1">coverage lapsed</Text>
+              <Text className="text-[9px] text-ink-300 mt-1">{t("dashboard.stats_sub_expired")}</Text>
             </Pressable>
 
             <Pressable
               onPress={() => router.push("/(tabs)/wallet")}
               className="flex-1 bg-white border border-cream-200 rounded-3xl p-4 shadow-sm active:opacity-90"
             >
-              <Text className="text-[10px] font-semibold text-ink-400 uppercase tracking-wider">Invoiced</Text>
+              <Text className="text-[10px] font-semibold text-ink-400 uppercase tracking-wider">{t("dashboard.stats_invoiced")}</Text>
               <Text className="text-2xl font-bold text-brand-600 mt-1">{counts.withInvoice}</Text>
-              <Text className="text-[9px] text-ink-300 mt-1">receipts saved</Text>
+              <Text className="text-[9px] text-ink-300 mt-1">{t("dashboard.stats_sub_invoiced")}</Text>
             </Pressable>
           </View>
         </View>
 
         {/* Explore Tools Grid */}
         <Text className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-3 px-1">
-          Explore Features
+          {t("dashboard.explore_features")}
         </Text>
         <View className="flex-row flex-wrap justify-between gap-y-3 mb-6">
           {exploreTools.map((tool) => (

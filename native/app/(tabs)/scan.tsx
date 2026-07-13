@@ -4,6 +4,7 @@ import { CameraView, useCameraPermissions } from "expo-camera";
 import { useRouter } from "expo-router";
 import { supabase } from "../../src/lib/supabase";
 import type { OcrResult, ProductFormValues } from "../../src/lib/types";
+import { useI18n } from "../../src/i18n";
 
 // Base URL of the live Next.js API (same Supabase project as the web app).
 // Set EXPO_PUBLIC_API_BASE_URL in native/.env for local/dev API targets;
@@ -24,6 +25,7 @@ function ocrToPrefill(ocr: OcrResult): Partial<ProductFormValues> {
 }
 
 export default function ScanScreen() {
+  const { t } = useI18n();
   const [permission, requestPermission] = useCameraPermissions();
   const cameraRef = useRef<CameraView>(null);
   const [busy, setBusy] = useState(false);
@@ -35,14 +37,14 @@ export default function ScanScreen() {
     try {
       const photo = await cameraRef.current.takePictureAsync({ base64: true, quality: 0.7 });
       if (!photo?.base64) {
-        Alert.alert("Capture failed", "Could not read the photo. Try again.");
+        Alert.alert(t("scan.error_capture_failed") || "Capture failed", t("scan.error_capture_failed_desc") || "Could not read the photo. Try again.");
         return;
       }
 
       const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
       const accessToken = sessionData.session?.access_token;
       if (sessionError || !accessToken) {
-        Alert.alert("Not signed in", "Please sign in again to scan a bill.");
+        Alert.alert(t("product.error_not_signed_in") || "Not signed in", t("scan.error_sign_in_to_scan") || "Please sign in again to scan a bill.");
         return;
       }
 
@@ -61,7 +63,7 @@ export default function ScanScreen() {
 
       if (!res.ok) {
         const body = await res.json().catch(() => ({}) as { error?: string });
-        Alert.alert("Scan failed", body?.error ?? `Server returned ${res.status}.`);
+        Alert.alert(t("scan.error_scan_failed") || "Scan failed", body?.error ?? `Server returned ${res.status}.`);
         return;
       }
 
@@ -73,7 +75,7 @@ export default function ScanScreen() {
 
       router.push({ pathname: "/product/add", params: { prefill: JSON.stringify(ocrToPrefill(ocr)) } });
     } catch (e) {
-      Alert.alert("Scan failed", e instanceof Error ? e.message : "Something went wrong.");
+      Alert.alert(t("scan.error_scan_failed") || "Scan failed", e instanceof Error ? e.message : (t("scan.error_something_wrong") || "Something went wrong."));
     } finally {
       setBusy(false);
     }
@@ -82,7 +84,7 @@ export default function ScanScreen() {
   if (!permission) {
     return (
       <View className="flex-1 items-center justify-center bg-cream-100">
-        <Text className="text-ink-500">Loading camera…</Text>
+        <Text className="text-ink-500">{t("scan.loading_camera") || "Loading camera…"}</Text>
       </View>
     );
   }
@@ -91,10 +93,10 @@ export default function ScanScreen() {
     return (
       <View className="flex-1 items-center justify-center gap-4 bg-cream-100 px-8">
         <Text className="text-center text-ink-700">
-          QuickScanZ needs camera access to scan bills and warranty cards.
+          {t("scan.permission_needed") || "QuickScanZ needs camera access to scan bills and warranty cards."}
         </Text>
         <Pressable onPress={requestPermission} className="rounded-2xl bg-brand-500 px-6 py-3">
-          <Text className="font-semibold text-white">Grant camera access</Text>
+          <Text className="font-semibold text-white">{t("scan.grant_permission") || "Grant camera access"}</Text>
         </Pressable>
       </View>
     );
@@ -111,7 +113,7 @@ export default function ScanScreen() {
         >
           {busy && <ActivityIndicator />}
         </Pressable>
-        <Text className="mt-3 text-xs text-white">{busy ? "Reading bill…" : "Tap to scan a bill or warranty card"}</Text>
+        <Text className="mt-3 text-xs text-white">{busy ? (t("scan.reading_bill") || "Reading bill…") : (t("scan.help_text") || "Tap to scan a bill or warranty card")}</Text>
       </View>
     </View>
   );

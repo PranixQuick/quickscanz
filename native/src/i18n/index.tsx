@@ -20,7 +20,7 @@ const DICT = catalog as unknown as Record<string, Dict>;
 type Ctx = {
   locale: Locale;
   setLocale: (l: Locale) => Promise<void>;
-  t: (key: string) => string;
+  t: (key: string, params?: Record<string, string | number>) => string;
 };
 
 const I18nContext = createContext<Ctx | null>(null);
@@ -43,10 +43,16 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const t = useCallback(
-    (key: string) => {
+    (key: string, params?: Record<string, string | number>) => {
       const en = DICT.en || {};
       const cur = DICT[locale] || {};
-      return cur[key] ?? en[key] ?? key;
+      let val = cur[key] ?? en[key] ?? key;
+      if (params) {
+        Object.entries(params).forEach(([k, v]) => {
+          val = val.replace(new RegExp(`{${k}}`, "g"), String(v));
+        });
+      }
+      return val;
     },
     [locale]
   );

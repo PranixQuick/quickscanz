@@ -5,6 +5,7 @@ import { supabase } from "../../src/lib/supabase";
 import { useAuth } from "../../src/features/auth/AuthProvider";
 import { calculateExpiryDate } from "../../src/lib/calculations";
 import type { ProductFormValues } from "../../src/lib/types";
+import { useI18n } from "../../src/i18n";
 
 const EMPTY: ProductFormValues = {
   name: "",
@@ -67,6 +68,7 @@ function Field({
 export default function AddProductScreen() {
   const { prefill } = useLocalSearchParams<{ prefill?: string }>();
   const { user } = useAuth();
+  const { t } = useI18n();
   const router = useRouter();
   const [values, setValues] = useState<ProductFormValues>({ ...EMPTY, ...parsePrefill(prefill) });
   const [saving, setSaving] = useState(false);
@@ -78,15 +80,15 @@ export default function AddProductScreen() {
 
   async function handleSave() {
     if (!user) {
-      Alert.alert("Not signed in", "Please sign in again.");
+      Alert.alert(t("product.error_not_signed_in") || "Not signed in", t("product.error_sign_in_again") || "Please sign in again.");
       return;
     }
     if (!values.name.trim() || !values.brand.trim() || !values.purchase_date.trim()) {
-      Alert.alert("Missing info", "Name, brand, and purchase date are required.");
+      Alert.alert(t("product.error_missing_info") || "Missing info", t("product.error_missing_info_desc") || "Name, brand, and purchase date are required.");
       return;
     }
     if (!/^\d{4}-\d{2}-\d{2}$/.test(values.purchase_date.trim())) {
-      Alert.alert("Invalid date", "Purchase date must be in yyyy-mm-dd format.");
+      Alert.alert(t("product.error_invalid_date") || "Invalid date", t("product.error_invalid_date_desc") || "Purchase date must be in yyyy-mm-dd format.");
       return;
     }
 
@@ -125,29 +127,29 @@ export default function AddProductScreen() {
 
   return (
     <ScrollView className="flex-1 bg-cream-100" contentContainerStyle={{ padding: 24, paddingTop: 16 }}>
-      <Text className="mb-6 text-2xl font-bold text-ink-700">Add Product</Text>
+      <Text className="mb-6 text-2xl font-bold text-ink-700">{t("product.add_title") || "Add Product"}</Text>
 
-      <Field label="Name" required value={values.name} onChangeText={(v) => set("name", v)} placeholder="e.g. Samsung Galaxy S23" />
-      <Field label="Brand" required value={values.brand} onChangeText={(v) => set("brand", v)} placeholder="e.g. Samsung" />
+      <Field label={t("product.add_name") || "Name"} required value={values.name} onChangeText={(v) => set("name", v)} placeholder="e.g. Samsung Galaxy S23" />
+      <Field label={t("product.add_brand") || "Brand"} required value={values.brand} onChangeText={(v) => set("brand", v)} placeholder="e.g. Samsung" />
       <Field
-        label="Purchase date (yyyy-mm-dd)"
+        label={t("product.add_purchase_date_format") || "Purchase date (yyyy-mm-dd)"}
         required
         value={values.purchase_date}
         onChangeText={(v) => set("purchase_date", v)}
         placeholder="2026-01-15"
       />
       <Field
-        label="Warranty (months)"
+        label={t("product.add_warranty_format") || "Warranty (months)"}
         value={values.warranty_months}
         onChangeText={(v) => set("warranty_months", v)}
         keyboardType="numeric"
       />
-      <Field label="Price (INR)" value={values.price} onChangeText={(v) => set("price", v)} keyboardType="decimal-pad" />
-      <Field label="Category" value={values.category} onChangeText={(v) => set("category", v)} />
-      <Field label="Model number" value={values.model_number} onChangeText={(v) => set("model_number", v)} />
-      <Field label="Serial number" value={values.serial_number} onChangeText={(v) => set("serial_number", v)} />
-      <Field label="Store" value={values.store_name} onChangeText={(v) => set("store_name", v)} />
-      <Field label="Notes" value={values.notes} onChangeText={(v) => set("notes", v)} />
+      <Field label={t("product.add_price_format") || "Price (INR)"} value={values.price} onChangeText={(v) => set("price", v)} keyboardType="decimal-pad" />
+      <Field label={t("product.category") || "Category"} value={values.category} onChangeText={(v) => set("category", v)} />
+      <Field label={t("product.model_number") || "Model number"} value={values.model_number} onChangeText={(v) => set("model_number", v)} />
+      <Field label={t("product.serial_number") || "Serial number"} value={values.serial_number} onChangeText={(v) => set("serial_number", v)} />
+      <Field label={t("product.store") || "Store"} value={values.store_name} onChangeText={(v) => set("store_name", v)} />
+      <Field label={t("product.notes") || "Notes"} value={values.notes} onChangeText={(v) => set("notes", v)} />
 
       {error ? <Text className="mb-4 text-sm text-red-600">{error}</Text> : null}
 
@@ -156,7 +158,7 @@ export default function AddProductScreen() {
         disabled={saving}
         className="items-center rounded-2xl bg-brand-500 py-3.5 active:opacity-90 disabled:opacity-50"
       >
-        {saving ? <ActivityIndicator color="white" /> : <Text className="font-semibold text-white">Save product</Text>}
+        {saving ? <ActivityIndicator color="white" /> : <Text className="font-semibold text-white">{t("product.save_btn") || "Save product"}</Text>}
       </Pressable>
     </ScrollView>
   );

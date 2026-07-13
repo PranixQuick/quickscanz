@@ -105,11 +105,11 @@ export default function AccountScreen() {
   async function handleSaveProfile() {
     if (!user) return;
     if (!editTitle) {
-      setProfileError("Please select a title.");
+      setProfileError(t("account.error_select_title") || "Please select a title.");
       return;
     }
     if (!editName.trim()) {
-      setProfileError("Please enter your name.");
+      setProfileError(t("account.error_enter_name") || "Please enter your name.");
       return;
     }
     setProfileError("");
@@ -132,9 +132,9 @@ export default function AccountScreen() {
         phone: editPhone.trim() || null,
       });
       setProfileModalVisible(false);
-      Alert.alert("Success", "Profile updated successfully.");
+      Alert.alert(t("common.success") || "Success", t("account.profile_updated") || "Profile updated successfully.");
     } catch (err) {
-      setProfileError(err instanceof Error ? err.message : "Failed to update profile.");
+      setProfileError(err instanceof Error ? err.message : (t("account.error_update_failed") || "Failed to update profile."));
     } finally {
       setSavingProfile(false);
     }
@@ -150,8 +150,8 @@ export default function AccountScreen() {
 
     Linking.openURL(mailtoUrl).catch(() => {
       Alert.alert(
-        "Mail App Not Found",
-        `Please send an email to privacy@quickscanz.com with the subject "Account Deletion Request" to request deletion.`
+        t("account.mail_app_not_found") || "Mail App Not Found",
+        t("account.mail_app_not_found_desc") || `Please send an email to privacy@quickscanz.com with the subject "Account Deletion Request" to request deletion.`
       );
     });
   }
@@ -197,10 +197,10 @@ export default function AccountScreen() {
               </View>
               <View>
                 <Text className="text-base font-bold text-ink-900">
-                  {profile?.display_name || "New User"}
+                  {profile?.display_name || (t("account.new_user") || "New User")}
                 </Text>
                 <Text className="text-xs text-ink-400">
-                  {profile?.email ?? user?.email ?? "No email added"}
+                  {profile?.email ?? user?.email ?? (t("account.no_email_added") || "No email added")}
                 </Text>
               </View>
             </View>
@@ -213,7 +213,7 @@ export default function AccountScreen() {
           </View>
           <View className="pt-4 border-t border-cream-100 flex-row justify-between items-center">
             <View>
-              <Text className="text-[10px] text-ink-300 font-semibold uppercase tracking-wider">Subscription</Text>
+              <Text className="text-[10px] text-ink-300 font-semibold uppercase tracking-wider">{t("account.subscription") || "Subscription"}</Text>
               <Text className="text-sm font-semibold text-brand-600 mt-0.5">{subscription}</Text>
             </View>
             {subscription === "Free" && (
@@ -221,7 +221,7 @@ export default function AccountScreen() {
                 onPress={() => router.push("/pricing")}
                 className="bg-brand-500 px-4 py-2 rounded-xl active:opacity-90"
               >
-                <Text className="text-xs font-semibold text-white">Upgrade</Text>
+                <Text className="text-xs font-semibold text-white">{t("account.upgrade") || "Upgrade"}</Text>
               </Pressable>
             )}
           </View>
@@ -229,13 +229,13 @@ export default function AccountScreen() {
 
         {/* Linked Accounts */}
         <Text className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-2 px-1">
-          Linked Accounts
+          {t("account.linked_accounts") || "Linked Accounts"}
         </Text>
         <View className="bg-white border border-cream-200 rounded-3xl p-4 shadow-sm gap-3 mb-6">
           <View className="flex-row justify-between items-center">
             <View className="flex-row items-center gap-2">
               <Ionicons name="mail-outline" size={16} color="#4b5563" />
-              <Text className="text-sm text-ink-700">Email Address</Text>
+              <Text className="text-sm text-ink-700">{t("account.email_address") || "Email Address"}</Text>
             </View>
             <Ionicons
               name={isEmailLinked ? "checkmark-circle" : "close-circle"}
@@ -246,7 +246,7 @@ export default function AccountScreen() {
           <View className="flex-row justify-between items-center">
             <View className="flex-row items-center gap-2">
               <Ionicons name="call-outline" size={16} color="#4b5563" />
-              <Text className="text-sm text-ink-700">Phone Number</Text>
+              <Text className="text-sm text-ink-700">{t("account.phone_number") || "Phone Number"}</Text>
             </View>
             <Ionicons
               name={isPhoneLinked ? "checkmark-circle" : "close-circle"}
@@ -257,7 +257,7 @@ export default function AccountScreen() {
           <View className="flex-row justify-between items-center">
             <View className="flex-row items-center gap-2">
               <Ionicons name="logo-google" size={16} color="#4b5563" />
-              <Text className="text-sm text-ink-700">Google</Text>
+              <Text className="text-sm text-ink-700">{t("account.google") || "Google"}</Text>
             </View>
             <Ionicons
               name={isGoogleLinked ? "checkmark-circle" : "close-circle"}
@@ -270,7 +270,7 @@ export default function AccountScreen() {
         {/* Sign Out Button */}
         <Pressable
           onPress={() =>
-            Alert.alert(t("account.sign_out_btn") || "Sign Out", "Are you sure you want to sign out?", [
+            Alert.alert(t("account.sign_out_btn") || "Sign Out", t("account.sign_out_confirm") || "Are you sure you want to sign out?", [
               { text: t("common.cancel") || "Cancel", style: "cancel" },
               { text: t("account.sign_out_btn") || "Sign Out", style: "destructive", onPress: handleSignOut },
             ])
@@ -284,22 +284,22 @@ export default function AccountScreen() {
 
         {/* Danger Zone */}
         <View className="border-t border-cream-200 pt-4 items-center">
-          <Text className="text-[10px] text-ink-300 uppercase font-semibold tracking-wider mb-2">Danger Zone</Text>
+          <Text className="text-[10px] text-ink-300 uppercase font-semibold tracking-wider mb-2">{t("account.danger_zone") || "Danger Zone"}</Text>
           <Pressable
             onPress={() =>
               Alert.alert(
-                "Delete Account",
-                "Requesting account deletion will notify our support team to remove your account and all associated data. Do you wish to proceed?",
+                t("account.delete_account_title") || "Delete Account",
+                t("account.delete_account_confirm") || "Requesting account deletion will notify our support team to remove your account and all associated data. Do you wish to proceed?",
                 [
-                  { text: "Cancel", style: "cancel" },
-                  { text: "Request Deletion", style: "destructive", onPress: handleDeleteAccountRequest },
+                  { text: t("common.cancel") || "Cancel", style: "cancel" },
+                  { text: t("account.delete_account_btn") || "Request Deletion", style: "destructive", onPress: handleDeleteAccountRequest },
                 ]
               )
             }
             className="flex-row items-center gap-1.5 active:opacity-80"
           >
             <Ionicons name="trash-outline" size={12} color="#dc2626" />
-            <Text className="text-xs font-semibold text-red-600">Request Account Deletion</Text>
+            <Text className="text-xs font-semibold text-red-600">{t("account.delete_account_btn") || "Request Account Deletion"}</Text>
           </Pressable>
         </View>
       </ScrollView>
@@ -315,7 +315,7 @@ export default function AccountScreen() {
             className="bg-cream-50 rounded-t-3xl border-t border-cream-200 overflow-hidden"
           >
             <View className="bg-white border-b border-cream-100 px-6 py-4 flex-row justify-between items-center">
-              <Text className="text-base font-bold text-ink-900">Edit Profile</Text>
+              <Text className="text-base font-bold text-ink-900">{t("account.edit_profile_title") || "Edit Profile"}</Text>
               <Pressable onPress={() => setProfileModalVisible(false)} className="p-1 rounded-full active:bg-cream-100">
                 <Ionicons name="close" size={20} color="#1a1612" />
               </Pressable>
@@ -323,7 +323,7 @@ export default function AccountScreen() {
 
             <ScrollView className="p-6 max-h-[500px]">
               {/* Title Selector */}
-              <Text className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-2">Title</Text>
+              <Text className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-2">{t("account.title") || "Title"}</Text>
               <View className="flex-row gap-2 mb-4">
                 {(["Mr", "Mrs", "Ms"] as const).map((tVal) => (
                   <Pressable
@@ -341,21 +341,21 @@ export default function AccountScreen() {
               </View>
 
               {/* Name Input */}
-              <Text className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-2">Full Name</Text>
+              <Text className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-2">{t("account.full_name") || "Full Name"}</Text>
               <TextInput
                 value={editName}
                 onChangeText={setEditName}
-                placeholder="e.g. John Doe"
+                placeholder={t("account.placeholder_name") || "e.g. John Doe"}
                 placeholderTextColor="#9ca3af"
                 className="w-full bg-white border border-cream-300 rounded-xl px-4 py-2.5 text-ink-700 mb-4"
               />
 
               {/* Email Input */}
-              <Text className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-2">Email Address</Text>
+              <Text className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-2">{t("account.email_address") || "Email Address"}</Text>
               <TextInput
                 value={editEmail}
                 onChangeText={setEditEmail}
-                placeholder="e.g. john@example.com"
+                placeholder={t("account.placeholder_email") || "e.g. john@example.com"}
                 placeholderTextColor="#9ca3af"
                 keyboardType="email-address"
                 autoCapitalize="none"
@@ -363,11 +363,11 @@ export default function AccountScreen() {
               />
 
               {/* Phone Input */}
-              <Text className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-2">Phone Number</Text>
+              <Text className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-2">{t("account.phone_number") || "Phone Number"}</Text>
               <TextInput
                 value={editPhone}
                 onChangeText={setEditPhone}
-                placeholder="e.g. +919876543210"
+                placeholder={t("account.placeholder_phone") || "e.g. +919876543210"}
                 placeholderTextColor="#9ca3af"
                 keyboardType="phone-pad"
                 autoCapitalize="none"
@@ -386,7 +386,7 @@ export default function AccountScreen() {
                 {savingProfile ? (
                   <ActivityIndicator color="#fdfcf8" />
                 ) : (
-                  <Text className="text-cream-50 font-semibold text-sm">Save Changes</Text>
+                  <Text className="text-cream-50 font-semibold text-sm">{t("account.save_changes") || "Save Changes"}</Text>
                 )}
               </Pressable>
             </ScrollView>

@@ -6,6 +6,7 @@ import { supabase } from "../src/lib/supabase";
 import { useAuth } from "../src/features/auth/AuthProvider";
 import { API_BASE_URL } from "../src/lib/api";
 import type { SubscriptionPlan, UserSubscription } from "../src/lib/types";
+import { useI18n } from "../src/i18n";
 
 /**
  * Mirrors app/pricing/page.tsx + components/subscription/PricingClient.tsx
@@ -36,6 +37,7 @@ import type { SubscriptionPlan, UserSubscription } from "../src/lib/types";
 
 export default function PricingScreen() {
   const { user } = useAuth();
+  const { t } = useI18n();
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
   const [currentSub, setCurrentSub] = useState<UserSubscription | null>(null);
   const [loading, setLoading] = useState(true);
@@ -92,8 +94,8 @@ export default function PricingScreen() {
       className="flex-1 bg-cream-100"
       contentContainerStyle={{ padding: 24, paddingTop: 16, paddingBottom: 48 }}
     >
-      <Text className="text-2xl font-bold text-ink-700">Upgrade Your Plan</Text>
-      <Text className="mt-1 text-sm text-ink-500">One app for every product you own. Never lose a warranty again.</Text>
+      <Text className="text-2xl font-bold text-ink-700">{t("pricing.title") || "Upgrade Your Plan"}</Text>
+      <Text className="mt-1 text-sm text-ink-500">{t("pricing.subtitle") || "One app for every product you own. Never lose a warranty again."}</Text>
 
       <View className="mt-6 gap-4">
         {plans.map((plan) => {
@@ -110,7 +112,7 @@ export default function PricingScreen() {
                     <Text className="text-base font-semibold text-ink-700">{plan.name}</Text>
                     {isCurrent && (
                       <View className="rounded-full bg-green-100 px-2 py-0.5">
-                        <Text className="text-[10px] font-medium text-green-700">Current</Text>
+                        <Text className="text-[10px] font-medium text-green-700">{t("pricing.current") || "Current"}</Text>
                       </View>
                     )}
                   </View>
@@ -120,7 +122,7 @@ export default function PricingScreen() {
                   <Text className="text-xl font-light text-ink-700">₹{plan.price_inr.toLocaleString("en-IN")}</Text>
                   {!isFree && (
                     <Text className="text-[10px] text-ink-300">
-                      per {plan.interval === "yearly" ? "year" : "month"} +GST
+                      {plan.interval === "yearly" ? (t("pricing.per_year") || "per year +GST") : (t("pricing.per_month") || "per month +GST")}
                     </Text>
                   )}
                 </View>
@@ -136,11 +138,11 @@ export default function PricingScreen() {
 
               {isCurrent ? (
                 <View className="mt-4 items-center rounded-xl bg-cream-200 py-2.5">
-                  <Text className="text-sm text-ink-500">Your current plan</Text>
+                  <Text className="text-sm text-ink-500">{t("pricing.current_plan") || "Your current plan"}</Text>
                 </View>
               ) : isFree ? (
                 <View className="mt-4 items-center py-2.5">
-                  <Text className="text-xs text-ink-300">Free forever · No credit card needed</Text>
+                  <Text className="text-xs text-ink-300">{t("pricing.free_forever") || "Free forever · No credit card needed"}</Text>
                 </View>
               ) : (
                 <Pressable
@@ -151,7 +153,7 @@ export default function PricingScreen() {
                   {opening ? (
                     <ActivityIndicator color="white" />
                   ) : (
-                    <Text className="font-semibold text-white">Upgrade to {plan.name} →</Text>
+                    <Text className="font-semibold text-white">{t("pricing.upgrade_btn", { name: plan.name }) || `Upgrade to ${plan.name} →`}</Text>
                   )}
                 </Pressable>
               )}
@@ -162,14 +164,12 @@ export default function PricingScreen() {
 
       <View className="mt-6 rounded-xl bg-cream-200 p-3">
         <Text className="text-[11px] leading-relaxed text-ink-500">
-          Upgrades open QuickScanZ&apos;s secure web checkout (Razorpay) in your browser. Native in-app purchase is
-          planned for a future release — for now, complete checkout there and pull this screen back into focus (or
-          reopen it) once you&apos;re done.
+          {t("pricing.checkout_note") || "Upgrades open secure web checkout (Razorpay) in your browser. Complete checkout there and return once done."}
         </Text>
       </View>
 
       <Text className="mt-6 text-center text-xs text-ink-300">
-        Payments processed securely via Razorpay · Cancel anytime · 18% GST applicable
+        {t("pricing.payments_secure") || "Payments processed securely via Razorpay · Cancel anytime · 18% GST applicable"}
       </Text>
     </ScrollView>
   );

@@ -327,7 +327,7 @@ export default function ClaimsScreen() {
           <Text className="text-lg">🔧</Text>
           <View>
             <Text className="text-sm font-semibold text-ink-700">{selected.name}</Text>
-            <Text className="text-xs text-ink-400 mt-0.5">Warranty until {selected.expiry_date}</Text>
+            <Text className="text-xs text-ink-400 mt-0.5">{t("product.warranty_until") || "Warranty until"} {selected.expiry_date}</Text>
           </View>
         </View>
       )}
@@ -412,7 +412,7 @@ export default function ClaimsScreen() {
             disabled={!input.trim() || sending}
             className="items-center justify-center rounded-xl bg-ink-900 px-5 py-3 active:bg-ink-800 disabled:opacity-40"
           >
-            <Text className="font-semibold text-cream-50 text-sm">Send</Text>
+            <Text className="font-semibold text-cream-50 text-sm">{t("common.send") || "Send"}</Text>
           </Pressable>
         </View>
       )}

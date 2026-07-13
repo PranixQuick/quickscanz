@@ -86,21 +86,37 @@ export function getStatusConfig(status: WarrantyStatus) {
   }
 }
 
-export function formatWarrantyCountdown(expiryDate: string): string {
+export function formatWarrantyCountdown(expiryDate: string, t?: (key: string, params?: Record<string, string | number>) => string): string {
   const days = getDaysRemaining(expiryDate);
-  if (days < 0) return `Expired ${Math.abs(days)} day${Math.abs(days) === 1 ? "" : "s"} ago`;
-  if (days === 0) return "Expires today";
-  if (days === 1) return "1 day remaining";
-  if (days < 30) return `${days} days remaining`;
+  const trans = t || ((k: string, p?: any) => {
+    if (k === "product.countdown_expired") return `Expired ${p?.days} days ago`;
+    if (k === "product.countdown_expires_today") return "Expires today";
+    if (k === "product.countdown_day_remaining") return "1 day remaining";
+    if (k === "product.countdown_days_remaining") return `${p?.days} days remaining`;
+    if (k === "product.countdown_years_months_remaining") return `${p?.years}y ${p?.months}m remaining`;
+    if (k === "product.countdown_years_remaining") return `${p?.years} years remaining`;
+    if (k === "product.countdown_months_remaining") return `${p?.months} months remaining`;
+    return k;
+  });
+
+  if (days < 0) {
+    return trans("product.countdown_expired", { days: Math.abs(days) });
+  }
+  if (days === 0) return trans("product.countdown_expires_today");
+  if (days === 1) return trans("product.countdown_day_remaining");
+  if (days < 30) return trans("product.countdown_days_remaining", { days });
 
   const totalMonths = Math.floor(days / 30);
   const years = Math.floor(totalMonths / 12);
   const months = totalMonths % 12;
-  const parts: string[] = [];
-  if (years > 0) parts.push(`${years} year${years > 1 ? "s" : ""}`);
-  if (months > 0) parts.push(`${months} month${months > 1 ? "s" : ""}`);
-  if (parts.length === 0) return `${days} days remaining`;
-  return `${parts.join(" ")} remaining`;
+
+  if (years > 0 && months > 0) {
+    return trans("product.countdown_years_months_remaining", { years, months });
+  }
+  if (years > 0) {
+    return trans("product.countdown_years_remaining", { years });
+  }
+  return trans("product.countdown_months_remaining", { months });
 }
 
 /** Ascending by days-remaining (most urgent first) — stable, non-mutating. */

@@ -166,7 +166,7 @@ export default function WalletScreen() {
                 </View>
                 <Text className="text-xs text-ink-400 mt-0.5">{item.brand}</Text>
                 <Text className={`mt-2 text-[10px] font-medium ${config.text}`}>
-                  {formatWarrantyCountdown(item.expiry_date)}
+                  {formatWarrantyCountdown(item.expiry_date, t)}
                 </Text>
               </Pressable>
             );
