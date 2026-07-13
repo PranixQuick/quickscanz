@@ -1,5 +1,5 @@
 import "../global.css";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { View, ActivityIndicator } from "react-native";
 import { Stack, useRouter, useSegments } from "expo-router";
 import { AuthProvider, useAuth } from "../src/features/auth/AuthProvider";
@@ -15,18 +15,27 @@ function RootNavigation() {
   const { loading, session } = useAuth();
   const segments = useSegments();
   const router = useRouter();
+  const lastSessionIdRef = useRef<string | null | undefined>(undefined);
 
   useEffect(() => {
     if (loading) return;
 
     const inAuthGroup = segments[0] === "(auth)";
+    const sessionId = session?.user?.id ?? null;
+
+    // Prevent duplicate redirects for the same session state
+    if (lastSessionIdRef.current === sessionId) {
+      return;
+    }
 
     if (!session && !inAuthGroup) {
+      lastSessionIdRef.current = null;
       router.replace("/login");
     } else if (session && inAuthGroup) {
+      lastSessionIdRef.current = sessionId;
       router.replace("/");
     }
-  }, [loading, session, segments, router]);
+  }, [loading, session, segments[0], router]);
 
   if (loading) {
     return (
