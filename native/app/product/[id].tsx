@@ -104,11 +104,8 @@ export default function ProductDetailScreen() {
   }
 
   return (
-    <ScrollView className="flex-1 bg-cream-100" contentContainerStyle={{ padding: 24, paddingTop: 56 }}>
-      <Stack.Screen options={{ title: product.name, headerShown: true }} />
-      <Pressable onPress={() => router.back()} className="mb-4 flex-row items-center">
-        <Text className="text-brand-600">← Back</Text>
-      </Pressable>
+    <ScrollView className="flex-1 bg-cream-100" contentContainerStyle={{ padding: 24, paddingTop: 16 }}>
+      <Stack.Screen options={{ title: product.name }} />
 
       <Text className="text-2xl font-bold text-ink-700">{product.name}</Text>
       <Text className="text-base text-ink-500">{product.brand}</Text>

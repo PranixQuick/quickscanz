@@ -90,9 +90,8 @@ export default function PricingScreen() {
   return (
     <ScrollView
       className="flex-1 bg-cream-100"
-      contentContainerStyle={{ padding: 24, paddingTop: 56, paddingBottom: 48 }}
+      contentContainerStyle={{ padding: 24, paddingTop: 16, paddingBottom: 48 }}
     >
-      <Stack.Screen options={{ title: "Upgrade", headerShown: true }} />
       <Text className="text-2xl font-bold text-ink-700">Upgrade Your Plan</Text>
       <Text className="mt-1 text-sm text-ink-500">One app for every product you own. Never lose a warranty again.</Text>
 

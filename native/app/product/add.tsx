@@ -124,8 +124,7 @@ export default function AddProductScreen() {
   }
 
   return (
-    <ScrollView className="flex-1 bg-cream-100" contentContainerStyle={{ padding: 24, paddingTop: 56 }}>
-      <Stack.Screen options={{ title: "Add Product", headerShown: true }} />
+    <ScrollView className="flex-1 bg-cream-100" contentContainerStyle={{ padding: 24, paddingTop: 16 }}>
       <Text className="mb-6 text-2xl font-bold text-ink-700">Add Product</Text>
 
       <Field label="Name" required value={values.name} onChangeText={(v) => set("name", v)} placeholder="e.g. Samsung Galaxy S23" />

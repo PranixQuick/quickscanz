@@ -11,7 +11,7 @@ export const LOCALE_LABELS: Record<Locale, string> = {
   te: "తెలుగు",
   ta: "தமிழ்",
   kn: "ಕನ್ನಡ",
-  ml: "മലയാളం",
+  ml: "മലയാളം",
 };
 
 type Dict = Record<string, string>;

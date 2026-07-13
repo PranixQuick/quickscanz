@@ -10,6 +10,7 @@ import {
   Platform,
 } from "react-native";
 import { useFocusEffect, useRouter } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
 import { supabase } from "../../src/lib/supabase";
 import { apiFetch, ApiAuthError } from "../../src/lib/api";
 import { useAuth } from "../../src/features/auth/AuthProvider";
