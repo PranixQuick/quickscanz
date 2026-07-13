@@ -66,7 +66,7 @@ export default function LoginScreen() {
           return;
         }
         if (data?.session) {
-          router.replace("/");
+          // Handled by global AuthProvider listener
         } else {
           setSuccessMessage("Account created! Please check your email inbox to verify your account.");
         }
@@ -77,7 +77,7 @@ export default function LoginScreen() {
           setError(error.message);
           return;
         }
-        router.replace("/");
+        // Handled by global AuthProvider listener
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Authentication failed.");
@@ -121,7 +121,7 @@ export default function LoginScreen() {
         // User cancelled the browser session
         return;
       }
-      router.replace("/");
+      // Handled by global AuthProvider listener
     } catch (e) {
       setError(e instanceof Error ? e.message : "Google sign-in failed.");
     } finally {
@@ -178,7 +178,7 @@ export default function LoginScreen() {
         setError("Invalid OTP code. Please check and try again.");
         return;
       }
-      router.replace("/");
+      // Handled by global AuthProvider listener
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to verify OTP.");
     } finally {
