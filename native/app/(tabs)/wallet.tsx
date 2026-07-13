@@ -31,19 +31,26 @@ export default function WalletScreen() {
       setLoading(false);
       return;
     }
-    const { data, error } = await supabase
-      .from("products")
-      .select(PRODUCT_COLUMNS)
-      .eq("user_id", user.id)
-      .order("expiry_date", { ascending: true });
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from("products")
+        .select(PRODUCT_COLUMNS)
+        .eq("user_id", user.id)
+        .order("expiry_date", { ascending: true });
 
-    if (error) setError(error.message);
-    else {
-      setError("");
-      setProducts((data as Product[] | null) ?? []);
+      if (error) {
+        setError(error.message);
+      } else {
+        setError("");
+        setProducts((data as Product[] | null) ?? []);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load products list.");
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
     }
-    setLoading(false);
-    setRefreshing(false);
   }, [user]);
 
   useFocusEffect(

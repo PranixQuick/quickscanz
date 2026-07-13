@@ -111,16 +111,25 @@ export default function ClaimsScreen() {
       setLoadingProducts(false);
       return;
     }
-    const { data } = await supabase
-      .from("products")
-      .select(PRODUCT_COLUMNS)
-      .eq("user_id", user.id)
-      .eq("is_demo", false)
-      .order("expiry_date", { ascending: true });
-    const list = (data as Product[] | null) ?? [];
-    setProducts(list);
-    setSelectedId((prev) => prev ?? list[0]?.id ?? null);
-    setLoadingProducts(false);
+    setLoadingProducts(true);
+    try {
+      const { data, error } = await supabase
+        .from("products")
+        .select(PRODUCT_COLUMNS)
+        .eq("user_id", user.id)
+        .eq("is_demo", false)
+        .order("expiry_date", { ascending: true });
+
+      if (!error) {
+        const list = (data as Product[] | null) ?? [];
+        setProducts(list);
+        setSelectedId((prev) => prev ?? list[0]?.id ?? null);
+      }
+    } catch (err) {
+      // safe fallback
+    } finally {
+      setLoadingProducts(false);
+    }
   }, [user]);
 
   useFocusEffect(

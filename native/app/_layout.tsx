@@ -1,15 +1,63 @@
 import "../global.css";
-import { useEffect, useRef } from "react";
-import { View, ActivityIndicator } from "react-native";
+import React, { Component, useEffect, useRef, type ErrorInfo, type ReactNode } from "react";
+import { View, ActivityIndicator, ScrollView, Pressable, Text } from "react-native";
 import { Stack, useRouter, useSegments } from "expo-router";
 import { AuthProvider, useAuth } from "../src/features/auth/AuthProvider";
 
+// ─── Custom Error Boundary for Release Build Debugging ────────────────────────
+interface ErrorBoundaryProps {
+  children: ReactNode;
+}
+
+interface ErrorBoundaryState {
+  hasError: boolean;
+  error: Error | null;
+}
+
+class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  state: ErrorBoundaryState = {
+    hasError: false,
+    error: null,
+  };
+
+  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    // eslint-disable-next-line no-console
+    console.error("[ErrorBoundary] Caught error:", error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <View className="flex-1 bg-cream-100 px-6 py-12 justify-center">
+          <Text className="text-xl font-bold text-red-600 mb-2">App Error Detected</Text>
+          <Text className="text-sm text-ink-500 mb-4 leading-5">
+            QuickScanZ Premium encountered a rendering error. Please review the stack trace below to identify the issue:
+          </Text>
+          <ScrollView className="flex-1 bg-white border border-cream-300 rounded-2xl p-4 mb-6">
+            <Text className="text-[10px] text-red-600 font-mono leading-4">
+              {this.state.error?.stack || this.state.error?.message || "Unknown rendering exception"}
+            </Text>
+          </ScrollView>
+          <Pressable
+            onPress={() => this.setState({ hasError: false, error: null })}
+            className="items-center rounded-2xl bg-brand-500 py-4 active:opacity-90 shadow-sm"
+          >
+            <Text className="font-semibold text-white text-sm">Reset & Try Again</Text>
+          </Pressable>
+        </View>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
 /**
  * Redirects between the (auth) and (tabs) route groups based on session state.
- * NOTE (M1 known gap): this only gates on "is there a Supabase session" — it
- * does not yet force the biometric /unlock screen on cold start/resume. Wiring
- * that in (bootstrap from SecureStore via src/lib/biometric.ts before trusting
- * AsyncStorage's session, then require a successful unlock) is a follow-up.
  */
 function RootNavigation() {
   const { loading, session } = useAuth();
@@ -56,8 +104,10 @@ function RootNavigation() {
 
 export default function RootLayout() {
   return (
-    <AuthProvider>
-      <RootNavigation />
-    </AuthProvider>
+    <ErrorBoundary>
+      <AuthProvider>
+        <RootNavigation />
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }

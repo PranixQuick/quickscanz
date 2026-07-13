@@ -19,17 +19,22 @@ export default function HomeScreen() {
       return;
     }
     setLoading(true);
-    const { data, error } = await supabase.from("products").select("expiry_date").eq("user_id", user.id);
+    try {
+      const { data, error } = await supabase.from("products").select("expiry_date").eq("user_id", user.id);
 
-    if (error) {
-      setError(error.message);
+      if (error) {
+        setError(error.message);
+        setLoading(false);
+        return;
+      }
+
+      setError("");
+      setCounts(countByStatus((data as { expiry_date: string }[] | null) ?? []));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load product statistics.");
+    } finally {
       setLoading(false);
-      return;
     }
-
-    setError("");
-    setCounts(countByStatus((data as { expiry_date: string }[] | null) ?? []));
-    setLoading(false);
   }, [user]);
 
   useFocusEffect(
