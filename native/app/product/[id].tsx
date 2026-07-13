@@ -181,7 +181,10 @@ export default function ProductDetailScreen() {
         <Row label={t("product.model_number") || "Model number"} value={product.model_number} />
         <Row label={t("product.serial_number") || "Serial number"} value={product.serial_number} />
         <Row label={t("product.store") || "Store"} value={product.store_name} />
+        <Row label={t("product.store_contact") || "Retailer Contact"} value={product.store_contact} />
+        <Row label={t("product.store_location") || "Retailer Location"} value={product.store_location} />
         <Row label={t("product.notes") || "Notes"} value={product.notes} />
+
       </View>
     </ScrollView>
   );

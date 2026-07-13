@@ -21,8 +21,11 @@ function ocrToPrefill(ocr: OcrResult): Partial<ProductFormValues> {
     model_number: ocr.model_number ?? "",
     serial_number: ocr.serial_number ?? "",
     store_name: ocr.store_name ?? "",
+    store_contact: "",
+    store_location: "",
   };
 }
+
 
 export default function ScanScreen() {
   const { t } = useI18n();

@@ -7,24 +7,13 @@ import { clearSavedSession } from "../../src/lib/biometric";
 import { useI18n } from "../../src/i18n";
 import { supabase } from "../../src/lib/supabase";
 import LanguageDropdown from "../../src/components/LanguageDropdown";
+import HeaderLogo from "../../src/components/HeaderLogo";
 
-function AppLogo() {
-  return (
-    <View className="w-8 h-8 rounded-xl bg-ink-900 justify-center items-center">
-      <View className="w-4.5 h-4.5 flex-wrap flex-row gap-[3px] justify-center items-center">
-        <View className="w-1.5 h-1.5 rounded-[2px] bg-cream-50" />
-        <View className="w-1.5 h-1.5 rounded-[2px] bg-cream-50 opacity-60" />
-        <View className="w-1.5 h-1.5 rounded-[2px] bg-cream-50 opacity-60" />
-        <View className="w-1.5 h-1.5 rounded-[2px] bg-cream-50 opacity-25" />
-      </View>
-    </View>
-  );
-}
 
 export default function AccountScreen() {
   const { user, signOut } = useAuth();
   const router = useRouter();
-  const { locale, t } = useI18n();
+  const { locale, t, fontFamily } = useI18n();
 
   const [profile, setProfile] = useState<{
     display_name: string | null;
@@ -37,6 +26,8 @@ export default function AccountScreen() {
   // Modals state
   const [langModalVisible, setLangModalVisible] = useState(false);
   const [profileModalVisible, setProfileModalVisible] = useState(false);
+  const [phoneModalVisible, setPhoneModalVisible] = useState(false);
+  const [emailModalVisible, setEmailModalVisible] = useState(false);
 
   // Edit Profile Form State
   const [editTitle, setEditTitle] = useState<"Mr" | "Mrs" | "Ms" | null>(null);
@@ -45,6 +36,20 @@ export default function AccountScreen() {
   const [editPhone, setEditPhone] = useState("");
   const [savingProfile, setSavingProfile] = useState(false);
   const [profileError, setProfileError] = useState("");
+
+  // Phone Binding Form State
+  const [bindingPhone, setBindingPhone] = useState("+91");
+  const [phoneOtp, setPhoneOtp] = useState("");
+  const [phoneStep, setPhoneStep] = useState<1 | 2>(1);
+  const [phoneLoading, setPhoneLoading] = useState(false);
+  const [phoneError, setPhoneError] = useState("");
+
+  // Email Binding Form State
+  const [bindingEmail, setBindingEmail] = useState("");
+  const [bindingPassword, setBindingPassword] = useState("");
+  const [emailLoading, setEmailLoading] = useState(false);
+  const [emailError, setEmailError] = useState("");
+
 
   const loadData = useCallback(async () => {
     if (!user) return;
@@ -156,6 +161,96 @@ export default function AccountScreen() {
     });
   }
 
+  async function handleSendPhoneOtp() {
+    if (!bindingPhone.trim() || !bindingPhone.startsWith("+")) {
+      setPhoneError("Please enter a valid phone number with country code (e.g. +91XXXXXXXXXX)");
+      return;
+    }
+    setPhoneError("");
+    setPhoneLoading(true);
+    try {
+      const { error } = await supabase.auth.updateUser({ phone: bindingPhone.trim() });
+      if (error) throw error;
+      setPhoneStep(2);
+    } catch (err) {
+      setPhoneError(err instanceof Error ? err.message : "Failed to send OTP");
+    } finally {
+      setPhoneLoading(false);
+    }
+  }
+
+  async function handleVerifyPhoneOtp() {
+    if (!phoneOtp.trim()) {
+      setPhoneError("Please enter the OTP");
+      return;
+    }
+    setPhoneError("");
+    setPhoneLoading(true);
+    try {
+      const { error } = await supabase.auth.verifyOtp({
+        phone: bindingPhone.trim(),
+        token: phoneOtp.trim(),
+        type: "phone_change",
+      });
+      if (error) throw error;
+      Alert.alert(t("common.success") || "Success", "Phone number linked successfully!");
+      setPhoneModalVisible(false);
+      loadData();
+    } catch (err) {
+      setPhoneError(err instanceof Error ? err.message : "Failed to verify OTP");
+    } finally {
+      setPhoneLoading(false);
+    }
+  }
+
+  async function handleLinkEmail() {
+    if (!bindingEmail.trim() || !bindingEmail.includes("@")) {
+      setEmailError("Please enter a valid email address");
+      return;
+    }
+    if (bindingPassword.length < 6) {
+      setEmailError("Password must be at least 6 characters");
+      return;
+    }
+    setEmailError("");
+    setEmailLoading(true);
+    try {
+      const { error } = await supabase.auth.updateUser({
+        email: bindingEmail.trim(),
+        password: bindingPassword,
+      });
+      if (error) throw error;
+      Alert.alert(
+        t("common.success") || "Success",
+        "Verification email sent! Please check your inbox to confirm linking."
+      );
+      setEmailModalVisible(false);
+      loadData();
+    } catch (err) {
+      setEmailError(err instanceof Error ? err.message : "Failed to link email");
+    } finally {
+      setEmailLoading(false);
+    }
+  }
+
+  async function handleLinkGoogle() {
+    try {
+      const { data, error } = await supabase.auth.linkIdentity({
+        provider: "google",
+        options: {
+          redirectTo: "quickscanz://",
+        },
+      });
+      if (error) throw error;
+      if (data?.url) {
+        await Linking.openURL(data.url);
+      }
+    } catch (err) {
+      Alert.alert("Error", err instanceof Error ? err.message : "Failed to link Google account");
+    }
+  }
+
+
   const isGoogleLinked = user?.app_metadata.providers?.includes("google");
   const isEmailLinked = !!user?.email;
   const isPhoneLinked = !!user?.phone;
@@ -172,10 +267,8 @@ export default function AccountScreen() {
     <View className="flex-1 bg-cream-50 pt-12">
       {/* Top Header */}
       <View className="flex-row items-center justify-between px-6 pb-4 border-b border-cream-200 bg-cream-50">
-        <View className="flex-row items-center gap-2">
-          <AppLogo />
-          <Text className="text-lg font-bold text-ink-900 tracking-tight">QuickScanZ</Text>
-        </View>
+        <HeaderLogo />
+
         <Pressable
           onPress={() => setLangModalVisible(true)}
           className="flex-row items-center gap-1.5 px-3 py-1.5 rounded-full bg-cream-200 active:opacity-85"
@@ -228,44 +321,85 @@ export default function AccountScreen() {
         </View>
 
         {/* Linked Accounts */}
-        <Text className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-2 px-1">
+        <Text style={{ fontFamily: fontFamily(true) }} className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-2 px-1">
           {t("account.linked_accounts") || "Linked Accounts"}
         </Text>
         <View className="bg-white border border-cream-200 rounded-3xl p-4 shadow-sm gap-3 mb-6">
-          <View className="flex-row justify-between items-center">
+          <Pressable
+            disabled={isEmailLinked}
+            onPress={() => {
+              setBindingEmail("");
+              setBindingPassword("");
+              setEmailError("");
+              setEmailModalVisible(true);
+            }}
+            className="flex-row justify-between items-center py-1 active:opacity-60"
+          >
             <View className="flex-row items-center gap-2">
               <Ionicons name="mail-outline" size={16} color="#4b5563" />
-              <Text className="text-sm text-ink-700">{t("account.email_address") || "Email Address"}</Text>
+              <Text style={{ fontFamily: fontFamily(false) }} className="text-sm text-ink-700">{t("account.email_address") || "Email Address"}</Text>
             </View>
-            <Ionicons
-              name={isEmailLinked ? "checkmark-circle" : "close-circle"}
-              size={18}
-              color={isEmailLinked ? "#0B6E4F" : "#9ca3af"}
-            />
-          </View>
-          <View className="flex-row justify-between items-center">
+            <View className="flex-row items-center gap-1.5">
+              {!isEmailLinked && (
+                <Text style={{ fontFamily: fontFamily(true) }} className="text-[10px] text-brand-600 font-bold uppercase">{t("account.link_btn") || "Link"}</Text>
+              )}
+              <Ionicons
+                name={isEmailLinked ? "checkmark-circle" : "add-circle-outline"}
+                size={18}
+                color={isEmailLinked ? "#0B6E4F" : "#ef4444"}
+              />
+            </View>
+          </Pressable>
+
+          <Pressable
+            disabled={isPhoneLinked}
+            onPress={() => {
+              setBindingPhone("+91");
+              setPhoneOtp("");
+              setPhoneStep(1);
+              setPhoneError("");
+              setPhoneModalVisible(true);
+            }}
+            className="flex-row justify-between items-center py-1 active:opacity-60"
+          >
             <View className="flex-row items-center gap-2">
               <Ionicons name="call-outline" size={16} color="#4b5563" />
-              <Text className="text-sm text-ink-700">{t("account.phone_number") || "Phone Number"}</Text>
+              <Text style={{ fontFamily: fontFamily(false) }} className="text-sm text-ink-700">{t("account.phone_number") || "Phone Number"}</Text>
             </View>
-            <Ionicons
-              name={isPhoneLinked ? "checkmark-circle" : "close-circle"}
-              size={18}
-              color={isPhoneLinked ? "#0B6E4F" : "#9ca3af"}
-            />
-          </View>
-          <View className="flex-row justify-between items-center">
+            <View className="flex-row items-center gap-1.5">
+              {!isPhoneLinked && (
+                <Text style={{ fontFamily: fontFamily(true) }} className="text-[10px] text-brand-600 font-bold uppercase">{t("account.link_btn") || "Link"}</Text>
+              )}
+              <Ionicons
+                name={isPhoneLinked ? "checkmark-circle" : "add-circle-outline"}
+                size={18}
+                color={isPhoneLinked ? "#0B6E4F" : "#ef4444"}
+              />
+            </View>
+          </Pressable>
+
+          <Pressable
+            disabled={isGoogleLinked}
+            onPress={handleLinkGoogle}
+            className="flex-row justify-between items-center py-1 active:opacity-60"
+          >
             <View className="flex-row items-center gap-2">
               <Ionicons name="logo-google" size={16} color="#4b5563" />
-              <Text className="text-sm text-ink-700">{t("account.google") || "Google"}</Text>
+              <Text style={{ fontFamily: fontFamily(false) }} className="text-sm text-ink-700">{t("account.google") || "Google"}</Text>
             </View>
-            <Ionicons
-              name={isGoogleLinked ? "checkmark-circle" : "close-circle"}
-              size={18}
-              color={isGoogleLinked ? "#0B6E4F" : "#9ca3af"}
-            />
-          </View>
+            <View className="flex-row items-center gap-1.5">
+              {!isGoogleLinked && (
+                <Text style={{ fontFamily: fontFamily(true) }} className="text-[10px] text-brand-600 font-bold uppercase">{t("account.link_btn") || "Link"}</Text>
+              )}
+              <Ionicons
+                name={isGoogleLinked ? "checkmark-circle" : "add-circle-outline"}
+                size={18}
+                color={isGoogleLinked ? "#0B6E4F" : "#ef4444"}
+              />
+            </View>
+          </Pressable>
         </View>
+
 
         {/* Sign Out Button */}
         <Pressable
@@ -393,6 +527,161 @@ export default function AccountScreen() {
           </KeyboardAvoidingView>
         </Pressable>
       </Modal>
+
+      {/* Email Binding Modal */}
+      <Modal visible={emailModalVisible} animationType="slide" transparent>
+        <Pressable className="flex-1 bg-black/40 justify-end" onPress={() => setEmailModalVisible(false)}>
+          <KeyboardAvoidingView
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+            className="bg-cream-50 rounded-t-3xl border-t border-cream-200 overflow-hidden"
+          >
+            <Pressable>
+              <View className="bg-white border-b border-cream-100 px-6 py-4 flex-row justify-between items-center">
+                <Text style={{ fontFamily: fontFamily(true) }} className="text-base font-bold text-ink-900">Link Email Address</Text>
+                <Pressable onPress={() => setEmailModalVisible(false)} className="p-1 rounded-full active:bg-cream-100">
+                  <Ionicons name="close" size={20} color="#1a1612" />
+                </Pressable>
+              </View>
+
+              <View className="p-6">
+                <Text style={{ fontFamily: fontFamily(true) }} className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-2">Email Address</Text>
+                <TextInput
+                  value={bindingEmail}
+                  onChangeText={setBindingEmail}
+                  placeholder="e.g. you@example.com"
+                  placeholderTextColor="#9ca3af"
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  style={{ fontFamily: fontFamily(false) }}
+                  className="w-full bg-white border border-cream-300 rounded-xl px-4 py-2.5 text-ink-700 mb-4"
+                />
+
+                <Text style={{ fontFamily: fontFamily(true) }} className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-2">Password</Text>
+                <TextInput
+                  value={bindingPassword}
+                  onChangeText={setBindingPassword}
+                  placeholder="At least 6 characters"
+                  placeholderTextColor="#9ca3af"
+                  secureTextEntry
+                  autoCapitalize="none"
+                  style={{ fontFamily: fontFamily(false) }}
+                  className="w-full bg-white border border-cream-300 rounded-xl px-4 py-2.5 text-ink-700 mb-6"
+                />
+
+                {emailError ? (
+                  <Text style={{ fontFamily: fontFamily(false) }} className="text-sm text-red-600 text-center mb-4">{emailError}</Text>
+                ) : null}
+
+                <Pressable
+                  onPress={handleLinkEmail}
+                  disabled={emailLoading}
+                  className="w-full bg-ink-900 py-3.5 rounded-2xl items-center active:bg-ink-800 disabled:opacity-50 mb-6"
+                >
+                  {emailLoading ? (
+                    <ActivityIndicator color="#fdfcf8" />
+                  ) : (
+                    <Text style={{ fontFamily: fontFamily(true) }} className="text-cream-50 font-semibold text-sm">Link Email</Text>
+                  )}
+                </Pressable>
+              </View>
+            </Pressable>
+          </KeyboardAvoidingView>
+        </Pressable>
+      </Modal>
+
+      {/* Phone Binding Modal */}
+      <Modal visible={phoneModalVisible} animationType="slide" transparent>
+        <Pressable className="flex-1 bg-black/40 justify-end" onPress={() => setPhoneModalVisible(false)}>
+          <KeyboardAvoidingView
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+            className="bg-cream-50 rounded-t-3xl border-t border-cream-200 overflow-hidden"
+          >
+            <Pressable>
+              <View className="bg-white border-b border-cream-100 px-6 py-4 flex-row justify-between items-center">
+                <Text style={{ fontFamily: fontFamily(true) }} className="text-base font-bold text-ink-900">Link Phone Number</Text>
+                <Pressable onPress={() => setPhoneModalVisible(false)} className="p-1 rounded-full active:bg-cream-100">
+                  <Ionicons name="close" size={20} color="#1a1612" />
+                </Pressable>
+              </View>
+
+              <View className="p-6">
+                {phoneStep === 1 ? (
+                  <View>
+                    <Text style={{ fontFamily: fontFamily(true) }} className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-2">Phone Number</Text>
+                    <TextInput
+                      value={bindingPhone}
+                      onChangeText={setBindingPhone}
+                      placeholder="e.g. +919876543210"
+                      placeholderTextColor="#9ca3af"
+                      keyboardType="phone-pad"
+                      autoCapitalize="none"
+                      style={{ fontFamily: fontFamily(false) }}
+                      className="w-full bg-white border border-cream-300 rounded-xl px-4 py-2.5 text-ink-700 mb-6"
+                    />
+
+                    {phoneError ? (
+                      <Text style={{ fontFamily: fontFamily(false) }} className="text-sm text-red-600 text-center mb-4">{phoneError}</Text>
+                    ) : null}
+
+                    <Pressable
+                      onPress={handleSendPhoneOtp}
+                      disabled={phoneLoading}
+                      className="w-full bg-ink-900 py-3.5 rounded-2xl items-center active:bg-ink-800 disabled:opacity-50 mb-6"
+                    >
+                      {phoneLoading ? (
+                        <ActivityIndicator color="#fdfcf8" />
+                      ) : (
+                        <Text style={{ fontFamily: fontFamily(true) }} className="text-cream-50 font-semibold text-sm">Send OTP</Text>
+                      )}
+                    </Pressable>
+                  </View>
+                ) : (
+                  <View>
+                    <Text style={{ fontFamily: fontFamily(false) }} className="text-xs text-ink-600 mb-4">
+                      OTP has been sent to {bindingPhone}.
+                    </Text>
+
+                    <Text style={{ fontFamily: fontFamily(true) }} className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-2">Verification Code</Text>
+                    <TextInput
+                      value={phoneOtp}
+                      onChangeText={setPhoneOtp}
+                      placeholder="Enter 6-digit OTP"
+                      placeholderTextColor="#9ca3af"
+                      keyboardType="number-pad"
+                      style={{ fontFamily: fontFamily(false) }}
+                      className="w-full bg-white border border-cream-300 rounded-xl px-4 py-2.5 text-ink-700 mb-6"
+                    />
+
+                    {phoneError ? (
+                      <Text style={{ fontFamily: fontFamily(false) }} className="text-sm text-red-600 text-center mb-4">{phoneError}</Text>
+                    ) : null}
+
+                    <Pressable
+                      onPress={handleVerifyPhoneOtp}
+                      disabled={phoneLoading}
+                      className="w-full bg-ink-900 py-3.5 rounded-2xl items-center active:bg-ink-800 disabled:opacity-50 mb-4"
+                    >
+                      {phoneLoading ? (
+                        <ActivityIndicator color="#fdfcf8" />
+                      ) : (
+                        <Text style={{ fontFamily: fontFamily(true) }} className="text-cream-50 font-semibold text-sm">Verify OTP</Text>
+                      )}
+                    </Pressable>
+
+                    <Pressable
+                      onPress={() => setPhoneStep(1)}
+                      className="w-full py-2 items-center"
+                    >
+                      <Text style={{ fontFamily: fontFamily(true) }} className="text-xs text-ink-500 font-semibold">Change Phone Number</Text>
+                    </Pressable>
+                  </View>
+                )}
+              </View>
+            </Pressable>
+          </KeyboardAvoidingView>
+        </Pressable>
+      </Modal>
     </View>
   );
 }
+

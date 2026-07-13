@@ -15,24 +15,13 @@ import LanguageDropdown from "../../src/components/LanguageDropdown";
 import OnboardingFlow from "../../src/components/OnboardingFlow";
 import * as WebBrowser from "expo-web-browser";
 import { API_BASE_URL } from "../../src/lib/api";
+import HeaderLogo from "../../src/components/HeaderLogo";
 
 const PRODUCT_COLUMNS =
   "id, user_id, name, brand, purchase_date, warranty_months, expiry_date, price, invoice_url, created_at, category, model_number, serial_number, store_name, notes, is_demo";
 
-function AppLogo() {
-  return (
-    <View className="w-8 h-8 rounded-xl bg-ink-900 justify-center items-center">
-      <View className="w-4.5 h-4.5 flex-wrap flex-row gap-[3px] justify-center items-center">
-        <View className="w-1.5 h-1.5 rounded-[2px] bg-cream-50" />
-        <View className="w-1.5 h-1.5 rounded-[2px] bg-cream-50 opacity-60" />
-        <View className="w-1.5 h-1.5 rounded-[2px] bg-cream-50 opacity-60" />
-        <View className="w-1.5 h-1.5 rounded-[2px] bg-cream-50 opacity-25" />
-      </View>
-    </View>
-  );
-}
-
 export default function HomeScreen() {
+
   const { user } = useAuth();
   const router = useRouter();
   const { locale, t } = useI18n();
@@ -219,15 +208,16 @@ export default function HomeScreen() {
   }
 
   const exploreTools = [
-    { label: t("explore.lifecycle"), icon: "📊", action: () => openWebTool("/products/lifecycle", t("explore.lifecycle")), desc: t("explore.lifecycle_desc") },
-    { label: t("explore.compare"), icon: "⚖️", action: () => openWebTool("/compare", t("explore.compare")), desc: t("explore.compare_desc") },
-    { label: t("explore.buying_assistant"), icon: "🛒", action: () => openWebTool("/buying-assistant", t("explore.buying_assistant")), desc: t("explore.buying_assistant_desc") },
-    { label: t("explore.smart_home"), icon: "🏠", action: () => openWebTool("/smart-devices", t("explore.smart_home")), desc: t("explore.smart_home_desc") },
-    { label: t("explore.energy_monitor"), icon: "⚡", action: () => openWebTool("/energy", t("explore.energy_monitor")), desc: t("explore.energy_monitor_desc") },
-    { label: t("explore.family_vault"), icon: "👥", action: () => openWebTool("/family", t("explore.family_vault")), desc: t("explore.family_vault_desc") },
+    { label: t("explore.lifecycle"), icon: "📊", action: () => router.push("/lifecycle"), desc: t("explore.lifecycle_desc") },
+    { label: t("explore.compare"), icon: "⚖️", action: () => router.push("/compare"), desc: t("explore.compare_desc") },
+    { label: t("explore.buying_assistant"), icon: "🛒", action: () => router.push("/buying-assistant"), desc: t("explore.buying_assistant_desc") },
+    { label: t("explore.smart_home"), icon: "🏠", action: () => router.push("/smart-home"), desc: t("explore.smart_home_desc") },
+    { label: t("explore.energy_monitor"), icon: "⚡", action: () => router.push("/energy"), desc: t("explore.energy_monitor_desc") },
+    { label: t("explore.family_vault"), icon: "👥", action: () => router.push("/family"), desc: t("explore.family_vault_desc") },
     { label: t("explore.upgrade"), icon: "⭐", action: () => router.push("/pricing"), desc: t("explore.upgrade_desc") },
     { label: t("explore.add_product"), icon: "➕", action: () => router.push("/product/add"), desc: t("explore.add_product_desc") },
   ];
+
 
   if (loading && products.length === 0) {
     return (
@@ -241,10 +231,8 @@ export default function HomeScreen() {
     <View className="flex-1 bg-cream-50 pt-12">
       {/* Top Header */}
       <View className="flex-row items-center justify-between px-6 pb-4 border-b border-cream-200 bg-cream-50">
-        <View className="flex-row items-center gap-2">
-          <AppLogo />
-          <Text className="text-lg font-bold text-ink-900 tracking-tight">QuickScanZ</Text>
-        </View>
+        <HeaderLogo />
+
         <Pressable
           onPress={() => setLangModalVisible(true)}
           className="flex-row items-center gap-1.5 px-3 py-1.5 rounded-full bg-cream-200 active:opacity-85"

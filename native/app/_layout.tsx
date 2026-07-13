@@ -3,7 +3,10 @@ import React, { Component, useEffect, useRef, type ErrorInfo, type ReactNode } f
 import { View, ActivityIndicator, ScrollView, Pressable, Text } from "react-native";
 import { Stack, useRouter, useSegments } from "expo-router";
 import { AuthProvider, useAuth } from "../src/features/auth/AuthProvider";
-import { I18nProvider } from "../src/i18n";
+import { I18nProvider, useI18n } from "../src/i18n";
+import { useFonts } from "expo-font";
+import HeaderLogo from "../src/components/HeaderLogo";
+import FloatingAariaButton from "../src/components/FloatingAariaButton";
 
 // ─── Custom Error Boundary for Release Build Debugging ────────────────────────
 interface ErrorBoundaryProps {
@@ -86,6 +89,20 @@ function RootNavigation() {
   const segments = useSegments();
   const router = useRouter();
   const lastSessionIdRef = useRef<string | null | undefined>(undefined);
+  const { t } = useI18n();
+
+  const [fontsLoaded] = useFonts({
+    NotoSansDevanagari_Regular: require("../assets/fonts/NotoSansDevanagari_400Regular.ttf"),
+    NotoSansDevanagari_Bold: require("../assets/fonts/NotoSansDevanagari_700Bold.ttf"),
+    NotoSansTelugu_Regular: require("../assets/fonts/NotoSansTelugu_400Regular.ttf"),
+    NotoSansTelugu_Bold: require("../assets/fonts/NotoSansTelugu_700Bold.ttf"),
+    NotoSansTamil_Regular: require("../assets/fonts/NotoSansTamil_400Regular.ttf"),
+    NotoSansTamil_Bold: require("../assets/fonts/NotoSansTamil_700Bold.ttf"),
+    NotoSansKannada_Regular: require("../assets/fonts/NotoSansKannada_400Regular.ttf"),
+    NotoSansKannada_Bold: require("../assets/fonts/NotoSansKannada_700Bold.ttf"),
+    NotoSansMalayalam_Regular: require("../assets/fonts/NotoSansMalayalam_400Regular.ttf"),
+    NotoSansMalayalam_Bold: require("../assets/fonts/NotoSansMalayalam_700Bold.ttf"),
+  });
 
   useEffect(() => {
     if (loading) return;
@@ -107,7 +124,7 @@ function RootNavigation() {
     }
   }, [loading, session, segments[0], router]);
 
-  if (loading) {
+  if (loading || !fontsLoaded) {
     return (
       <View className="flex-1 items-center justify-center bg-cream-100">
         <ActivityIndicator />
@@ -116,25 +133,35 @@ function RootNavigation() {
   }
 
   return (
-    <Stack
-      screenOptions={{
-        headerShown: true,
-        headerStyle: { backgroundColor: "#fdfcf8" },
-        headerTintColor: "#1a1612",
-        headerTitleStyle: { fontWeight: "600", fontSize: 16 },
-        headerShadowVisible: false, // Clean flat look
-      }}
-    >
-      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      <Stack.Screen name="(auth)/login" options={{ headerShown: false }} />
-      <Stack.Screen name="(auth)/unlock" options={{ headerShown: false }} />
-      <Stack.Screen name="pricing" options={{ title: "Upgrade" }} />
-      <Stack.Screen name="product/[id]" options={{ title: "Product Details" }} />
-      <Stack.Screen name="product/add" options={{ title: "Add Product" }} />
-      <Stack.Screen name="webview" options={{ title: "QuickScanZ" }} />
-    </Stack>
+    <View style={{ flex: 1 }}>
+      <Stack
+        screenOptions={{
+          headerShown: true,
+          headerStyle: { backgroundColor: "#fdfcf8" },
+          headerTintColor: "#1a1612",
+          headerTitle: ({ children }) => <HeaderLogo title={children} />,
+          headerShadowVisible: false, // Clean flat look
+        }}
+      >
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="(auth)/login" options={{ headerShown: false }} />
+        <Stack.Screen name="(auth)/unlock" options={{ headerShown: false }} />
+        <Stack.Screen name="pricing" options={{ title: t("explore.upgrade") || "Upgrade" }} />
+        <Stack.Screen name="product/[id]" options={{ title: t("product.details") || "Product Details" }} />
+        <Stack.Screen name="product/add" options={{ title: t("explore.add_product") || "Add Product" }} />
+        <Stack.Screen name="lifecycle" options={{ title: t("explore.lifecycle") }} />
+        <Stack.Screen name="compare" options={{ title: t("explore.compare") }} />
+        <Stack.Screen name="buying-assistant" options={{ title: t("explore.buying_assistant") }} />
+        <Stack.Screen name="smart-home" options={{ title: t("explore.smart_home") }} />
+        <Stack.Screen name="energy" options={{ title: t("explore.energy_monitor") }} />
+        <Stack.Screen name="family" options={{ title: t("explore.family_vault") }} />
+        <Stack.Screen name="webview" options={{ title: "QuickScanZ" }} />
+      </Stack>
+      <FloatingAariaButton />
+    </View>
   );
 }
+
 
 export default function RootLayout() {
   return (

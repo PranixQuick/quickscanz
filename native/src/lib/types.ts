@@ -12,11 +12,15 @@ export interface Product {
   expiry_date: string; // yyyy-mm-dd — derived from purchase_date + warranty_months
   price: number | null;
   invoice_url: string | null;
+  manual_url?: string | null;
   created_at: string;
+
   category?: string | null;
   model_number?: string | null;
   serial_number?: string | null;
   store_name?: string | null;
+  store_contact?: string | null;
+  store_location?: string | null;
   notes?: string | null;
 }
 
@@ -52,8 +56,11 @@ export interface ProductFormValues {
   model_number: string;
   serial_number: string;
   store_name: string;
+  store_contact: string;
+  store_location: string;
   notes: string;
 }
+
 
 // ── M3: Claims ────────────────────────────────────────────────────────────
 // Mirrors lib/actions/claim.ts's ClaimMessage/ClaimSession (web). The native

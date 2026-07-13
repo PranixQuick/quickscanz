@@ -139,3 +139,69 @@ export function countByStatus<T extends Pick<Product, "expiry_date">>(products: 
   }
   return counts;
 }
+
+export interface ResaleEstimate {
+  estimatePct: number;
+  estimatedValueInr: number | null;
+  confidence: "high" | "medium" | "low";
+  reason: string;
+  conditionLabel: string;
+}
+
+export function estimateResaleValue(params: {
+  purchaseDate: string;
+  originalPrice: number | null;
+  category: string | null;
+  conditionRating: number | null;
+  warrantyStatus: "active" | "expiring_soon" | "expired";
+}): ResaleEstimate {
+  const { purchaseDate, originalPrice, category, conditionRating, warrantyStatus } = params;
+  const ageMonths = Math.floor(
+    (Date.now() - new Date(purchaseDate).getTime()) / (1000 * 60 * 60 * 24 * 30)
+  );
+  const ageYears = ageMonths / 12;
+  const condition = conditionRating || 3;
+  const conditionLabel = ["", "Poor", "Fair", "Good", "Very Good", "Excellent"][condition];
+
+  const curves: Record<string, { yearOne: number; perYear: number; floor: number }> = {
+    "Smartphone":          { yearOne: 35, perYear: 15, floor: 15 },
+    "Laptop":              { yearOne: 30, perYear: 12, floor: 20 },
+    "Tablet":              { yearOne: 30, perYear: 12, floor: 15 },
+    "Television":          { yearOne: 20, perYear: 8,  floor: 30 },
+    "Air Conditioner":     { yearOne: 20, perYear: 8,  floor: 35 },
+    "Refrigerator":        { yearOne: 15, perYear: 6,  floor: 35 },
+    "Washing Machine":     { yearOne: 20, perYear: 8,  floor: 25 },
+    "Kitchen Appliance":   { yearOne: 25, perYear: 10, floor: 20 },
+    "Small Appliance":     { yearOne: 30, perYear: 12, floor: 15 },
+    "Camera":              { yearOne: 25, perYear: 10, floor: 20 },
+    "Audio / Wearable":    { yearOne: 35, perYear: 15, floor: 10 },
+    "Computer Peripheral": { yearOne: 30, perYear: 12, floor: 15 },
+    "Wearable":            { yearOne: 35, perYear: 15, floor: 10 },
+    "Home Appliance":      { yearOne: 20, perYear: 8,  floor: 30 },
+  };
+
+  const cat = category || "Electronics";
+  const curve = curves[cat] || { yearOne: 25, perYear: 10, floor: 20 };
+
+  let pct: number;
+  if (ageYears <= 1) {
+    pct = 100 - (curve.yearOne * ageYears);
+  } else {
+    pct = (100 - curve.yearOne) - (curve.perYear * (ageYears - 1));
+  }
+  pct = Math.max(pct, curve.floor);
+
+  const conditionAdj = (condition - 3) * 4;
+  pct = Math.min(95, Math.max(curve.floor - 5, pct + conditionAdj));
+
+  if (warrantyStatus === "active") pct = Math.min(95, pct + 5);
+
+  const estimatedValueInr = originalPrice ? Math.round((originalPrice * pct) / 100) : null;
+  const confidence = originalPrice && conditionRating ? "high" : originalPrice ? "medium" : "low";
+  const reason = ageYears < 1
+    ? `Nearly new (${ageMonths}m old) ${conditionLabel.toLowerCase()} condition`
+    : `${ageYears.toFixed(1)} years old, ${conditionLabel.toLowerCase()} condition${warrantyStatus === "active" ? ", in warranty" : ""}`;
+
+  return { estimatePct: Math.round(pct), estimatedValueInr, confidence, reason, conditionLabel };
+}
+

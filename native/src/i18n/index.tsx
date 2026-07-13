@@ -21,6 +21,7 @@ type Ctx = {
   locale: Locale;
   setLocale: (l: Locale) => Promise<void>;
   t: (key: string, params?: Record<string, string | number>) => string;
+  fontFamily: (isBold?: boolean) => string | undefined;
 };
 
 const I18nContext = createContext<Ctx | null>(null);
@@ -57,8 +58,28 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     [locale]
   );
 
+  const fontFamily = useCallback(
+    (isBold = false) => {
+      switch (locale) {
+        case "hi":
+          return isBold ? "NotoSansDevanagari_Bold" : "NotoSansDevanagari_Regular";
+        case "te":
+          return isBold ? "NotoSansTelugu_Bold" : "NotoSansTelugu_Regular";
+        case "ta":
+          return isBold ? "NotoSansTamil_Bold" : "NotoSansTamil_Regular";
+        case "kn":
+          return isBold ? "NotoSansKannada_Bold" : "NotoSansKannada_Regular";
+        case "ml":
+          return isBold ? "NotoSansMalayalam_Bold" : "NotoSansMalayalam_Regular";
+        default:
+          return undefined; // English uses default system font (Inter/San Francisco/Roboto)
+      }
+    },
+    [locale]
+  );
+
   return (
-    <I18nContext.Provider value={{ locale, setLocale: changeLocale, t }}>
+    <I18nContext.Provider value={{ locale, setLocale: changeLocale, t, fontFamily }}>
       {children}
     </I18nContext.Provider>
   );
@@ -73,3 +94,4 @@ export function useI18n(): Ctx {
 export function useT() {
   return useI18n().t;
 }
+

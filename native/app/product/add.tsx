@@ -17,8 +17,11 @@ const EMPTY: ProductFormValues = {
   model_number: "",
   serial_number: "",
   store_name: "",
+  store_contact: "",
+  store_location: "",
   notes: "",
 };
+
 
 // scan.tsx pushes here with ?prefill=<JSON of Partial<ProductFormValues>> after
 // a successful OCR call, so the user can review/edit before saving.
@@ -111,10 +114,13 @@ export default function AddProductScreen() {
           model_number: values.model_number.trim() || null,
           serial_number: values.serial_number.trim() || null,
           store_name: values.store_name.trim() || null,
+          store_contact: values.store_contact.trim() || null,
+          store_location: values.store_location.trim() || null,
           notes: values.notes.trim() || null,
         })
         .select("id")
         .single();
+
 
       if (error) throw error;
       router.replace(`/product/${data.id}`);
@@ -148,8 +154,11 @@ export default function AddProductScreen() {
       <Field label={t("product.category") || "Category"} value={values.category} onChangeText={(v) => set("category", v)} />
       <Field label={t("product.model_number") || "Model number"} value={values.model_number} onChangeText={(v) => set("model_number", v)} />
       <Field label={t("product.serial_number") || "Serial number"} value={values.serial_number} onChangeText={(v) => set("serial_number", v)} />
-      <Field label={t("product.store") || "Store"} value={values.store_name} onChangeText={(v) => set("store_name", v)} />
+      <Field label={t("product.store") || "Store / Retailer Name"} value={values.store_name} onChangeText={(v) => set("store_name", v)} />
+      <Field label={t("product.store_contact") || "Retailer Contact"} value={values.store_contact} onChangeText={(v) => set("store_contact", v)} />
+      <Field label={t("product.store_location") || "Retailer Location"} value={values.store_location} onChangeText={(v) => set("store_location", v)} />
       <Field label={t("product.notes") || "Notes"} value={values.notes} onChangeText={(v) => set("notes", v)} />
+
 
       {error ? <Text className="mb-4 text-sm text-red-600">{error}</Text> : null}
 
