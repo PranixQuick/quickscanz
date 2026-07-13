@@ -98,7 +98,7 @@ export async function POST(req: NextRequest) {
   }
 
   // Fallback to offline rule-based if all API calls fail
-  const bestName = `Standard ${brand || category}`;
+  const bestName = `Standard ${category}`;
   const fallbackData = {
     recommendations: [
       {

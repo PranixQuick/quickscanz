@@ -13,13 +13,22 @@ import { NextRequest, NextResponse } from "next/server";
 import webpush from "web-push";
 import { createClient } from "@/lib/supabase/server";
 
-webpush.setVapidDetails(
-  `mailto:${process.env.VAPID_EMAIL ?? "support@quickscanz.com"}`,
-  process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? "",
-  process.env.VAPID_PRIVATE_KEY ?? ""
-);
+const vapidEmail = process.env.VAPID_EMAIL ?? "support@quickscanz.com";
+const vapidPublic = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+const vapidPrivate = process.env.VAPID_PRIVATE_KEY;
+
+if (vapidPublic && vapidPrivate) {
+  try {
+    webpush.setVapidDetails(`mailto:${vapidEmail}`, vapidPublic, vapidPrivate);
+  } catch (e) {
+    console.error("[push-send] Failed to set VAPID details:", e);
+  }
+}
 
 export async function POST(req: NextRequest) {
+  if (!vapidPublic || !vapidPrivate) {
+    return NextResponse.json({ error: "Push service not configured on host" }, { status: 500 });
+  }
   // 1. Verify cron secret — reject anything without it
   const secret = req.headers.get("x-cron-secret");
   if (!process.env.CRON_SECRET || secret !== process.env.CRON_SECRET) {
