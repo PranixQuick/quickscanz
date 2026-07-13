@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useRef, useState, useMemo } from "react";
 import {
   View,
   Text,
@@ -14,30 +14,8 @@ import { supabase } from "../../src/lib/supabase";
 import { apiFetch, ApiAuthError } from "../../src/lib/api";
 import { useAuth } from "../../src/features/auth/AuthProvider";
 import { getWarrantyStatus } from "../../src/lib/calculations";
+import { useI18n } from "../../src/i18n";
 import type { Product, ClaimMessage } from "../../src/lib/types";
-
-// Mirrors components/ai/ClaimAssistant.tsx (web): same quick-issue chips,
-// same POST /api/ai contract (model/max_tokens/system/messages/product_id),
-// same "keep going even if the AI call fails" fallback behaviour. Unlike the
-// web version's i18n-keyed fallback copy, this uses plain English strings
-// (native i18n wiring is a follow-up — see native/NATIVE_APP_PLAN.md).
-//
-// claim_sessions rows are written directly via the native supabase client
-// (RLS-scoped to the signed-in user, same as lib/actions/claim.ts's server
-// actions) instead of through a Next.js route, since these are plain table
-// reads/writes with no server-only secret involved — only the actual AI
-// generation call needs the Next.js API (see src/lib/api.ts for the
-// Bearer-auth caveat on that call).
-const QUICK_ISSUES = [
-  "Product stopped working",
-  "Screen / display problem",
-  "Battery drains too fast",
-  "Physical damage",
-  "Not cooling / heating",
-  "Noise or vibration",
-  "Software / connectivity issue",
-  "Parts missing or broken",
-];
 
 const PRODUCT_COLUMNS =
   "id, user_id, name, brand, purchase_date, warranty_months, expiry_date, price, invoice_url, created_at, category, model_number, serial_number, store_name, notes";
@@ -93,6 +71,8 @@ function fallbackMessage(product: Product): ClaimMessage {
 export default function ClaimsScreen() {
   const { user } = useAuth();
   const router = useRouter();
+  const { t } = useI18n();
+
   const [products, setProducts] = useState<Product[]>([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -140,6 +120,46 @@ export default function ClaimsScreen() {
 
   const selected = products.find((p) => p.id === selectedId) ?? null;
 
+  const quickIssues = useMemo(() => {
+    return [
+      t("claim.issue_stopped_working") === "claim.issue_stopped_working" ? "Product stopped working" : t("claim.issue_stopped_working"),
+      t("claim.issue_display") === "claim.issue_display" ? "Screen / display problem" : t("claim.issue_display"),
+      t("claim.issue_battery") === "claim.issue_battery" ? "Battery drains too fast" : t("claim.issue_battery"),
+      t("claim.issue_damage") === "claim.issue_damage" ? "Physical damage" : t("claim.issue_damage"),
+      t("claim.issue_cooling") === "claim.issue_cooling" ? "Not cooling / heating" : t("claim.issue_cooling"),
+      t("claim.issue_noise") === "claim.issue_noise" ? "Noise or vibration" : t("claim.issue_noise"),
+      t("claim.issue_software") === "claim.issue_software" ? "Software / connectivity issue" : t("claim.issue_software"),
+      t("claim.issue_parts") === "claim.issue_parts" ? "Parts missing or broken" : t("claim.issue_parts"),
+    ];
+  }, [t]);
+
+  const pageTitle = useMemo(() => {
+    const val = t("nav.claim");
+    return val === "nav.claim" ? "Claim AI" : val;
+  }, [t]);
+
+  const pageSubtitle = useMemo(() => {
+    const val = t("claim.page_subtitle");
+    return val === "claim.page_subtitle" ? "Get guided through your warranty claim, step by step." : val;
+  }, [t]);
+
+  const addFirstTitle = useMemo(() => {
+    const val = t("claim.add_first_title");
+    return val === "claim.add_first_title" ? "Add a product first" : val;
+  }, [t]);
+
+  const addFirstDesc = useMemo(() => {
+    const val = t("claim.add_first_desc");
+    return val === "claim.add_first_desc"
+      ? "Claim AI guides you through warranty claims for your products. Add your first real product to get started."
+      : val;
+  }, [t]);
+
+  const addButtonText = useMemo(() => {
+    const val = t("dashboard.add_first_product");
+    return val === "dashboard.add_first_product" ? "Add a product" : val;
+  }, [t]);
+
   function resetConversation(nextId: string) {
     setSelectedId(nextId);
     setSessionId(null);
@@ -186,9 +206,6 @@ export default function ClaimsScreen() {
       });
 
       if (res.status === 401) {
-        // Expected until /api/ai gets a Bearer-token fallback — see
-        // src/lib/api.ts's doc comment. Fall back to local guidance instead
-        // of a dead-end error screen.
         setAuthWarning(
           "AI claim guidance isn't reachable from the app yet (a small server auth update is pending) — showing general guidance instead."
         );
@@ -244,7 +261,7 @@ export default function ClaimsScreen() {
 
   if (loadingProducts) {
     return (
-      <View className="flex-1 items-center justify-center bg-cream-100">
+      <View className="flex-1 items-center justify-center bg-cream-50">
         <ActivityIndicator />
       </View>
     );
@@ -252,17 +269,19 @@ export default function ClaimsScreen() {
 
   if (products.length === 0) {
     return (
-      <View className="flex-1 items-center justify-center gap-3 bg-cream-100 px-8 py-12">
-        <Text className="text-2xl font-bold text-ink-700">Claims</Text>
-        <Text className="text-center text-ink-500">
-          Add a product to your Warranty Wallet first — the claim assistant needs a product to give you specific
-          guidance.
+      <View className="flex-1 items-center justify-center gap-4 bg-cream-50 px-8 py-12">
+        <View className="h-12 w-12 items-center justify-center rounded-2xl bg-cream-100 mb-2">
+          <Ionicons name="sparkles-outline" size={24} color="#786e62" />
+        </View>
+        <Text className="text-sm font-semibold text-ink-900 text-center">{addFirstTitle}</Text>
+        <Text className="text-xs text-ink-400 text-center leading-5 px-4">
+          {addFirstDesc}
         </Text>
         <Pressable
           onPress={() => router.push("/product/add")}
-          className="mt-2 rounded-2xl bg-brand-500 px-6 py-3 active:opacity-90"
+          className="bg-ink-900 rounded-xl px-6 py-3 active:bg-ink-800"
         >
-          <Text className="font-semibold text-white">Add a product</Text>
+          <Text className="text-xs font-semibold text-cream-50">{addButtonText}</Text>
         </Pressable>
       </View>
     );
@@ -270,49 +289,51 @@ export default function ClaimsScreen() {
 
   return (
     <KeyboardAvoidingView
-      className="flex-1 bg-cream-100"
+      className="flex-1 bg-cream-50"
       behavior={Platform.OS === "ios" ? "padding" : undefined}
       keyboardVerticalOffset={80}
     >
-      <View className="px-6 pb-2 pt-12">
-        <Text className="text-2xl font-bold text-ink-700">Claims</Text>
-        <Text className="mt-1 text-sm text-ink-500">AI-guided help for warranty issues, product by product.</Text>
+      <View className="px-6 pb-4 pt-16">
+        <Text className="text-2xl font-bold text-ink-900 tracking-tight">{pageTitle}</Text>
+        <Text className="mt-1 text-xs text-ink-400 leading-4">{pageSubtitle}</Text>
       </View>
 
       {products.length > 1 && (
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          className="mb-2 px-6"
-          contentContainerStyle={{ gap: 8 }}
-        >
-          {products.map((p) => (
-            <Pressable
-              key={p.id}
-              onPress={() => resetConversation(p.id)}
-              className={`rounded-xl border px-3 py-2 ${
-                p.id === selectedId ? "border-brand-500 bg-brand-500" : "border-cream-300 bg-white"
-              }`}
-            >
-              <Text className={`text-xs ${p.id === selectedId ? "text-white" : "text-ink-500"}`}>{p.name}</Text>
-            </Pressable>
-          ))}
-        </ScrollView>
+        <View className="mb-4">
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            className="px-6"
+            contentContainerStyle={{ gap: 8 }}
+          >
+            {products.map((p) => (
+              <Pressable
+                key={p.id}
+                onPress={() => resetConversation(p.id)}
+                className={`rounded-xl border px-3 py-2 ${
+                  p.id === selectedId ? "border-ink-900 bg-ink-900" : "border-cream-200 bg-white"
+                }`}
+              >
+                <Text className={`text-xs ${p.id === selectedId ? "text-cream-50 font-semibold" : "text-ink-500"}`}>{p.name}</Text>
+              </Pressable>
+            ))}
+          </ScrollView>
+        </View>
       )}
 
       {selected && (
-        <View className="mx-6 mb-2 flex-row items-center gap-3 rounded-2xl border border-cream-300 bg-white p-3">
+        <View className="mx-6 mb-4 flex-row items-center gap-3 rounded-2xl border border-cream-200 bg-white p-4 shadow-sm">
           <Text className="text-lg">🔧</Text>
           <View>
-            <Text className="text-sm font-medium text-ink-700">{selected.name}</Text>
-            <Text className="text-xs text-ink-300">Warranty until {selected.expiry_date}</Text>
+            <Text className="text-sm font-semibold text-ink-700">{selected.name}</Text>
+            <Text className="text-xs text-ink-400 mt-0.5">Warranty until {selected.expiry_date}</Text>
           </View>
         </View>
       )}
 
       {authWarning && (
-        <View className="mx-6 mb-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2">
-          <Text className="text-xs text-amber-700">{authWarning}</Text>
+        <View className="mx-6 mb-4 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2">
+          <Text className="text-[11px] text-amber-700 leading-4">{authWarning}</Text>
         </View>
       )}
 
@@ -323,15 +344,17 @@ export default function ClaimsScreen() {
       >
         {!started ? (
           <View className="gap-3 pb-4">
-            <Text className="text-xs font-semibold uppercase tracking-wide text-ink-300">What&apos;s the issue?</Text>
+            <Text className="text-xs font-semibold uppercase tracking-wide text-ink-300">
+              {t("claim.issue_prompt") || "What's the issue?"}
+            </Text>
             <View className="flex-row flex-wrap gap-2">
-              {QUICK_ISSUES.map((issue) => (
+              {quickIssues.map((issue) => (
                 <Pressable
                   key={issue}
                   onPress={() => handleStart(issue)}
-                  className="rounded-xl border border-cream-300 bg-white px-3 py-2.5"
+                  className="rounded-xl border border-cream-200 bg-white px-3 py-2.5 active:bg-cream-100"
                 >
-                  <Text className="text-xs text-ink-500">{issue}</Text>
+                  <Text className="text-xs text-ink-700">{issue}</Text>
                 </Pressable>
               ))}
             </View>
@@ -342,16 +365,16 @@ export default function ClaimsScreen() {
               <View
                 key={i}
                 className={`max-w-[85%] rounded-2xl px-4 py-3 ${
-                  m.role === "user" ? "self-end bg-ink-700" : "self-start border border-cream-300 bg-white"
+                  m.role === "user" ? "self-end bg-ink-900" : "self-start border border-cream-200 bg-white"
                 }`}
               >
-                <Text className={`text-sm leading-relaxed ${m.role === "user" ? "text-white" : "text-ink-700"}`}>
+                <Text className={`text-sm leading-relaxed ${m.role === "user" ? "text-cream-50" : "text-ink-800"}`}>
                   {m.content}
                 </Text>
               </View>
             ))}
             {sending && (
-              <View className="self-start rounded-2xl border border-cream-300 bg-white px-4 py-3">
+              <View className="self-start rounded-2xl border border-cream-200 bg-white px-4 py-3">
                 <ActivityIndicator size="small" />
               </View>
             )}
@@ -361,9 +384,11 @@ export default function ClaimsScreen() {
 
       {limitReached ? (
         <View className="mx-6 mb-6 rounded-xl border border-amber-200 bg-amber-50 p-3">
-          <Text className="text-center text-sm font-medium text-ink-700">Message limit reached</Text>
-          <Text className="mt-1 text-center text-xs text-ink-500">
-            Upgrade to Pro from the Pricing screen for more AI claim messages per product.
+          <Text className="text-center text-sm font-semibold text-ink-700">
+            {t("claim.limit_reached_title") || "Message limit reached"}
+          </Text>
+          <Text className="mt-1 text-center text-xs text-ink-500 leading-4">
+            {t("claim.limit_reached_desc") || "Upgrade to Pro from the Pricing screen for more AI claim messages."}
           </Text>
         </View>
       ) : (
@@ -371,18 +396,22 @@ export default function ClaimsScreen() {
           <TextInput
             value={input}
             onChangeText={setInput}
-            placeholder={started ? "Type your reply…" : "Or describe the issue…"}
+            placeholder={
+              started
+                ? t("claim.reply_placeholder") || "Type your reply..."
+                : t("claim.input_placeholder") || "Or describe the issue..."
+            }
             placeholderTextColor="#9ca3af"
             editable={!sending}
             multiline
-            className="flex-1 rounded-xl border border-cream-300 bg-white px-3 py-2.5 text-ink-700"
+            className="flex-1 rounded-xl border border-cream-200 bg-white px-3 py-2.5 text-ink-900 text-sm"
           />
           <Pressable
             onPress={() => (started ? handleSend() : input.trim() && handleStart(input.trim()))}
             disabled={!input.trim() || sending}
-            className="items-center justify-center rounded-xl bg-ink-700 px-4 py-3 active:opacity-90 disabled:opacity-40"
+            className="items-center justify-center rounded-xl bg-ink-900 px-5 py-3 active:bg-ink-800 disabled:opacity-40"
           >
-            <Text className="font-semibold text-white">Send</Text>
+            <Text className="font-semibold text-cream-50 text-sm">Send</Text>
           </Pressable>
         </View>
       )}
