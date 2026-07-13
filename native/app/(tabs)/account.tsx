@@ -29,7 +29,7 @@ export default function AccountScreen() {
     <ScrollView className="flex-1 bg-cream-100 px-6 py-12" contentContainerStyle={{ gap: 24 }}>
       <View>
         <Text className="text-sm text-ink-500">Signed in as</Text>
-        <Text className="text-xl font-bold text-ink-700">{user?.email ?? "Unknown"}</Text>
+        <Text className="text-xl font-bold text-ink-700">{user?.email ?? user?.phone ?? "Unknown"}</Text>
       </View>
 
       <Pressable
