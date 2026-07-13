@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from "react";
-import catalog from "../../../lib/i18n/messages.json";
+import catalog from "./messages.json";
 import { getLocale, setLocale as saveLocale } from "../lib/locale";
 
 export const LOCALES = ["en", "hi", "te", "ta", "kn", "ml"] as const;
