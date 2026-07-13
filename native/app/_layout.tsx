@@ -3,6 +3,7 @@ import React, { Component, useEffect, useRef, type ErrorInfo, type ReactNode } f
 import { View, ActivityIndicator, ScrollView, Pressable, Text } from "react-native";
 import { Stack, useRouter, useSegments } from "expo-router";
 import { AuthProvider, useAuth } from "../src/features/auth/AuthProvider";
+import { I18nProvider } from "../src/i18n";
 
 // ─── Custom Error Boundary for Release Build Debugging ────────────────────────
 interface ErrorBoundaryProps {
@@ -105,9 +106,11 @@ function RootNavigation() {
 export default function RootLayout() {
   return (
     <ErrorBoundary>
-      <AuthProvider>
-        <RootNavigation />
-      </AuthProvider>
+      <I18nProvider>
+        <AuthProvider>
+          <RootNavigation />
+        </AuthProvider>
+      </I18nProvider>
     </ErrorBoundary>
   );
 }
