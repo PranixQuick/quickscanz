@@ -27,6 +27,17 @@ const ONESIGNAL_APP_ID = process.env.EXPO_PUBLIC_ONESIGNAL_APP_ID;
 
 let initialized = false;
 
+// Eager initialization on bundle load
+if (ONESIGNAL_APP_ID) {
+  try {
+    OneSignal.initialize(ONESIGNAL_APP_ID);
+    initialized = true;
+  } catch (e) {
+    // eslint-disable-next-line no-console
+    console.warn("[push] Eager OneSignal initialize failed:", e);
+  }
+}
+
 function ensureInitialized(): boolean {
   if (initialized) return true;
 
@@ -74,10 +85,18 @@ export async function registerPush(): Promise<boolean> {
  * existing send-push-notifications edge function target this device via
  * `include_external_user_ids`.
  */
-export function setPushExternalId(userId: string): void {
+export async function setPushExternalId(userId: string): Promise<void> {
+  const newlyInitialized = !initialized && ONESIGNAL_APP_ID;
   if (!ensureInitialized()) return;
 
   try {
+    // If we just initialized OneSignal, give the native platform-side context
+    // a brief moment (e.g. 500ms) to bind and spin up before calling login.
+    // This prevents the Bridgeless/New Architecture race condition on Android
+    // ("Must call 'initWithContext' before 'login'").
+    if (newlyInitialized) {
+      await new Promise((resolve) => setTimeout(resolve, 500));
+    }
     OneSignal.login(userId);
   } catch (e) {
     // eslint-disable-next-line no-console
