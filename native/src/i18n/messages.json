@@ -167,7 +167,7 @@
     "product.add_subtitle": "Track warranty and store your invoice in one place.",
     "product.invoice_security_note": "Invoices are stored privately and securely",
     "product.scan_bill_title": "Scan Bill / Invoice",
-    "product.scan_bill_desc": "Take a photo of your paper bill, Amazon/Flipkart invoice, or any receipt. The app will auto-fill brand, product, serial number, price and date.",
+    "product.scan_bill_desc": "Use AI OCR to automatically extract details",
     "product.take_photo": "Take Photo",
     "product.choose_file": "Choose File",
     "product.reading_bill": "Reading your bill...",
@@ -510,7 +510,11 @@
     "scan.error_capture_failed_desc": "Could not read the photo. Try again.",
     "scan.error_scan_failed": "Scan failed",
     "scan.error_something_wrong": "Something went wrong.",
-    "scan.error_sign_in_to_scan": "Please sign in again to scan a bill."
+    "scan.error_sign_in_to_scan": "Please sign in again to scan a bill.",
+    "account.link_btn": "Link",
+    "product.store_contact": "Retailer Contact",
+    "product.store_location": "Retailer Location",
+    "product.scan_bill": "Scan Invoice / Bill"
   },
   "hi": {
     "common.save": "सहेजें",
@@ -668,7 +672,7 @@
     "product.add_subtitle": "वारंटी पर नज़र रखें और अपने चालान को एक ही स्थान पर रखें।",
     "product.invoice_security_note": "चालान निजी और सुरक्षित रूप से संग्रहीत किए जाते हैं।",
     "product.scan_bill_title": "स्कैन बिल/चालान",
-    "product.scan_bill_desc": "अपने कागजी बिल, अमेज़न/फ्लिपकार्ट चालान, या किसी भी रसीद की फोटो लें। ऐप ब्रांड, उत्पाद, सीरियल नंबर, कीमत और तारीख को स्वतः भर देगा।",
+    "product.scan_bill_desc": "विवरण स्वचालित रूप से निकालने के लिए AI OCR का उपयोग करें",
     "product.take_photo": "फोटो लें",
     "product.choose_file": "फ़ाइल चुनें",
     "product.reading_bill": "अपना बिल पढ़ते हुए...",
@@ -1006,7 +1010,11 @@
     "scan.error_capture_failed_desc": "तस्वीर पढ़ी नहीं जा सकी। पुन: प्रयास करें।",
     "scan.error_scan_failed": "स्कैन विफल रहा",
     "scan.error_something_wrong": "कुछ गलत हो गया।",
-    "scan.error_sign_in_to_scan": "बिल को स्कैन करने के लिए कृपया पुनः साइन इन करें।"
+    "scan.error_sign_in_to_scan": "बिल को स्कैन करने के लिए कृपया पुनः साइन इन करें।",
+    "account.link_btn": "लिंक",
+    "product.store_contact": "विक्रेता संपर्क",
+    "product.store_location": "विक्रेता स्थान",
+    "product.scan_bill": "इनवॉइस / बिल स्कैन करें"
   },
   "te": {
     "common.save": "సేవ్ చేయండి",
@@ -1164,7 +1172,7 @@
     "product.add_subtitle": "వారంటీని ట్రాక్ చేసి, మీ ఇన్వాయిస్ను ఒకే చోట నిల్వ చేయండి.",
     "product.invoice_security_note": "ఇన్వాయిస్లు ప్రైవేటుగా మరియు సురక్షితంగా నిల్వ చేయబడతాయి.",
     "product.scan_bill_title": "స్కాన్ బిల్లు/ఇన్వాయిస్",
-    "product.scan_bill_desc": "మీ కాగితపు బిల్లు, అమెజాన్/ఫ్లిప్కార్ట్ ఇన్వాయిస్ లేదా ఏదైనా రసీదు యొక్క ఫోటో తీసుకోండి. ఈ యాప్ బ్రాండ్, ఉత్పత్తి, సీరియల్ నంబర్, ధర మరియు తేదీని స్వయంచాలకంగా నింపుతుంది.",
+    "product.scan_bill_desc": "వివరాలను స్వయంచాలకంగా సంగ్రహించడానికి AI OCRని ఉపయోగించండి",
     "product.take_photo": "ఫోటో తీయండి",
     "product.choose_file": "ఫైల్ను ఎంచుకోండి",
     "product.reading_bill": "మీ బిల్లు చదవడం...",
@@ -1502,7 +1510,11 @@
     "scan.error_capture_failed_desc": "ఫోటోను చదవలేకపోయాము. మళ్లీ ప్రయత్నించండి.",
     "scan.error_scan_failed": "స్కాన్ విఫలమైంది",
     "scan.error_something_wrong": "ఏదో తప్పు జరిగింది.",
-    "scan.error_sign_in_to_scan": "బిల్లును స్కాన్ చేయడానికి దయచేసి మళ్లీ సైన్ ఇన్ చేయండి."
+    "scan.error_sign_in_to_scan": "బిల్లును స్కాన్ చేయడానికి దయచేసి మళ్లీ సైన్ ఇన్ చేయండి.",
+    "account.link_btn": "లింక్",
+    "product.store_contact": "రిటైలర్ సంప్రదించండి",
+    "product.store_location": "రిటైలర్ స్థానం",
+    "product.scan_bill": "ఇన్‌వాయిస్ / బిల్లును స్కాన్ చేయండి"
   },
   "ta": {
     "common.save": "சேமிக்கவும்",
@@ -1660,7 +1672,7 @@
     "product.add_subtitle": "உத்தரவாதத்தை கண்காணித்து, உங்கள் விலைப்பட்டியலை ஒரே இடத்தில் சேமிக்கவும்.",
     "product.invoice_security_note": "விலைப்பட்டியல்கள் தனிப்பட்ட முறையிலும் பாதுகாப்பாகவும் சேமிக்கப்படுகின்றன.",
     "product.scan_bill_title": "ஸ்கேன் பில்/விலைப்பட்டியல்",
-    "product.scan_bill_desc": "உங்கள் காகித பில், அமேசான்/பிளிப்கார்ட் விலைப்பட்டியல் அல்லது எந்த ரசீதையும் புகைப்படம் எடுங்கள். இந்த செயலி தானாகவே பிராண்ட், தயாரிப்பு, வரிசை எண், விலை மற்றும் தேதியை நிரப்பும்.",
+    "product.scan_bill_desc": "விவரங்களை தானாகவே பிரித்தெடுக்க AI OCR ஐப் பயன்படுத்தவும்",
     "product.take_photo": "புகைப்படம் எடுங்கள்",
     "product.choose_file": "கோப்பைத் தேர்ந்தெடுக்கவும்",
     "product.reading_bill": "உங்கள் மசோதாவைப் படியுங்கள்...",
@@ -1998,7 +2010,11 @@
     "scan.error_capture_failed_desc": "புகைப்படத்தைப் படிக்க முடியவில்லை. மீண்டும் முயற்சிக்கவும்.",
     "scan.error_scan_failed": "ஸ்கேன் செய்யத் தவறியது",
     "scan.error_something_wrong": "ஏதோ தவறாகிவிட்டது.",
-    "scan.error_sign_in_to_scan": "பில்லை ஸ்கேன் செய்ய மீண்டும் உள்நுழையவும்."
+    "scan.error_sign_in_to_scan": "பில்லை ஸ்கேன் செய்ய மீண்டும் உள்நுழையவும்.",
+    "account.link_btn": "இணைக்கவும்",
+    "product.store_contact": "சில்லறை விற்பனையாளர் தொடர்பு",
+    "product.store_location": "சில்லறை விற்பனையாளர் இருப்பிடம்",
+    "product.scan_bill": "விலைப்பட்டியல் / பில்லை ஸ்கேன் செய்யவும்"
   },
   "kn": {
     "common.save": "ಉಳಿಸಿ",
@@ -2156,7 +2172,7 @@
     "product.add_subtitle": "ಖಾತರಿಯನ್ನು ಟ್ರ್ಯಾಕ್ ಮಾಡಿ ಮತ್ತು ನಿಮ್ಮ ಸರಕುಪಟ್ಟಿಗಳನ್ನು ಒಂದೇ ಸ್ಥಳದಲ್ಲಿ ಸಂಗ್ರಹಿಸಿಡಿ.",
     "product.invoice_security_note": "ಇನ್ವಾಯ್ಸ್ಗಳನ್ನು ಖಾಸಗಿಯಾಗಿ ಮತ್ತು ಸುರಕ್ಷಿತವಾಗಿ ಸಂಗ್ರಹಿಸಲಾಗುತ್ತದೆ.",
     "product.scan_bill_title": "ಸ್ಕ್ಯಾನ್ ಬಿಲ್/ಇನ್ವಾಯ್ಸ್",
-    "product.scan_bill_desc": "ನಿಮ್ಮ ಕಾಗದದ ಬಿಲ್, ಅಮೆಜಾನ್/ಫ್ಲಿಪ್ಕಾರ್ಟ್ ಇನ್ವಾಯ್ಸ್ ಅಥವಾ ಯಾವುದೇ ರಸೀದಿಯನ್ನು ಫೋಟೋ ತೆಗೆದುಕೊಳ್ಳಿ. ಅಪ್ಲಿಕೇಶನ್ ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಬ್ರ್ಯಾಂಡ್, ಉತ್ಪನ್ನ, ಸರಣಿ ಸಂಖ್ಯೆ, ಬೆಲೆ ಮತ್ತು ದಿನಾಂಕವನ್ನು ತುಂಬುತ್ತದೆ.",
+    "product.scan_bill_desc": "ವಿವರಗಳನ್ನು ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಹೊರತೆಗೆಯಲು AI OCR ಬಳಸಿ",
     "product.take_photo": "ಫೋಟೋ ತೆಗೆದುಕೊಳ್ಳಿ",
     "product.choose_file": "ಕಡತವನ್ನು ಆರಿಸಿ",
     "product.reading_bill": "ನಿಮ್ಮ ಬಿಲ್ ಓದಿ...",
@@ -2494,7 +2510,11 @@
     "scan.error_capture_failed_desc": "ಫೋಟೋ ಓದಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.",
     "scan.error_scan_failed": "ಸ್ಕ್ಯಾನ್ ಮಾಡಲು ವಿಫಲವಾಗಿದೆ",
     "scan.error_something_wrong": "ಏನೋ ತಪ್ಪಾಗಿದೆ.",
-    "scan.error_sign_in_to_scan": "ಬಿಲ್ಲನ್ನು ಸ್ಕ್ಯಾನ್ ಮಾಡಲು ದಯವಿಟ್ಟು ಮತ್ತೊಮ್ಮೆ ಸೈನ್ ಇನ್ ಮಾಡಿ."
+    "scan.error_sign_in_to_scan": "ಬಿಲ್ಲನ್ನು ಸ್ಕ್ಯಾನ್ ಮಾಡಲು ದಯವಿಟ್ಟು ಮತ್ತೊಮ್ಮೆ ಸೈನ್ ಇನ್ ಮಾಡಿ.",
+    "account.link_btn": "ಲಿಂಕ್",
+    "product.store_contact": "ಚಿಲ್ಲರೆ ವ್ಯಾಪಾರಿ ಸಂಪರ್ಕ",
+    "product.store_location": "ಚಿಲ್ಲರೆ ವ್ಯಾಪಾರಿ ಸ್ಥಳ",
+    "product.scan_bill": "ಇನ್‌ವಾಯ್ಸ್ / ಬಿಲ್ಲನ್ನು ಸ್ಕ್ಯಾನ್ ಮಾಡಿ"
   },
   "ml": {
     "common.save": "സേവ് ചെയ്യുക",
@@ -2652,7 +2672,7 @@
     "product.add_subtitle": "വാറന്റി ട്രാക്ക് ചെയ്ത് നിങ്ങളുടെ ഇൻവോയ്സ് ഒരിടത്ത് സൂക്ഷിക്കുക.",
     "product.invoice_security_note": "ഇൻവോയ്സുകൾ സ്വകാര്യമായും സുരക്ഷിതമായും സൂക്ഷിക്കുന്നു.",
     "product.scan_bill_title": "സ്കാൻ ബിൽ/ഇൻവോയ്സ്",
-    "product.scan_bill_desc": "നിങ്ങളുടെ പേപ്പർ ബിൽ, ആമസോൺ/ഫ്ലിപ്കാർട്ട് ഇൻവോയ്സ് അല്ലെങ്കിൽ ഏതെങ്കിലും രസീത് എന്നിവയുടെ ഫോട്ടോ എടുക്കുക. ആപ്പ് ബ്രാൻഡ്, ഉൽപ്പന്നം, സീരിയൽ നമ്പർ, വില, തീയതി എന്നിവ ഓട്ടോ-ഫിൽ ചെയ്യും.",
+    "product.scan_bill_desc": "വിവരങ്ങൾ സ്വയമേവ എക്സ്ട്രാക്റ്റ് ചെയ്യാൻ AI OCR ഉപയോഗിക്കുക",
     "product.take_photo": "ഫോട്ടോ എടുക്കുക",
     "product.choose_file": "ഫയൽ തിരഞ്ഞെടുക്കുക",
     "product.reading_bill": "നിങ്ങളുടെ ബിൽ വായിക്കുന്നു...",
@@ -2990,6 +3010,10 @@
     "scan.error_capture_failed_desc": "ഫോട്ടോ വായിക്കാൻ കഴിഞ്ഞില്ല. വീണ്ടും ശ്രമിക്കുക.",
     "scan.error_scan_failed": "സ്കാനിംഗ് പരാജയപ്പെട്ടു",
     "scan.error_something_wrong": "എന്തോ തകരാറുണ്ടായി.",
-    "scan.error_sign_in_to_scan": "ബില്ല് സ്കാൻ ചെയ്യാൻ ദയവായി വീണ്ടും സൈൻ ഇൻ ചെയ്യുക."
+    "scan.error_sign_in_to_scan": "ബില്ല് സ്കാൻ ചെയ്യാൻ ദയവായി വീണ്ടും സൈൻ ഇൻ ചെയ്യുക.",
+    "account.link_btn": "ലിങ്ക്",
+    "product.store_contact": "റീട്ടെയിലർ കോൺടാക്റ്റ്",
+    "product.store_location": "റീട്ടെയിലർ ലൊക്കേഷൻ",
+    "product.scan_bill": "ഇൻവോയ്സ് / ബില്ല് സ്കാൻ ചെയ്യുക"
   }
 }

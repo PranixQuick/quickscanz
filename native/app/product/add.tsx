@@ -6,6 +6,7 @@ import { useAuth } from "../../src/features/auth/AuthProvider";
 import { calculateExpiryDate } from "../../src/lib/calculations";
 import type { ProductFormValues } from "../../src/lib/types";
 import { useI18n } from "../../src/i18n";
+import { Ionicons } from "@expo/vector-icons";
 
 const EMPTY: ProductFormValues = {
   name: "",
@@ -134,6 +135,21 @@ export default function AddProductScreen() {
   return (
     <ScrollView className="flex-1 bg-cream-100" contentContainerStyle={{ padding: 24, paddingTop: 16 }}>
       <Text className="mb-6 text-2xl font-bold text-ink-700">{t("product.add_title") || "Add Product"}</Text>
+
+      {/* OCR Scan Trigger Card */}
+      <Pressable
+        onPress={() => router.push("/(tabs)/scan")}
+        className="mb-6 flex-row items-center gap-4 rounded-3xl border border-dashed border-brand-300 bg-brand-50/50 p-5 active:opacity-80"
+      >
+        <View className="h-10 w-10 items-center justify-center rounded-2xl bg-brand-500">
+          <Ionicons name="camera-outline" size={20} color="white" />
+        </View>
+        <View className="flex-1">
+          <Text className="text-sm font-bold text-brand-900">{t("product.scan_bill") || "Scan Invoice / Bill"}</Text>
+          <Text className="text-[10px] text-brand-600 font-medium">{t("product.scan_bill_desc") || "Use AI OCR to automatically extract details"}</Text>
+        </View>
+        <Ionicons name="chevron-forward" size={16} color="#0B6E4F" />
+      </Pressable>
 
       <Field label={t("product.add_name") || "Name"} required value={values.name} onChangeText={(v) => set("name", v)} placeholder="e.g. Samsung Galaxy S23" />
       <Field label={t("product.add_brand") || "Brand"} required value={values.brand} onChangeText={(v) => set("brand", v)} placeholder="e.g. Samsung" />

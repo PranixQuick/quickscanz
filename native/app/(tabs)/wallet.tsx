@@ -7,6 +7,7 @@ import { useAuth } from "../../src/features/auth/AuthProvider";
 import { getStatusConfig, getWarrantyStatus, formatWarrantyCountdown, sortByExpiry } from "../../src/lib/calculations";
 import { useI18n } from "../../src/i18n";
 import type { Product, WarrantyStatus } from "../../src/lib/types";
+import HeaderLogo from "../../src/components/HeaderLogo";
 
 const PRODUCT_COLUMNS =
   "id, user_id, name, brand, purchase_date, warranty_months, expiry_date, price, invoice_url, created_at, category, model_number, serial_number, store_name, notes";
@@ -95,10 +96,10 @@ export default function WalletScreen() {
   }, [t]);
 
   return (
-    <View className="flex-1 bg-cream-50 px-6 pt-16">
-      {/* Header section */}
-      <View className="mb-6 flex-row items-center justify-between">
-        <Text className="text-2xl font-bold text-ink-900 tracking-tight">{walletTitle}</Text>
+    <View className="flex-1 bg-cream-50 pt-12">
+      {/* Top Header */}
+      <View className="flex-row items-center justify-between px-6 pb-4 border-b border-cream-200 bg-cream-50">
+        <HeaderLogo title={walletTitle} />
         <Pressable
           onPress={() => router.push("/product/add")}
           accessibilityLabel="Add product"
@@ -108,7 +109,8 @@ export default function WalletScreen() {
         </Pressable>
       </View>
 
-      {loading ? (
+      <View className="flex-1 px-6 pt-4">
+        {loading ? (
         <ActivityIndicator className="my-10" />
       ) : error ? (
         <Text className="text-sm text-red-600">{error}</Text>
@@ -173,6 +175,7 @@ export default function WalletScreen() {
           }}
         />
       )}
+      </View>
     </View>
   );
 }
