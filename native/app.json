@@ -39,6 +39,34 @@
         "android.permission.USE_FINGERPRINT",
         "android.permission.CAMERA",
         "android.permission.RECORD_AUDIO"
+      ],
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "https",
+              "host": "quickscanz.app"
+            },
+            {
+              "scheme": "https",
+              "host": "www.quickscanz.app"
+            },
+            {
+              "scheme": "https",
+              "host": "quickscanz.com"
+            },
+            {
+              "scheme": "https",
+              "host": "www.quickscanz.com"
+            }
+          ],
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
+        }
       ]
     },
     "plugins": [
