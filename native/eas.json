@@ -14,8 +14,6 @@
       "channel": "preview",
       "android": { "buildType": "apk" },
       "env": {
-        "EXPO_PUBLIC_SUPABASE_URL": "https://yqfwvnrnpydcrzomzdvr.supabase.co",
-        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlxZnd2bnJucHlkY3J6b216ZHZyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2NzY2OTUsImV4cCI6MjA4OTI1MjY5NX0.m5o0Cfgq9Z5WOKPffbYrm_PWlUL3mz5_E_Xo0Apb3uc",
         "EXPO_PUBLIC_API_BASE_URL": "https://www.quickscanz.com"
       }
     },
