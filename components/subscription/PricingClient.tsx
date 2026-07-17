@@ -64,7 +64,27 @@ export default function PricingClient({ plans, currentPlanId, userEmail }: Props
         setProcessingPlanId(null);
         return;
       }
-      window.location.href = result.redirectUrl;
+      try {
+        const url = new URL(result.redirectUrl);
+        const form = document.createElement("form");
+        form.method = "POST";
+        form.action = "https://api.razorpay.com/v1/checkout/embedded";
+
+        url.searchParams.forEach((value, key) => {
+          const input = document.createElement("input");
+          input.type = "hidden";
+          input.name = key;
+          input.value = value;
+          form.appendChild(input);
+        });
+
+        document.body.appendChild(form);
+        form.submit();
+      } catch (e) {
+        console.error("Failed to redirect to Razorpay:", e);
+        toast.error("Failed to redirect to payment page. Please try again.");
+        setProcessingPlanId(null);
+      }
     });
   }
 

@@ -205,3 +205,35 @@ export function estimateResaleValue(params: {
   return { estimatePct: Math.round(pct), estimatedValueInr, confidence, reason, conditionLabel };
 }
 
+export function getLocalizedWarrantySpokenSummary(
+  brand: string,
+  name: string,
+  expiryDate: string,
+  locale: string,
+  t?: (key: string, params?: Record<string, string | number>) => string
+): string {
+  const status = getWarrantyStatus(expiryDate);
+  const countdown = formatWarrantyCountdown(expiryDate, t);
+
+  if (locale === "ml") {
+    const statusPhrase = status === "expired" ? "കാലഹരണപ്പെട്ടു" : status === "expiring_soon" ? "ഉടൻ അവസാനിക്കും" : "നിലവിലുണ്ട്";
+    return `${brand} ${name} ഇതിന്റെ വാറന്റി ${statusPhrase}. ${countdown}.`;
+  } else if (locale === "hi") {
+    const statusPhrase = status === "expired" ? "समाप्त हो गया है" : status === "expiring_soon" ? "जल्द समाप्त होने वाला है" : "सक्रिय है";
+    return `आपके ${brand} ${name} की वारंटी ${statusPhrase}. ${countdown}.`;
+  } else if (locale === "te") {
+    const statusPhrase = status === "expired" ? "గడువు ముగిసింది" : status === "expiring_soon" ? "త్వరలో ముగియనుంది" : "క్రియాశీలంగా ఉంది";
+    return `మీ ${brand} ${name} వారంటీ ${statusPhrase}. ${countdown}.`;
+  } else if (locale === "ta") {
+    const statusPhrase = status === "expired" ? "முடிவடைந்தது" : status === "expiring_soon" ? "விரைவில் முடிவடைகிறது" : "செயலில் உள்ளது";
+    return `உங்கள் ${brand} ${name} இன் உத்தரவாதம் ${statusPhrase}. ${countdown}.`;
+  } else if (locale === "kn") {
+    const statusPhrase = status === "expired" ? "ಅವಧಿ ಮುಗಿದಿದೆ" : status === "expiring_soon" ? "ಶೀಘ್ರದಲ್ಲೇ ಮುಗಿಯಲಿದೆ" : "ಸಕ್ರಿಯವಾಗಿದೆ";
+    return `ನಿಮ್ಮ ${brand} ${name} ವಾರಂಟಿ ${statusPhrase}. ${countdown}.`;
+  } else {
+    const statusText = status === "expired" ? "has expired" : status === "expiring_soon" ? "is expiring soon" : "is active";
+    return `Your ${brand} ${name} warranty ${statusText}. ${countdown}.`;
+  }
+}
+
+

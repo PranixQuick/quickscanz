@@ -8,6 +8,8 @@ import { getStatusConfig, getWarrantyStatus, formatWarrantyCountdown, sortByExpi
 import { useI18n } from "../../src/i18n";
 import type { Product, WarrantyStatus } from "../../src/lib/types";
 import HeaderLogo from "../../src/components/HeaderLogo";
+import { useAariaSpeech } from "../../src/features/aaria/useAariaSpeech";
+import { getLocalizedWarrantySpokenSummary } from "../../src/lib/calculations";
 
 const PRODUCT_COLUMNS =
   "id, user_id, name, brand, purchase_date, warranty_months, expiry_date, price, invoice_url, created_at, category, model_number, serial_number, store_name, notes";
@@ -21,7 +23,8 @@ const SECTION_ORDER: { status: WarrantyStatus; key: string; defaultTitle: string
 export default function WalletScreen() {
   const { user } = useAuth();
   const router = useRouter();
-  const { t } = useI18n();
+  const { locale, t } = useI18n();
+  const aaria = useAariaSpeech(locale);
 
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -164,7 +167,19 @@ export default function WalletScreen() {
                   <Text className="flex-1 pr-2 font-semibold text-ink-700" numberOfLines={1}>
                     {item.name}
                   </Text>
-                  <View className={`h-2 w-2 rounded-full ${config.dot}`} />
+                  <View className="flex-row items-center gap-2">
+                    <Pressable
+                      onPress={(e) => {
+                        e.stopPropagation();
+                        const spokenText = getLocalizedWarrantySpokenSummary(item.brand, item.name, item.expiry_date, locale, t);
+                        aaria.speak(spokenText).catch((err) => console.error(err));
+                      }}
+                      className="p-1.5 rounded-full bg-cream-100 active:bg-cream-200"
+                    >
+                      <Ionicons name="volume-medium-outline" size={14} color="#1a1612" />
+                    </Pressable>
+                    <View className={`h-2.5 w-2.5 rounded-full ${config.dot}`} />
+                  </View>
                 </View>
                 <Text className="text-xs text-ink-400 mt-0.5">{item.brand}</Text>
                 <Text className={`mt-2 text-[10px] font-medium ${config.text}`}>

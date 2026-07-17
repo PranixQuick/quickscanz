@@ -19,6 +19,7 @@ import { useI18n } from "../../src/i18n";
 import type { Product, ClaimMessage } from "../../src/lib/types";
 import HeaderLogo from "../../src/components/HeaderLogo";
 
+
 const PRODUCT_COLUMNS =
   "id, user_id, name, brand, purchase_date, warranty_months, expiry_date, price, invoice_url, created_at, category, model_number, serial_number, store_name, notes";
 
@@ -290,18 +291,19 @@ export default function ClaimsScreen() {
   }
 
   return (
-    <KeyboardAvoidingView
-      className="flex-1 bg-cream-50"
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-      keyboardVerticalOffset={80}
-    >
-      {/* Top Header */}
-      <View className="flex-row items-center justify-between px-6 pb-4 pt-12 border-b border-cream-200 bg-cream-50 mb-4">
-        <View>
-          <HeaderLogo title={pageTitle} />
-          <Text className="mt-1 text-xs text-ink-400 leading-4">{pageSubtitle}</Text>
+    <View style={{ flex: 1 }}>
+      <KeyboardAvoidingView
+        className="flex-1 bg-cream-50"
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        keyboardVerticalOffset={80}
+      >
+        {/* Top Header */}
+        <View className="flex-row items-center justify-between px-6 pb-4 pt-12 border-b border-cream-200 bg-cream-50 mb-4">
+          <View>
+            <HeaderLogo title={pageTitle} />
+            <Text className="mt-1 text-xs text-ink-400 leading-4">{pageSubtitle}</Text>
+          </View>
         </View>
-      </View>
 
       {products.length > 1 && (
         <View className="mb-4">
@@ -420,6 +422,7 @@ export default function ClaimsScreen() {
           </Pressable>
         </View>
       )}
-    </KeyboardAvoidingView>
+      </KeyboardAvoidingView>
+    </View>
   );
 }

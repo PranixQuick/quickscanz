@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { View, Text, ScrollView, Pressable, ActivityIndicator, Alert } from "react-native";
+import { View, Text, ScrollView, Pressable, ActivityIndicator, Alert, Modal, TextInput, KeyboardAvoidingView, Platform } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { supabase } from "../src/lib/supabase";
@@ -26,8 +26,17 @@ export default function CompareScreen() {
   const router = useRouter();
   const { t, fontFamily } = useI18n();
   const [items, setItems] = useState<ComparisonItem[]>([]);
+  const [researchedItems, setResearchedItems] = useState<ComparisonItem[]>([]);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Form States
+  const [modalVisible, setModalVisible] = useState(false);
+  const [formName, setFormName] = useState("");
+  const [formBrand, setFormBrand] = useState("");
+  const [formPrice, setFormPrice] = useState("");
+  const [formWarranty, setFormWarranty] = useState("");
+  const [formCategory, setFormCategory] = useState("");
 
   useEffect(() => {
     async function loadProducts() {
@@ -36,8 +45,7 @@ export default function CompareScreen() {
         const { data, error } = await supabase
           .from("products")
           .select("*")
-          .eq("user_id", user.id)
-          .eq("is_demo", false);
+          .eq("user_id", user.id);
 
         if (!error && data) {
           const now = new Date();
@@ -90,6 +98,10 @@ export default function CompareScreen() {
     loadProducts();
   }, [user]);
 
+  const allItems = useMemo(() => {
+    return [...items, ...researchedItems];
+  }, [items, researchedItems]);
+
   function toggleSelect(id: string) {
     setSelectedIds((prev) => {
       if (prev.includes(id)) {
@@ -104,8 +116,8 @@ export default function CompareScreen() {
   }
 
   const selectedItems = useMemo(() => {
-    return items.filter((i) => selectedIds.includes(i.id));
-  }, [items, selectedIds]);
+    return allItems.filter((i) => selectedIds.includes(i.id));
+  }, [allItems, selectedIds]);
 
   const comparison = useMemo(() => {
     if (selectedItems.length < 2) return null;
@@ -145,11 +157,62 @@ export default function CompareScreen() {
     }
     if (bestLifespan) {
       const b = selectedItems.find((i) => i.id === bestLifespan)!;
-      insights.push(`⏳ ${b.brand} ${b.name} has the longest expected lifespan (~${b.avg_lifespan_years} years)`);
+      insights.push(`⏳ ${b.brand} ${b.name} has the longest expected lifespan (~${b.avg_lifespan_years} years).`);
     }
 
     return { bestValue, longestWarranty, bestLifespan, insights };
   }, [selectedItems]);
+
+  function handleAddResearchedProduct() {
+    if (!formName || !formBrand || !formPrice || !formWarranty || !formCategory) {
+      Alert.alert("Error", "All fields are required.");
+      return;
+    }
+    const parsedPrice = parseFloat(formPrice);
+    const parsedWarranty = parseInt(formWarranty);
+    if (isNaN(parsedPrice) || isNaN(parsedWarranty)) {
+      Alert.alert("Error", "Price and Warranty must be valid numbers.");
+      return;
+    }
+
+    const catLower = formCategory.toLowerCase();
+    let lifespan = 5;
+    if (catLower.includes("phone")) lifespan = 3;
+    else if (catLower.includes("laptop")) lifespan = 4;
+    else if (catLower.includes("tv") || catLower.includes("television")) lifespan = 7;
+    else if (catLower.includes("washing") || catLower.includes("ac") || catLower.includes("fridge")) lifespan = 10;
+
+    const newItem: ComparisonItem = {
+      id: `researched_${Date.now()}`,
+      name: formName,
+      brand: formBrand,
+      category: formCategory,
+      purchase_date: new Date().toISOString().split("T")[0],
+      price: parsedPrice,
+      warranty_months: parsedWarranty,
+      avg_lifespan_years: lifespan,
+      cost_per_day: Number((parsedPrice / 1).toFixed(2)),
+      days_owned: 1,
+      warranty_status: "active",
+    };
+
+    setResearchedItems((prev) => [...prev, newItem]);
+    setSelectedIds((prev) => {
+      if (prev.length >= 3) {
+        Alert.alert("Auto-selected", "Replaced one selection to show the newly added researched product.");
+        return [prev[0], prev[1], newItem.id];
+      }
+      return [...prev, newItem.id];
+    });
+
+    // Reset Form
+    setFormName("");
+    setFormBrand("");
+    setFormPrice("");
+    setFormWarranty("");
+    setFormCategory("");
+    setModalVisible(false);
+  }
 
   if (loading) {
     return (
@@ -161,14 +224,25 @@ export default function CompareScreen() {
 
   return (
     <ScrollView className="flex-1 bg-cream-50 px-6 pt-4" contentContainerStyle={{ paddingBottom: 48 }}>
-      <Text style={{ fontFamily: fontFamily(true) }} className="text-xl font-bold text-ink-900 mb-2">
-        {t("explore.compare")}
-      </Text>
+      <View className="flex-row justify-between items-center mb-2">
+        <Text style={{ fontFamily: fontFamily(true) }} className="text-xl font-bold text-ink-900">
+          {t("explore.compare")}
+        </Text>
+        <Pressable
+          onPress={() => setModalVisible(true)}
+          className="flex-row items-center gap-1.5 px-3 py-2 bg-brand-500 rounded-xl active:bg-brand-600"
+        >
+          <Ionicons name="add" size={14} color="#fdfcf8" />
+          <Text style={{ fontFamily: fontFamily(true) }} className="text-[10px] font-bold text-white uppercase tracking-wider">
+            Research Product
+          </Text>
+        </Pressable>
+      </View>
       <Text style={{ fontFamily: fontFamily(false) }} className="text-xs text-ink-400 mb-6 leading-5">
         {t("explore.compare_desc")}
       </Text>
 
-      {items.length === 0 ? (
+      {allItems.length === 0 ? (
         <View className="bg-white border border-cream-200 rounded-3xl p-6 items-center justify-center shadow-sm">
           <Ionicons name="git-compare-outline" size={32} color="#9ca3af" />
           <Text style={{ fontFamily: fontFamily(true) }} className="text-sm font-semibold text-ink-800 mt-3 text-center">
@@ -190,21 +264,22 @@ export default function CompareScreen() {
             {t("compare.select_label") || "Select products to compare (2 or 3)"}
           </Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} className="flex-row gap-3 mb-6">
-            {items.map((i) => {
+            {allItems.map((i) => {
               const isSelected = selectedIds.includes(i.id);
+              const isResearched = i.id.startsWith("researched_");
               return (
                 <Pressable
                   key={i.id}
                   onPress={() => toggleSelect(i.id)}
                   className={`px-4 py-3 rounded-2xl border ${
                     isSelected ? "bg-ink-900 border-ink-900" : "bg-white border-cream-200"
-                  }`}
+                  } mr-2`}
                 >
                   <Text
                     style={{ fontFamily: fontFamily(true) }}
                     className={`text-xs font-bold ${isSelected ? "text-cream-50" : "text-ink-900"}`}
                   >
-                    {i.name}
+                    {i.name} {isResearched && "🔍"}
                   </Text>
                   <Text
                     style={{ fontFamily: fontFamily(false) }}
@@ -245,7 +320,7 @@ export default function CompareScreen() {
                         {item.brand}
                       </Text>
 
-                      <View className="space-y-3">
+                      <View className="gap-3">
                         <View>
                           <Text style={{ fontFamily: fontFamily(false) }} className="text-[9px] text-ink-300 uppercase">
                             {t("product.price") || "Price"}
@@ -283,7 +358,7 @@ export default function CompareScreen() {
                   <Text style={{ fontFamily: fontFamily(true) }} className="text-xs font-bold text-ink-800 mb-3">
                     📊 {t("compare.insights_title") || "Comparison Insights"}
                   </Text>
-                  <View className="space-y-2">
+                  <View className="gap-2">
                     {comparison.insights.map((insight, idx) => (
                       <Text key={idx} style={{ fontFamily: fontFamily(false) }} className="text-xs text-ink-800 leading-5">
                         {insight}
@@ -296,6 +371,100 @@ export default function CompareScreen() {
           )}
         </>
       )}
+
+      {/* Add Researched Product Modal */}
+      <Modal visible={modalVisible} animationType="slide" transparent>
+        <View className="flex-1 justify-end">
+          <Pressable className="absolute inset-0 bg-black/40" onPress={() => setModalVisible(false)} />
+          <View
+            className="bg-cream-50 rounded-t-3xl border-t border-cream-200 overflow-hidden"
+          >
+            <View className="p-6">
+              <View className="flex-row justify-between items-center mb-4">
+                <Text style={{ fontFamily: fontFamily(true) }} className="text-base font-bold text-ink-900">
+                  Add Product to Research
+                </Text>
+                <Pressable onPress={() => setModalVisible(false)} className="p-1 rounded-full active:bg-cream-100">
+                  <Ionicons name="close" size={20} color="#1a1612" />
+                </Pressable>
+              </View>
+
+              <View className="mb-4 gap-3">
+                <View>
+                  <Text style={{ fontFamily: fontFamily(true) }} className="text-[10px] font-bold text-ink-400 uppercase tracking-wider mb-1.5">Product Name</Text>
+                  <TextInput
+                    value={formName}
+                    onChangeText={setFormName}
+                    placeholder="e.g. iPhone 15 Pro"
+                    placeholderTextColor="#9ca3af"
+                    style={{ fontFamily: fontFamily(false) }}
+                    className="bg-white border border-cream-300 rounded-xl px-4 py-2 text-ink-700 text-sm"
+                  />
+                </View>
+
+                <View>
+                  <Text style={{ fontFamily: fontFamily(true) }} className="text-[10px] font-bold text-ink-400 uppercase tracking-wider mb-1.5">Brand</Text>
+                  <TextInput
+                    value={formBrand}
+                    onChangeText={setFormBrand}
+                    placeholder="e.g. Apple"
+                    placeholderTextColor="#9ca3af"
+                    style={{ fontFamily: fontFamily(false) }}
+                    className="bg-white border border-cream-300 rounded-xl px-4 py-2 text-ink-700 text-sm"
+                  />
+                </View>
+
+                <View>
+                  <Text style={{ fontFamily: fontFamily(true) }} className="text-[10px] font-bold text-ink-400 uppercase tracking-wider mb-1.5">Price (INR)</Text>
+                  <TextInput
+                    value={formPrice}
+                    onChangeText={setFormPrice}
+                    placeholder="e.g. 119900"
+                    placeholderTextColor="#9ca3af"
+                    keyboardType="numeric"
+                    style={{ fontFamily: fontFamily(false) }}
+                    className="bg-white border border-cream-300 rounded-xl px-4 py-2 text-ink-700 text-sm"
+                  />
+                </View>
+
+                <View>
+                  <Text style={{ fontFamily: fontFamily(true) }} className="text-[10px] font-bold text-ink-400 uppercase tracking-wider mb-1.5">Warranty (Months)</Text>
+                  <TextInput
+                    value={formWarranty}
+                    onChangeText={setFormWarranty}
+                    placeholder="e.g. 12"
+                    placeholderTextColor="#9ca3af"
+                    keyboardType="numeric"
+                    style={{ fontFamily: fontFamily(false) }}
+                    className="bg-white border border-cream-300 rounded-xl px-4 py-2 text-ink-700 text-sm"
+                  />
+                </View>
+
+                <View>
+                  <Text style={{ fontFamily: fontFamily(true) }} className="text-[10px] font-bold text-ink-400 uppercase tracking-wider mb-1.5">Category</Text>
+                  <TextInput
+                    value={formCategory}
+                    onChangeText={setFormCategory}
+                    placeholder="e.g. Smartphone"
+                    placeholderTextColor="#9ca3af"
+                    style={{ fontFamily: fontFamily(false) }}
+                    className="bg-white border border-cream-300 rounded-xl px-4 py-2 text-ink-700 text-sm"
+                  />
+                </View>
+              </View>
+
+              <Pressable
+                onPress={handleAddResearchedProduct}
+                className="w-full bg-ink-900 py-3.5 rounded-2xl items-center active:bg-ink-800"
+              >
+                <Text style={{ fontFamily: fontFamily(true) }} className="text-cream-50 font-semibold text-sm uppercase tracking-wider">
+                  Add to Compare
+                </Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   );
 }

@@ -15,7 +15,9 @@ import LanguageDropdown from "../../src/components/LanguageDropdown";
 import OnboardingFlow from "../../src/components/OnboardingFlow";
 import * as WebBrowser from "expo-web-browser";
 import { API_BASE_URL } from "../../src/lib/api";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import HeaderLogo from "../../src/components/HeaderLogo";
+import { useAariaSpeech } from "../../src/features/aaria/useAariaSpeech";
 
 const PRODUCT_COLUMNS =
   "id, user_id, name, brand, purchase_date, warranty_months, expiry_date, price, invoice_url, created_at, category, model_number, serial_number, store_name, notes, is_demo";
@@ -24,7 +26,8 @@ export default function HomeScreen() {
 
   const { user } = useAuth();
   const router = useRouter();
-  const { locale, t } = useI18n();
+  const { locale, t, fontFamily } = useI18n();
+  const aaria = useAariaSpeech(locale);
 
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -34,6 +37,37 @@ export default function HomeScreen() {
   // Modals state
   const [langModalVisible, setLangModalVisible] = useState(false);
   const [onboardingVisible, setOnboardingVisible] = useState(false);
+  const [voiceEnabled, setVoiceEnabled] = useState(true);
+
+  const loadVoicePreference = async () => {
+    try {
+      const val = await AsyncStorage.getItem("aaria_voice_enabled");
+      setVoiceEnabled(val === null ? true : val === "true");
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      loadVoicePreference();
+    }, [])
+  );
+
+  const toggleVoice = async () => {
+    console.log("[HomeScreen] toggleVoice called! Current voiceEnabled:", voiceEnabled);
+    try {
+      const nextVal = !voiceEnabled;
+      setVoiceEnabled(nextVal);
+      await AsyncStorage.setItem("aaria_voice_enabled", String(nextVal));
+      console.log("[HomeScreen] AsyncStorage saved:", nextVal);
+      if (!nextVal) {
+        aaria.stop();
+      }
+    } catch (err) {
+      console.error("[HomeScreen] toggleVoice error:", err);
+    }
+  };
 
   // User Profile
   const [profile, setProfile] = useState<{
@@ -233,13 +267,39 @@ export default function HomeScreen() {
       <View className="flex-row items-center justify-between px-6 pb-4 border-b border-cream-200 bg-cream-50">
         <HeaderLogo />
 
-        <Pressable
-          onPress={() => setLangModalVisible(true)}
-          className="flex-row items-center gap-1.5 px-3 py-1.5 rounded-full bg-cream-200 active:opacity-85"
-        >
-          <Text className="text-xs text-ink-900 font-semibold uppercase">{locale}</Text>
-          <Ionicons name="chevron-down" size={12} color="#1a1612" />
-        </Pressable>
+        <View className="flex-row items-center gap-2">
+          {/* Interactive Voice Toggle */}
+          <Pressable
+            onPress={toggleVoice}
+            className={`flex-row items-center gap-1.5 px-3 py-1.5 rounded-full ${
+              voiceEnabled ? "bg-brand-50" : "bg-cream-200"
+            } active:opacity-85`}
+            accessibilityLabel="Toggle Interactive Voice"
+          >
+            <Ionicons
+              name={voiceEnabled ? "volume-medium-outline" : "volume-mute-outline"}
+              size={13}
+              color={voiceEnabled ? "#0B6E4F" : "#9ca3af"}
+            />
+            <Text
+              style={{ fontFamily: fontFamily(true) }}
+              className={`text-[9px] font-bold tracking-wider ${
+                voiceEnabled ? "text-brand-700" : "text-ink-400"
+              }`}
+            >
+              {voiceEnabled ? "VOICE ON" : "MUTED"}
+            </Text>
+          </Pressable>
+
+          {/* Language Switcher */}
+          <Pressable
+            onPress={() => setLangModalVisible(true)}
+            className="flex-row items-center gap-1.5 px-3 py-1.5 rounded-full bg-cream-200 active:opacity-85"
+          >
+            <Text className="text-xs text-ink-900 font-semibold uppercase">{locale}</Text>
+            <Ionicons name="chevron-down" size={12} color="#1a1612" />
+          </Pressable>
+        </View>
       </View>
 
       <ScrollView
@@ -257,6 +317,9 @@ export default function HomeScreen() {
       >
         {/* Hello Greeting */}
         <View className="mb-6">
+          <Text className="text-[10px] text-brand-600 font-bold tracking-widest uppercase mb-1">
+            A Pranix AI Labs Product
+          </Text>
           <Pressable onPress={() => setOnboardingVisible(true)}>
             <Text className="text-2xl font-light text-ink-900">
               Hi, <Text className="font-semibold">{capitalizedUserName}</Text> 👋

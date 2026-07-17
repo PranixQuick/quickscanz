@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { createClient as createBasicClient } from "@supabase/supabase-js";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 interface OCRResult {
@@ -83,8 +84,25 @@ function regexExtract(text: string): OCRResult {
 
 // ── Main handler ──────────────────────────────────────────────────────────────
 export async function POST(req: NextRequest) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  let user: any = null;
+  const authHeader = req.headers.get("Authorization");
+  if (authHeader && authHeader.startsWith("Bearer ")) {
+    const token = authHeader.substring(7);
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
+    if (supabaseUrl && supabaseAnonKey) {
+      const client = createBasicClient(supabaseUrl, supabaseAnonKey);
+      const { data } = await client.auth.getUser(token);
+      user = data.user;
+    }
+  }
+
+  if (!user) {
+    const supabase = await createClient();
+    const { data } = await supabase.auth.getUser();
+    user = data.user;
+  }
+
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   let body: any;
@@ -148,7 +166,7 @@ Parse Indian DD/MM/YYYY dates to yyyy-mm-dd. price = numeric INR string without 
   }
 
   // ── Try Gemini Vision (free tier) ─────────────────────────────────────────
-  const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+  const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "AIzaSyD2vcXLwG0dD9hIcsa5p_j6dhc6F74VtJQ";
   // gemini-1.5-flash is retired (404). Use gemini-2.0-flash, which works once
   // billing is enabled on the key's Google Cloud project. Overridable via GEMINI_MODEL.
   const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.0-flash";

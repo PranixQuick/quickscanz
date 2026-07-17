@@ -93,12 +93,18 @@ export async function aariaSpeak(
   text: string,
   opts: { lang?: string; qualityTier?: string; product?: string } = {}
 ): Promise<AariaSpeakResponse> {
-  return aariaFetch<AariaSpeakResponse>("/api/voice/speak", {
+  const res = await aariaFetch<any>("/api/voice/speak", {
     text,
     lang: opts.lang || "en",
     product: opts.product || AARIA_PRODUCT,
     quality_tier: opts.qualityTier || "standard",
   });
+  return {
+    audio_base64: res.audio_base64 || res.audio_ref,
+    lang: res.lang || opts.lang || "en",
+    engine_used: res.engine_used,
+    visual_companion: res.visual_companion ?? null,
+  };
 }
 
 export { AariaClientError, AARIA_BASE_URL };

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { View, Text, Pressable, ActivityIndicator } from "react-native";
 import { useRouter } from "expo-router";
-import { getSessionWithBiometric, hasBiometric } from "../../src/lib/biometric";
+import { getSessionWithBiometric, hasBiometric, setAppUnlocked, getRedirectPathAfterUnlock, setRedirectPathAfterUnlock } from "../../src/lib/biometric";
 import { supabase } from "../../src/lib/supabase";
 
 export default function UnlockScreen() {
@@ -34,7 +34,14 @@ export default function UnlockScreen() {
         setError(error.message);
         return;
       }
-      router.replace("/");
+      setAppUnlocked(true);
+      const redirectPath = getRedirectPathAfterUnlock();
+      if (redirectPath) {
+        setRedirectPathAfterUnlock(null);
+        router.replace(redirectPath);
+      } else {
+        router.replace("/");
+      }
     } finally {
       setChecking(false);
     }

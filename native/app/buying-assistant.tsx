@@ -1,8 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { View, Text, ScrollView, TextInput, Pressable, ActivityIndicator, Alert, Linking } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { apiFetch } from "../src/lib/api";
 import { useI18n } from "../src/i18n";
+import { supabase } from "../src/lib/supabase";
+import { useAuth } from "../src/features/auth/AuthProvider";
 
 interface Recommendation {
   name: string;
@@ -24,12 +26,48 @@ interface AssistantResponse {
 
 export default function BuyingAssistantScreen() {
   const { t, fontFamily } = useI18n();
+  const { user } = useAuth();
   const [step, setStep] = useState(1); // 1: Category, 2: Budget, 3: Preferences/Search, 4: Results
   const [category, setCategory] = useState("");
   const [budget, setBudget] = useState("");
   const [preferences, setPreferences] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<AssistantResponse | null>(null);
+
+  const [userProducts, setUserProducts] = useState<any[]>([]);
+  const [matchingProducts, setMatchingProducts] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (!user) return;
+    supabase
+      .from("products")
+      .select("*")
+      .eq("user_id", user.id)
+      .then(({ data }) => {
+        if (data) setUserProducts(data);
+      });
+  }, [user]);
+
+  useEffect(() => {
+    if (!category) {
+      setMatchingProducts([]);
+      return;
+    }
+    const catLower = category.toLowerCase().trim();
+    const matches = userProducts.filter((p) => {
+      const pCat = (p.category || "").toLowerCase();
+      const pSub = (p.subcategory || "").toLowerCase();
+      const pName = (p.name || "").toLowerCase();
+      return (
+        pCat.includes(catLower) ||
+        pSub.includes(catLower) ||
+        catLower.includes(pCat) ||
+        catLower.includes(pSub) ||
+        pName.includes(catLower)
+      );
+    });
+    setMatchingProducts(matches);
+  }, [category, userProducts]);
 
   const categories = ["Smartphone", "Laptop", "Washing Machine", "Air Conditioner", "Television"];
 
@@ -116,6 +154,48 @@ export default function BuyingAssistantScreen() {
               <Text style={{ fontFamily: fontFamily(true) }} className="text-xs text-cream-50 font-bold">
                 {category}
               </Text>
+            </View>
+          </View>
+        )}
+
+        {/* Context-aware wallet matching message */}
+        {step >= 2 && matchingProducts.length > 0 && (
+          <View className="flex-row items-start gap-2.5 max-w-[85%] mt-3">
+            <View className="h-7 w-7 rounded-full bg-brand-600 items-center justify-center">
+              <Ionicons name="wallet-outline" size={14} color="#fdfcf8" />
+            </View>
+            <View className="bg-white border border-brand-200 rounded-3xl rounded-tl-none p-4 shadow-sm flex-1">
+              <Text style={{ fontFamily: fontFamily(true) }} className="text-xs font-bold text-brand-700 mb-1.5 uppercase tracking-wide">
+                Wallet Match Found
+              </Text>
+              <Text style={{ fontFamily: fontFamily(false) }} className="text-xs text-ink-800 leading-5 mb-3">
+                I noticed you already have the following {category} in your wallet:
+              </Text>
+              
+              {matchingProducts.map((prod) => (
+                <View key={prod.id} className="bg-cream-50 border border-cream-200 rounded-2xl p-3.5 mb-2.5">
+                  <Text style={{ fontFamily: fontFamily(true) }} className="text-xs font-bold text-ink-900">
+                    {prod.brand} {prod.name}
+                  </Text>
+                  {prod.model_number && (
+                    <Text style={{ fontFamily: fontFamily(false) }} className="text-[10px] text-ink-400 mt-0.5">
+                      Model: {prod.model_number}
+                    </Text>
+                  )}
+                  <View className="flex-row items-center justify-between mt-2 pt-2 border-t border-cream-100">
+                    <Text style={{ fontFamily: fontFamily(false) }} className="text-[10px] text-ink-500">
+                      Expiry: {new Date(prod.expiry_date).toLocaleDateString()}
+                    </Text>
+                    <Text className={`text-[9px] font-bold uppercase px-2 py-0.5 rounded-full ${
+                      new Date(prod.expiry_date) > new Date()
+                        ? "bg-emerald-50 text-emerald-700"
+                        : "bg-red-50 text-red-700"
+                    }`}>
+                      {new Date(prod.expiry_date) > new Date() ? "Active" : "Expired"}
+                    </Text>
+                  </View>
+                </View>
+              ))}
             </View>
           </View>
         )}

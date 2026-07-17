@@ -203,6 +203,71 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             `}</Script>
           </>
         )}
+        {/* JSON-LD Structured Data Schema for SEO/AEO/SEM */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              "name": "QuickScanZ",
+              "url": "https://www.quickscanz.com",
+              "logo": "https://www.quickscanz.com/icons/icon-512.png",
+              "description": "QuickScanZ is your premium digital warranty wallet and post-purchase customer support organizer. Track product warranties, store invoices, and file claims automatically.",
+              "contactPoint": {
+                "@type": "ContactPoint",
+                "contactType": "technical support",
+                "email": "support@pranixailabs.com",
+                "url": "https://www.quickscanz.com/support"
+              },
+              "serviceArea": {
+                "@type": "AdministrativeArea",
+                "name": "India"
+              }
+            })
+          }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Service",
+              "serviceType": "Warranty Management",
+              "provider": {
+                "@type": "Organization",
+                "name": "QuickScanZ",
+                "url": "https://www.quickscanz.com"
+              },
+              "description": "Secure, fintech-grade mobile and web platform for tracking product warranties, storing purchase invoices, and routing customer service inquiries.",
+              "areaServed": "IN",
+              "hasOfferCatalog": {
+                "@type": "OfferCatalog",
+                "name": "QuickScanZ Pricing Plans",
+                "itemListElement": [
+                  {
+                    "@type": "Offer",
+                    "itemOffered": {
+                      "@type": "Service",
+                      "name": "QuickScanZ Free Plan"
+                    },
+                    "price": "0.00",
+                    "priceCurrency": "INR"
+                  },
+                  {
+                    "@type": "Offer",
+                    "itemOffered": {
+                      "@type": "Service",
+                      "name": "QuickScanZ Pro Plan"
+                    },
+                    "price": "149.00",
+                    "priceCurrency": "INR"
+                  }
+                ]
+              }
+            })
+          }}
+        />
       </body>
     </html>
   );
