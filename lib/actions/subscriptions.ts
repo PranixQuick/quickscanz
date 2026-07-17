@@ -108,7 +108,7 @@ export async function createRazorpayOrder(
       const parsed = JSON.parse(errBody);
       const code = parsed?.error?.code || "";
       const description = parsed?.error?.description || "";
-      console.error("[Razorpay] Order creation failed:", { httpStatus: orderRes.status, errorCode: code, description, keyPrefix: RAZORPAY_KEY_ID.slice(0, 12) + "...", planId, amountPaise });
+      console.error("[Razorpay] Order creation failed:", { httpStatus: orderRes.status, errorCode: code, description, keyPrefix: RAZORPAY_KEY_ID.slice(0, 12) + "...", planId, amount });
       if (orderRes.status === 401) friendlyError = "Payment credentials are invalid — please contact support";
       else if (code === "BAD_REQUEST_ERROR" && description.toLowerCase().includes("amount")) friendlyError = "Invalid payment amount — please contact support";
       else if (code === "GATEWAY_ERROR") friendlyError = "Payment gateway error — please try again in a moment";
