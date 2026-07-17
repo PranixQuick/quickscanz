@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { createClient as createSupabaseJsClient } from "@supabase/supabase-js";
 
 // ── Usage limits (enforced server-side, cannot be bypassed) ──────────────────
 // DATA COLLECTED: message_count per user per product, stored in ai_usage table
@@ -38,29 +37,7 @@ function getRuleBasedResponse(messages: Array<{ role: string; content: string }>
 
 export async function POST(req: NextRequest) {
   const supabase = await createClient();
-  let { data: { user } } = await supabase.auth.getUser();
-
-  // Non-breaking fallback: native clients (Expo/React Native) have no cookie jar,
-  // so they can never satisfy the SSR cookie-based session lookup above. If — and
-  // only if — that lookup found nobody, fall back to validating a bearer token
-  // sent in the Authorization header. Existing (cookie-based) web callers are
-  // completely unaffected: this block never runs when a cookie session exists.
-  if (!user) {
-    const authHeader = req.headers.get("authorization") ?? req.headers.get("Authorization");
-    const bearerToken = authHeader?.toLowerCase().startsWith("bearer ")
-      ? authHeader.slice(7).trim()
-      : null;
-
-    if (bearerToken) {
-      const bearerClient = createSupabaseJsClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-      );
-      const { data: bearerData } = await bearerClient.auth.getUser(bearerToken);
-      user = bearerData.user;
-    }
-  }
-
+  const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   let body: any;

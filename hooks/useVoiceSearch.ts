@@ -1,19 +1,6 @@
 "use client";
 
 import { useState, useRef, useCallback } from "react";
-import { useI18n } from "@/lib/i18n/provider";
-
-// Maps QuickScanZ's app locale codes (lib/i18n/provider.tsx, Locale =
-// 'en' | 'hi' | 'te' | 'ta' | 'kn' | 'ml') to the BCP-47 codes the browser's
-// Web Speech API (SpeechRecognition.lang) expects.
-const VOICE_SEARCH_BCP47: Record<string, string> = {
-  en: "en-IN",
-  hi: "hi-IN",
-  te: "te-IN",
-  ta: "ta-IN",
-  kn: "kn-IN",
-  ml: "ml-IN",
-};
 
 interface UseVoiceSearchReturn {
   isListening: boolean;
@@ -26,7 +13,6 @@ interface UseVoiceSearchReturn {
 }
 
 export function useVoiceSearch(onResult?: (text: string) => void): UseVoiceSearchReturn {
-  const { locale } = useI18n();
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -48,7 +34,7 @@ export function useVoiceSearch(onResult?: (text: string) => void): UseVoiceSearc
     const SpeechRecognitionAPI = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     const recognition = new SpeechRecognitionAPI();
 
-    recognition.lang = VOICE_SEARCH_BCP47[locale] || "en-IN";
+    recognition.lang = "en-IN";
     recognition.interimResults = true;
     recognition.maxAlternatives = 1;
     recognition.continuous = false;
@@ -80,7 +66,7 @@ export function useVoiceSearch(onResult?: (text: string) => void): UseVoiceSearc
 
     recognitionRef.current = recognition;
     recognition.start();
-  }, [isSupported, onResult, locale]);
+  }, [isSupported, onResult]);
 
   const stopListening = useCallback(() => {
     recognitionRef.current?.stop();

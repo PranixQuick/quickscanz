@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, ScrollView, Pressable, ActivityIndicator, Alert, Linking } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import { supabase } from "../src/lib/supabase";
 import { useAuth } from "../src/features/auth/AuthProvider";
 import { useI18n } from "../src/i18n";
@@ -9,6 +10,7 @@ import type { Product } from "../src/lib/types";
 
 export default function LifecycleScreen() {
   const { user } = useAuth();
+  const router = useRouter();
   const { t, fontFamily } = useI18n();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -70,9 +72,18 @@ export default function LifecycleScreen() {
       {products.length === 0 ? (
         <View className="bg-white border border-cream-200 rounded-3xl p-6 items-center">
           <Ionicons name="clipboard-outline" size={32} color="#9ca3af" />
-          <Text style={{ fontFamily: fontFamily(true) }} className="text-sm font-semibold text-ink-800 mt-3">
+          <Text style={{ fontFamily: fontFamily(true) }} className="text-sm font-semibold text-ink-800 mt-3 text-center">
             {t("lifecycle.no_products") || "No registered products yet"}
           </Text>
+          <Pressable
+            onPress={() => router.push("/(tabs)/scan")}
+            className="mt-4 px-5 py-2.5 bg-ink-900 rounded-xl active:bg-ink-800 flex-row items-center gap-1.5"
+          >
+            <Ionicons name="add" size={16} color="#fdfcf8" />
+            <Text style={{ fontFamily: fontFamily(true) }} className="text-xs font-bold text-cream-50 uppercase tracking-wider">
+              {t("app.add_product") || "Add Product"}
+            </Text>
+          </Pressable>
         </View>
       ) : (
         products.map((p) => {

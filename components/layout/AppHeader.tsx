@@ -28,7 +28,7 @@ export default function AppHeader({ userName }: AppHeaderProps) {
     setSigningOut(true);
     const supabase = createClient();
     await supabase.auth.signOut();
-    toast.success(t("account.signed_out_toast"));
+    toast.success("Signed out");
     router.push("/login");
     router.refresh();
   };
@@ -52,7 +52,7 @@ export default function AppHeader({ userName }: AppHeaderProps) {
             </svg>
           </div>
           <span className="font-display text-base font-medium text-ink-900 tracking-tight">
-            {t("app.brand_name")}
+            QuickScanZ
           </span>
         </Link>
 
@@ -62,7 +62,7 @@ export default function AppHeader({ userName }: AppHeaderProps) {
           <div className="relative">
             <button
               onClick={() => setLangOpen(!langOpen)}
-              aria-label={t("app.change_language")}
+              aria-label="Change language"
               aria-expanded={langOpen}
               className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium text-ink-600 hover:bg-cream-200 hover:text-ink-900 transition-colors"
             >
@@ -113,7 +113,7 @@ export default function AppHeader({ userName }: AppHeaderProps) {
             onClick={handleSignOut}
             disabled={signingOut}
             className="btn-ghost text-xs px-3 py-2 ml-1"
-            title={t("account.sign_out_btn")}
+            title="Sign out"
           >
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
               <path d="M5 2H2a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h3M9 10l3-3-3-3M5 7h7" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
