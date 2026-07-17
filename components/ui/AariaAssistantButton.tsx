@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useI18n } from "@/lib/i18n/provider";
 
 // ── Aaria voice-control-plane entry point ────────────────────────────────────
 // Distinct from components/ui/VoiceSearchButton.tsx (local browser Web Speech
@@ -37,7 +36,6 @@ function captionPreview(captions?: Array<Record<string, unknown>>): string | nul
 }
 
 export default function AariaAssistantButton() {
-  const { locale } = useI18n();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
@@ -56,7 +54,7 @@ export default function AariaAssistantButton() {
       const res = await fetch("/api/aaria-query", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text, lang_hint: locale }),
+        body: JSON.stringify({ text, lang_hint: "en" }),
       });
 
       const data = await res.json();

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { View, Text, Pressable, TextInput, ActivityIndicator, Modal, KeyboardAvoidingView, Platform } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import { useAuth } from "../features/auth/AuthProvider";
 import { useI18n } from "../i18n";
 import { useAariaSpeech } from "../features/aaria/useAariaSpeech";
@@ -8,6 +9,7 @@ import { supabase } from "../lib/supabase";
 
 export default function FloatingAariaButton() {
   const { user } = useAuth();
+  const router = useRouter();
   const { locale, t, fontFamily } = useI18n();
   const [visible, setVisible] = useState(false);
   const [query, setQuery] = useState("");
@@ -58,10 +60,54 @@ export default function FloatingAariaButton() {
 
   async function handleAsk() {
     if (!query.trim()) return;
-    const q = query.trim();
+    const q = query.trim().toLowerCase();
     setQuery("");
     setLoading(true);
     setResponse("");
+
+    // Voice navigation intent router (multilingual)
+    let targetRoute = "";
+    let speechConfirm = "";
+
+    if (q.includes("home") || q.includes("ഹോം")) {
+      targetRoute = "/";
+      speechConfirm = locale === "ml" ? "ശരി, ഹോമിലേക്ക് പോകുന്നു" : "Sure, navigating to Home";
+    } else if (q.includes("wallet") || q.includes("വാലറ്റ്")) {
+      targetRoute = "/(tabs)/wallet";
+      speechConfirm = locale === "ml" ? "ശരി, വാലറ്റ് കാണിക്കാം" : "Opening your Warranty Wallet";
+    } else if (q.includes("scan") || q.includes("സ്കാൻ")) {
+      targetRoute = "/(tabs)/scan";
+      speechConfirm = locale === "ml" ? "ശരി, ഇൻവോയ്സ് സ്കാനർ തുറക്കുന്നു" : "Opening Invoice Scanner";
+    } else if (q.includes("claim") || q.includes("ക്ലെയിം")) {
+      targetRoute = "/(tabs)/claims";
+      speechConfirm = locale === "ml" ? "ശരി, ക്ലെയിംസ് വിഭാഗത്തിലേക്ക് പോകുന്നു" : "Navigating to Claims";
+    } else if (q.includes("account") || q.includes("അക്കൗണ്ട്")) {
+      targetRoute = "/(tabs)/account";
+      speechConfirm = locale === "ml" ? "ശരി, നിങ്ങളുടെ പ്രൊഫൈൽ വിവരങ്ങൾ കാണിക്കാം" : "Opening Account Settings";
+    } else if (q.includes("upgrade") || q.includes("pricing") || q.includes("അപ്ഗ്രേഡ്")) {
+      targetRoute = "/pricing";
+      speechConfirm = locale === "ml" ? "ശരി, അപ്ഗ്രേഡ് ഓപ്ഷനുകൾ കാണിക്കാം" : "Sure, showing upgrade plans";
+    } else if (q.includes("assistant") || q.includes("buying") || q.includes("ഷോപ്പിംഗ്")) {
+      targetRoute = "/buying-assistant";
+      speechConfirm = locale === "ml" ? "ശരി, ബയിംഗ് അസിസ്റ്റന്റിലേക്ക് പോകുന്നു" : "Opening Buying Assistant";
+    } else if (q.includes("lifecycle") || q.includes("ലൈഫ്")) {
+      targetRoute = "/lifecycle";
+      speechConfirm = locale === "ml" ? "ശരി, ലൈഫ് സൈക്കിൾ പേജ് തുറക്കുന്നു" : "Opening Product Lifecycle";
+    } else if (q.includes("compare") || q.includes("താരതമ്യം")) {
+      targetRoute = "/compare";
+      speechConfirm = locale === "ml" ? "ശരി, താരതമ്യം കാണിക്കാം" : "Opening Product Comparison";
+    }
+
+    if (targetRoute) {
+      setResponse(speechConfirm);
+      await aaria.speak(speechConfirm);
+      setTimeout(() => {
+        setVisible(false);
+        router.push(targetRoute);
+      }, 1000);
+      setLoading(false);
+      return;
+    }
 
     try {
       const answer = await aaria.ask(q, (understood) => {
@@ -83,6 +129,7 @@ export default function FloatingAariaButton() {
       setLoading(false);
     }
   }
+
 
   return (
     <>

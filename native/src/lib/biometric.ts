@@ -52,3 +52,10 @@ export async function getSessionWithBiometric(): Promise<Session | null> {
     return null;
   }
 }
+
+/** Check if a session is currently saved in SecureStore. */
+export async function hasSavedSession(): Promise<boolean> {
+  const stored = await SecureStore.getItemAsync(SESSION_KEY);
+  return !!stored;
+}
+

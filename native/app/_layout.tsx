@@ -1,5 +1,5 @@
 import "../global.css";
-import React, { Component, useEffect, useRef, type ErrorInfo, type ReactNode } from "react";
+import React, { Component, useEffect, useRef, useState, type ErrorInfo, type ReactNode } from "react";
 import { View, ActivityIndicator, ScrollView, Pressable, Text } from "react-native";
 import { Stack, useRouter, useSegments } from "expo-router";
 import { AuthProvider, useAuth } from "../src/features/auth/AuthProvider";
@@ -7,6 +7,8 @@ import { I18nProvider, useI18n } from "../src/i18n";
 import { useFonts } from "expo-font";
 import HeaderLogo from "../src/components/HeaderLogo";
 import FloatingAariaButton from "../src/components/FloatingAariaButton";
+import { hasSavedSession } from "../src/lib/biometric";
+
 
 // ─── Custom Error Boundary for Release Build Debugging ────────────────────────
 interface ErrorBoundaryProps {
@@ -86,7 +88,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
  */
 function RootNavigation() {
   const { loading, session } = useAuth();
-  const segments = useSegments();
+  const segments = useSegments() as string[];
   const router = useRouter();
   const lastSessionIdRef = useRef<string | null | undefined>(undefined);
   const { t } = useI18n();
@@ -104,27 +106,46 @@ function RootNavigation() {
     NotoSansMalayalam_Bold: require("../assets/fonts/NotoSansMalayalam_700Bold.ttf"),
   });
 
+  const [hasSavedBiometric, setHasSavedBiometric] = useState<boolean | null>(null);
+
   useEffect(() => {
-    if (loading) return;
+    hasSavedSession()
+      .then((saved) => {
+        setHasSavedBiometric(saved);
+      })
+      .catch(() => {
+        setHasSavedBiometric(false);
+      });
+  }, []);
+
+  useEffect(() => {
+    if (loading || !fontsLoaded || hasSavedBiometric === null) return;
 
     const inAuthGroup = segments[0] === "(auth)";
+    const onUnlockPage = segments[1] === "unlock";
     const sessionId = session?.user?.id ?? null;
 
-    // Prevent duplicate redirects for the same session state
     if (lastSessionIdRef.current === sessionId) {
       return;
     }
 
-    if (!session && !inAuthGroup) {
-      lastSessionIdRef.current = null;
-      router.replace("/login");
+    if (!session) {
+      if (hasSavedBiometric && !onUnlockPage) {
+        lastSessionIdRef.current = null;
+        router.replace("/unlock");
+      } else if (!hasSavedBiometric && segments[1] !== "login") {
+        lastSessionIdRef.current = null;
+        router.replace("/login");
+      }
     } else if (session && inAuthGroup) {
       lastSessionIdRef.current = sessionId;
       router.replace("/");
     }
-  }, [loading, session, segments[0], router]);
+  }, [loading, session, segments[0], segments[1], fontsLoaded, hasSavedBiometric, router]);
 
-  if (loading || !fontsLoaded) {
+
+  if (loading || !fontsLoaded || hasSavedBiometric === null) {
+
     return (
       <View className="flex-1 items-center justify-center bg-cream-100">
         <ActivityIndicator />

@@ -382,7 +382,16 @@ export default function HomeScreen() {
             </Pressable>
           ))}
         </View>
+
+
+        {/* Signature Attribution */}
+        <View className="items-center py-6 mb-4">
+          <Text className="text-[10px] text-ink-300 font-semibold tracking-widest uppercase">
+            A Pranix AI Labs Product
+          </Text>
+        </View>
       </ScrollView>
+
 
       {/* Language Picker Dropdown */}
       <LanguageDropdown visible={langModalVisible} onClose={() => setLangModalVisible(false)} />

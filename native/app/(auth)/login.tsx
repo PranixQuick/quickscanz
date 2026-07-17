@@ -20,6 +20,17 @@ import { supabase } from "../../src/lib/supabase";
 // correctly when the app regains focus after the redirect.
 WebBrowser.maybeCompleteAuthSession();
 
+const COUNTRIES = [
+  { code: "+91", flag: "🇮🇳", name: "India" },
+  { code: "+1", flag: "🇺🇸", name: "United States" },
+  { code: "+44", flag: "🇬🇧", name: "United Kingdom" },
+  { code: "+971", flag: "🇦🇪", name: "United Arab Emirates" },
+  { code: "+49", flag: "🇩🇪", name: "Germany" },
+  { code: "+33", flag: "🇫🇷", name: "France" },
+  { code: "+61", flag: "🇦🇺", name: "Australia" },
+  { code: "+65", flag: "🇸🇬", name: "Singapore" }
+];
+
 export default function LoginScreen() {
   const router = useRouter();
   
@@ -35,17 +46,17 @@ export default function LoginScreen() {
   const [phone, setPhone] = useState("");
   const [otp, setOtp] = useState("");
   const [otpSent, setOtpSent] = useState(false);
+  const [selectedCountry, setSelectedCountry] = useState(COUNTRIES[0]);
+  const [showCountryPicker, setShowCountryPicker] = useState(false);
 
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
-  // Helper to format phone numbers to E.164 (India default +91)
+  // Helper to format phone numbers to E.164 (using selected country code)
   function formatPhone(raw: string) {
     const digits = raw.replace(/\D/g, "");
-    if (digits.startsWith("91") && digits.length >= 12) return `+${digits}`;
-    if (digits.length === 10) return `+91${digits}`;
-    return `+${digits}`;
+    return `${selectedCountry.code}${digits}`;
   }
 
   async function handleEmailAuth() {
@@ -134,8 +145,8 @@ export default function LoginScreen() {
     setSuccessMessage("");
     
     const formatted = formatPhone(phone);
-    if (formatted.length < 13) {
-      setError("Please enter a valid 10-digit phone number.");
+    if (phone.length < 7) {
+      setError("Please enter a valid phone number.");
       return;
     }
 
@@ -326,18 +337,48 @@ export default function LoginScreen() {
             {/* Phone OTP Form */}
             {activeTab === "phone" && (
               <View className="gap-4">
-                <View className="flex-row items-center rounded-2xl border border-cream-300 bg-cream-100/50 px-4 py-1">
+                <View className="flex-row items-center rounded-2xl border border-cream-300 bg-cream-100/50 px-4 py-1 relative">
                   <Ionicons name="call-outline" size={20} color="#9ca3af" style={{ marginRight: 10 }} />
-                  <Text className="text-ink-700 font-semibold" style={{ marginRight: 4 }}>🇮🇳 +91</Text>
+                  <Pressable
+                    onPress={() => setShowCountryPicker(!showCountryPicker)}
+                    className="flex-row items-center bg-cream-200/50 px-2 py-1 rounded-xl"
+                    style={{ marginRight: 8 }}
+                  >
+                    <Text className="text-sm mr-1">{selectedCountry.flag}</Text>
+                    <Text className="text-ink-700 font-bold text-xs">{selectedCountry.code}</Text>
+                    <Ionicons name="chevron-down" size={10} color="#4b5563" style={{ marginLeft: 2 }} />
+                  </Pressable>
                   <TextInput
                     value={phone}
-                    onChangeText={(val) => setPhone(val.replace(/\D/g, "").slice(0, 10))}
-                    placeholder="10-digit number"
+                    onChangeText={(val) => setPhone(val.replace(/\D/g, "").slice(0, 15))}
+                    placeholder="Phone number"
                     keyboardType="phone-pad"
                     editable={!otpSent && !busy}
                     className="flex-1 py-3.5 text-ink-700 text-sm tracking-wider"
                   />
                 </View>
+
+                {showCountryPicker && (
+                  <View className="absolute top-16 left-4 right-4 bg-white border border-cream-300 rounded-2xl p-2 z-50 shadow-lg max-h-48">
+                    <ScrollView nestedScrollEnabled={true}>
+                      {COUNTRIES.map((c) => (
+                        <Pressable
+                          key={c.code}
+                          onPress={() => {
+                            setSelectedCountry(c);
+                            setShowCountryPicker(false);
+                            setError("");
+                          }}
+                          className="flex-row items-center py-3 px-4 active:bg-cream-100 rounded-xl"
+                        >
+                          <Text className="text-lg mr-3">{c.flag}</Text>
+                          <Text className="text-sm font-semibold text-ink-700 flex-1">{c.name}</Text>
+                          <Text className="text-xs font-bold text-ink-400">{c.code}</Text>
+                        </Pressable>
+                      ))}
+                    </ScrollView>
+                  </View>
+                )}
 
                 {otpSent && (
                   <View className="flex-row items-center rounded-2xl border border-cream-300 bg-cream-100/50 px-4 py-1">
