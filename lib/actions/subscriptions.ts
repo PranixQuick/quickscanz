@@ -53,7 +53,8 @@ export async function getUserSubscription(): Promise<UserSubscription | null> {
 }
 
 export async function createRazorpayOrder(
-  planId: string
+  planId: string,
+  currency: string = "INR"
 ): Promise<{ orderId: string; amount: number; currency: string; key: string } | { error: string }> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -75,7 +76,13 @@ export async function createRazorpayOrder(
     return { error: "Payment configuration error — please contact support" };
   }
 
-  const amountPaise = plan.price_inr * 100;
+  let amount = plan.price_inr * 100;
+  if (currency !== "INR") {
+    const priceVal = plan.interval === "yearly"
+      ? (currency === "USD" ? 11.99 : 10.99)
+      : (currency === "USD" ? 1.99 : 1.89);
+    amount = Math.round(priceVal * 100);
+  }
   const credentials = Buffer.from(`${RAZORPAY_KEY_ID}:${RAZORPAY_KEY_SECRET}`).toString("base64");
 
   let orderRes: Response;
@@ -84,7 +91,7 @@ export async function createRazorpayOrder(
       method: "POST",
       headers: { Authorization: `Basic ${credentials}`, "Content-Type": "application/json" },
       body: JSON.stringify({
-        amount: amountPaise, currency: "INR",
+        amount: amount, currency: currency,
         receipt: `qs_${user.id.slice(0, 8)}_${Date.now()}`,
         notes: { user_id: user.id, plan_id: planId },
       }),
@@ -137,7 +144,7 @@ export async function createRazorpayOrder(
     console.error("[Razorpay] Failed to record pending subscription:", pendingErr.message);
     return { error: "Could not start checkout — please try again" };
   }
-  return { orderId: order.id, amount: amountPaise, currency: "INR", key: RAZORPAY_KEY_ID };
+  return { orderId: order.id, amount: amount, currency: currency, key: RAZORPAY_KEY_ID };
 }
 
 export async function verifyRazorpayPayment(params: {
@@ -189,7 +196,8 @@ export async function verifyRazorpayPayment(params: {
 // Works in Android TWA, iOS PWA standalone, and all browsers.
 // No window.open(), no JS modal — full-page redirect to Razorpay hosted checkout.
 export async function createRazorpayRedirectUrl(
-  planId: string
+  planId: string,
+  currency: string = "INR"
 ): Promise<{ redirectUrl: string } | { error: string }> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -204,7 +212,13 @@ export async function createRazorpayRedirectUrl(
   if (!RAZORPAY_KEY_ID || !RAZORPAY_KEY_SECRET)
     return { error: "Payment not configured — please contact support" };
 
-  const amountPaise = plan.price_inr * 100;
+  let amount = plan.price_inr * 100;
+  if (currency !== "INR") {
+    const priceVal = plan.interval === "yearly"
+      ? (currency === "USD" ? 11.99 : 10.99)
+      : (currency === "USD" ? 1.99 : 1.89);
+    amount = Math.round(priceVal * 100);
+  }
   // Return the user to the exact host they're on (e.g. www.quickscanz.com), so the
   // post-payment redirect + session/entitlement stay on the same origin. Avoids the
   // old NEXT_PUBLIC_APP_URL (which pointed at the vercel.app domain).
@@ -222,7 +236,7 @@ export async function createRazorpayRedirectUrl(
       method: "POST",
       headers: { Authorization: `Basic ${credentials}`, "Content-Type": "application/json" },
       body: JSON.stringify({
-        amount: amountPaise, currency: "INR",
+        amount: amount, currency: currency,
         receipt: `qs_${user.id.slice(0, 8)}_${Date.now()}`,
         notes: { user_id: user.id, plan_id: planId },
       }),
@@ -266,11 +280,11 @@ export async function createRazorpayRedirectUrl(
 
   const searchParams = new URLSearchParams({
     key_id: RAZORPAY_KEY_ID, order_id: order.id,
-    amount: String(amountPaise), currency: "INR",
+    amount: String(amount), currency: currency,
     name: "QuickScanZ", description: `${plan.name} — ${plan.interval} plan`,
     prefill_email: user.email || "",
     callback_url: callbackUrl,
-    cancel_url: `${appUrl}/pricing?cancelled=1`,
+    cancel_url: `${appUrl}/pricing?cancelled=1&currency=${currency}`,
   });
 
   return { redirectUrl: `https://api.razorpay.com/v1/checkout/embedded?${searchParams.toString()}` };

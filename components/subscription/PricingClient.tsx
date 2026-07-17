@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import toast from "react-hot-toast";
 import { createRazorpayRedirectUrl, type SubscriptionPlan } from "@/lib/actions/subscriptions";
 
@@ -51,6 +51,17 @@ export default function PricingClient({ plans, currentPlanId, userEmail }: Props
   const [processingPlanId, setProcessingPlanId] = useState<string | null>(null);
   const [interval, setInterval] = useState<"monthly" | "yearly">("yearly");
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [currency, setCurrency] = useState<"INR" | "USD" | "EUR">("INR");
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const curr = params.get("currency");
+      if (curr === "USD" || curr === "EUR" || curr === "INR") {
+        setCurrency(curr);
+      }
+    }
+  }, []);
 
   const displayed = plans.filter((p) => p.id === "free" || p.interval === interval);
 
@@ -58,7 +69,7 @@ export default function PricingClient({ plans, currentPlanId, userEmail }: Props
     if (plan.price_inr === 0) return;
     setProcessingPlanId(plan.id);
     startTransition(async () => {
-      const result = await createRazorpayRedirectUrl(plan.id);
+      const result = await createRazorpayRedirectUrl(plan.id, currency);
       if ("error" in result) {
         toast.error(result.error);
         setProcessingPlanId(null);
@@ -91,6 +102,26 @@ export default function PricingClient({ plans, currentPlanId, userEmail }: Props
         </p>
       </div>
 
+      {/* Currency Switcher */}
+      <div className="card p-3 bg-cream-50 border-cream-200">
+        <p className="text-[10px] text-ink-400 uppercase tracking-wider mb-2 font-medium">Currency</p>
+        <div className="flex items-center gap-2">
+          {(["INR", "USD", "EUR"] as const).map((curr) => (
+            <button
+              key={curr}
+              onClick={() => setCurrency(curr)}
+              className={`flex-1 py-2.5 rounded-xl text-xs font-semibold transition-all ${
+                currency === curr 
+                  ? "bg-white text-ink-900 shadow-sm border border-cream-200 font-bold" 
+                  : "text-ink-400 hover:text-ink-600"
+              }`}
+            >
+              {curr === "INR" ? "INR (₹)" : curr === "USD" ? "USD ($)" : "EUR (€)"}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Billing toggle */}
       <div className="card p-3 bg-cream-50 border-cream-200">
         <p className="text-[10px] text-ink-400 uppercase tracking-wider mb-2 font-medium">Billing cycle</p>
@@ -100,17 +131,21 @@ export default function PricingClient({ plans, currentPlanId, userEmail }: Props
               interval === "monthly" ? "bg-white text-ink-900 shadow-sm border border-cream-200" : "text-ink-400 hover:text-ink-600"
             }`}>
             Monthly
-            <p className="text-[10px] font-normal mt-0.5 opacity-70">&#8377;149 / month</p>
+            <p className="text-[10px] font-normal mt-0.5 opacity-70">
+              {currency === "INR" ? "₹149" : currency === "USD" ? "$1.99" : "€1.89"} / month
+            </p>
           </button>
           <button onClick={() => setInterval("yearly")}
             className={`flex-1 py-2.5 rounded-xl text-sm font-medium transition-all relative ${
               interval === "yearly" ? "bg-ink-900 text-cream-100 shadow-sm" : "bg-sage-50 text-sage-700 border border-sage-200 hover:bg-sage-100"
             }`}>
             <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 text-[9px] bg-sage-500 text-white px-2 py-0.5 rounded-full font-bold uppercase tracking-wide whitespace-nowrap">
-              Save &#8377;789
+              Save {currency === "INR" ? "₹789" : currency === "USD" ? "$11.89" : "€11.79"}
             </span>
             Yearly
-            <p className="text-[10px] font-normal mt-0.5 opacity-80">&#8377;999 / year</p>
+            <p className="text-[10px] font-normal mt-0.5 opacity-80">
+              {currency === "INR" ? "₹999" : currency === "USD" ? "$11.99" : "€10.99"} / year
+            </p>
           </button>
         </div>
       </div>
@@ -135,14 +170,25 @@ export default function PricingClient({ plans, currentPlanId, userEmail }: Props
                   </div>
                   <p className="text-xs text-ink-400">{plan.description}</p>
                 </div>
-                <div className="text-right">
-                  {isFree ? <p className="text-2xl font-light text-ink-900">&#8377;0</p> : (
-                    <>
-                      <p className="text-2xl font-light text-ink-900">&#8377;{plan.price_inr.toLocaleString("en-IN")}</p>
-                      <p className="text-[10px] text-ink-400">per {plan.interval === "yearly" ? "year" : "month"} +GST</p>
-                    </>
-                  )}
-                </div>
+                  <div className="text-right">
+                    {isFree ? (
+                      <p className="text-2xl font-light text-ink-900">
+                        {currency === "INR" ? "₹0" : currency === "USD" ? "$0" : "€0"}
+                      </p>
+                    ) : (
+                      <>
+                        <p className="text-2xl font-light text-ink-900">
+                          {currency === "INR" 
+                            ? `₹${plan.price_inr.toLocaleString("en-IN")}` 
+                            : currency === "USD"
+                              ? `$${plan.interval === "yearly" ? "11.99" : "1.99"}`
+                              : `€${plan.interval === "yearly" ? "10.99" : "1.89"}`
+                          }
+                        </p>
+                        <p className="text-[10px] text-ink-400">per {plan.interval === "yearly" ? "year" : "month"} +GST</p>
+                      </>
+                    )}
+                  </div>
               </div>
               <ul className="space-y-2 mb-4">
                 {(plan.features as string[]).map((feature) => (

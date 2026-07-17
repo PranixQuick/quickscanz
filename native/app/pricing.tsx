@@ -42,6 +42,7 @@ export default function PricingScreen() {
   const [currentSub, setCurrentSub] = useState<UserSubscription | null>(null);
   const [loading, setLoading] = useState(true);
   const [opening, setOpening] = useState(false);
+  const [currency, setCurrency] = useState<"INR" | "USD" | "EUR">("INR");
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -71,10 +72,19 @@ export default function PricingScreen() {
 
   const currentPlanId = currentSub?.plan_id ?? "free";
 
-  async function openWebCheckout() {
+  async function openWebCheckout(planId: string) {
     setOpening(true);
     try {
-      await WebBrowser.openBrowserAsync(`${API_BASE_URL}/pricing`);
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      if (token) {
+        const checkoutUrl = `${API_BASE_URL}/api/payment/checkout-redirect?token=${encodeURIComponent(token)}&plan_id=${planId}&currency=${currency}`;
+        await WebBrowser.openBrowserAsync(checkoutUrl);
+      } else {
+        await WebBrowser.openBrowserAsync(`${API_BASE_URL}/pricing?currency=${currency}`);
+      }
+    } catch (err) {
+      console.error(err);
     } finally {
       setOpening(false);
       load(); // refresh in case the subscription changed while the browser was open
@@ -100,6 +110,28 @@ export default function PricingScreen() {
       <Text style={{ fontFamily: fontFamily(false) }} className="mt-2 text-xs text-ink-400 leading-5">
         {t("pricing.subtitle") || "One app for every product you own. Never lose a warranty again."}
       </Text>
+
+      {/* Currency Switcher */}
+      <View className="mt-6 flex-row bg-cream-100 p-1 rounded-2xl border border-cream-200">
+        {(["INR", "USD", "EUR"] as const).map((curr) => (
+          <Pressable
+            key={curr}
+            onPress={() => setCurrency(curr)}
+            className={`flex-1 py-2.5 rounded-xl items-center justify-center ${
+              currency === curr ? "bg-white shadow-sm border border-cream-200" : ""
+            }`}
+          >
+            <Text
+              style={{ fontFamily: fontFamily(currency === curr) }}
+              className={`text-xs font-semibold ${
+                currency === curr ? "text-brand-500 font-bold" : "text-ink-500"
+              }`}
+            >
+              {curr === "INR" ? "INR (₹)" : curr === "USD" ? "USD ($)" : "EUR (€)"}
+            </Text>
+          </Pressable>
+        ))}
+      </View>
 
       <View className="mt-8 gap-6">
         {plans.map((plan) => {
@@ -143,7 +175,14 @@ export default function PricingScreen() {
                 </View>
                 <View className="items-end">
                   <Text style={{ fontFamily: fontFamily(true) }} className="text-2xl font-bold text-ink-900">
-                    ₹{plan.price_inr.toLocaleString("en-IN")}
+                    {plan.price_inr === 0 
+                      ? (currency === "INR" ? "₹0" : currency === "USD" ? "$0" : "€0")
+                      : (currency === "INR" 
+                        ? `₹${plan.price_inr.toLocaleString("en-IN")}` 
+                        : currency === "USD"
+                          ? `$${plan.interval === "yearly" ? "11.99" : "1.99"}`
+                          : `€${plan.interval === "yearly" ? "10.99" : "1.89"}`
+                      )}
                   </Text>
                   {!isFree && (
                     <Text style={{ fontFamily: fontFamily(false) }} className="text-[9px] text-ink-400 mt-0.5">
@@ -182,7 +221,7 @@ export default function PricingScreen() {
                 </View>
               ) : (
                 <Pressable
-                  onPress={openWebCheckout}
+                  onPress={() => openWebCheckout(plan.id)}
                   disabled={opening}
                   className="mt-6 items-center rounded-2xl bg-ink-900 py-4 active:scale-[0.98] active:opacity-95 disabled:opacity-50 shadow-sm"
                 >
