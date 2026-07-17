@@ -88,20 +88,18 @@ function PhoneOTPForm() {
   const [step, setStep] = useState<"phone" | "otp">("phone");
   const [isPending, setIsPending] = useState(false);
   const [error, setError] = useState("");
+  const [countryCode, setCountryCode] = useState("+91");
 
   function formatPhone(raw: string) {
-    // Strip non-digits, prepend +91 if no country code
     const digits = raw.replace(/\D/g, "");
-    if (digits.startsWith("91") && digits.length >= 12) return `+${digits}`;
-    if (digits.length === 10) return `+91${digits}`;
-    return `+${digits}`;
+    return `${countryCode}${digits}`;
   }
 
   async function sendOTP(e: React.FormEvent) {
     e.preventDefault();
     setError("");
     const formatted = formatPhone(phone);
-    if (formatted.length < 13) { setError(t("login.phone_invalid")); return; }
+    if (formatted.length < 9) { setError(t("login.phone_invalid")); return; }
     setIsPending(true);
     try {
       const supabase = createClient();
@@ -223,19 +221,30 @@ function PhoneOTPForm() {
 
       <div>
         <div className="flex items-center gap-2">
-          {/* Country code badge */}
-          <div className="flex items-center gap-1.5 px-3 py-3.5 bg-cream-200 border border-cream-200 rounded-xl text-sm font-medium text-ink-700 flex-shrink-0">
-            🇮🇳 +91
-          </div>
+          {/* Country code selector */}
+          <select
+            value={countryCode}
+            onChange={(e) => setCountryCode(e.target.value)}
+            className="px-3 py-3.5 bg-cream-200 border border-cream-300 rounded-xl text-sm font-medium text-ink-700 flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-sand-200 transition-all cursor-pointer"
+          >
+            <option value="+91">🇮🇳 +91</option>
+            <option value="+1">🇺🇸 +1</option>
+            <option value="+44">🇬🇧 +44</option>
+            <option value="+971">🇦🇪 +971</option>
+            <option value="+49">🇩🇪 +49</option>
+            <option value="+33">🇫🇷 +33</option>
+            <option value="+61">🇦🇺 +61</option>
+            <option value="+65">🇸🇬 +65</option>
+          </select>
           <input
             type="tel"
             inputMode="numeric"
             pattern="[0-9]*"
             value={phone}
-            onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
-            placeholder="9876543210"
+            onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 12))}
+            placeholder={countryCode === "+91" ? "9876543210" : "1234567890"}
             autoFocus
-            maxLength={10}
+            maxLength={12}
             className="flex-1 px-4 py-3.5 bg-cream-100 border border-cream-200 rounded-xl text-lg font-medium tracking-wider text-ink-900 focus:outline-none focus:border-sand-400 focus:ring-2 focus:ring-sand-200 transition-all"
           />
         </div>
@@ -247,7 +256,7 @@ function PhoneOTPForm() {
         </div>
       )}
 
-      <button type="submit" disabled={isPending || phone.length < 10}
+      <button type="submit" disabled={isPending || phone.length < 7}
         className="w-full btn-primary py-4 text-base font-semibold disabled:opacity-40 rounded-2xl">
         {isPending ? (
           <span className="flex items-center justify-center gap-2">
