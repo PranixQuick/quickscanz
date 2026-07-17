@@ -138,6 +138,34 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang={locale} data-locale={locale} className={`scroll-smooth ${cormorant.variable} ${dmSans.variable} ${dmMono.variable} ${notoHi.variable} ${notoTe.variable} ${notoTa.variable} ${notoKn.variable} ${notoMl.variable}`}>
       <body className="bg-cream-50 text-ink-900 font-body antialiased">
+        {/* Structured data — Organization + SoftwareApplication (AEO Phase 3) */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify([
+              {
+                "@context": "https://schema.org",
+                "@type": "Organization",
+                name: "Pranix AI Labs",
+                url: "https://www.pranixailabs.com",
+                logo: "https://www.quickscanz.com/icons/icon-512.png",
+                address: { "@type": "PostalAddress", addressLocality: "Vijayawada", addressRegion: "Andhra Pradesh", addressCountry: "IN" },
+              },
+              {
+                "@context": "https://schema.org",
+                "@type": "SoftwareApplication",
+                name: "QuickScanZ",
+                url: "https://www.quickscanz.com",
+                applicationCategory: "UtilitiesApplication",
+                operatingSystem: "Web, Android",
+                description: "Warranty and invoice wallet for India: scan bills, track warranty expiry, get reminders and AI-guided claim help in six Indian languages.",
+                offers: { "@type": "Offer", price: "0", priceCurrency: "INR", description: "Free plan available" },
+                publisher: { "@type": "Organization", name: "Pranix AI Labs" },
+                inLanguage: ["en", "te", "hi", "ta", "kn", "ml"],
+              },
+            ]),
+          }}
+        />
         <I18nProvider initialLocale={locale}>
           <LocaleBar />
           {children}
