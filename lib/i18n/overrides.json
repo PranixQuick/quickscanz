@@ -5,7 +5,6 @@
     "placeholder_note": "Template keys contain literal slot tokens the component fills at render time; translators MUST keep tokens intact and place them in natural word order. Tokens: {product} = `${brand} ${name}` (e.g. 'Samsung Galaxy S24'); {brand} = brand only; {date} = formatted expiry/purchase date; {issue} = the chosen/typed issue text. claim.greeting_* = AI-mode opening; claim.fallback_* = shown when AI is unavailable; claim.initial_user_msg = the message posted as the user when an issue is picked."
   },
   "en": {
-    "product.ocr_autofill_toast": "Auto-filled {count} fields from your bill!",
     "claim.greeting_active": "Your {product} is under warranty until {date}. Tell me what's wrong and I'll guide you through the claim process.",
     "claim.greeting_expired": "Your {product}'s warranty expired on {date}, but I can still help you understand your out-of-warranty options.",
     "claim.initial_user_msg": "I need help with my {product}. Issue: {issue}",
@@ -16,7 +15,6 @@
     "claim.fallback_step2": "Call {brand} customer care \u2014 search \"{brand} India toll free\" on Google for the latest number."
   },
   "hi": {
-    "product.ocr_autofill_toast": "अपने बिल से स्वतः भरे {count} फ़ील्ड!",
     "nav.home": "होम",
     "nav.claim": "क्लेम AI",
     "tile.buying_assistant": "खरीद सहायक",
@@ -42,7 +40,6 @@
     "claim.fallback_step2": "{brand} कस्टमर केयर को कॉल करें \u2014 ताज़ा नंबर के लिए Google पर \"{brand} India toll free\" खोजें।"
   },
   "te": {
-    "product.ocr_autofill_toast": "మీ బిల్లు నుండి స్వయంచాలకంగా నింపబడిన {count} ఖాళీలను!",
     "dashboard.hello": "నమస్కారం",
     "tile.smart_devices_sub": "IoT సర్వీస్ హెచ్చరికలు",
     "login.otp_sent": "OTP పంపబడింది",
@@ -61,7 +58,6 @@
     "claim.fallback_step2": "{brand} కస్టమర్ కేర్‌కు కాల్ చేయండి \u2014 తాజా నంబర్ కోసం Googleలో \"{brand} India toll free\" అని వెతకండి."
   },
   "ta": {
-    "product.ocr_autofill_toast": "உங்கள் பில் இருந்து தானாக நிரப்பப்பட்ட {count} புலங்கள்!",
     "tile.smart_devices_sub": "IoT சேவை எச்சரிக்கைகள்",
     "login.otp_sent": "OTP அனுப்பப்பட்டது",
     "nav.claim": "க்ளைம் AI",
@@ -80,7 +76,6 @@
     "claim.fallback_step2": "{brand} வாடிக்கையாளர் சேவையை அழைக்கவும் \u2014 சமீபத்திய எண்ணுக்கு Googleல் \"{brand} India toll free\" எனத் தேடுங்கள்."
   },
   "kn": {
-    "product.ocr_autofill_toast": "ನಿಮ್ಮ ಬಿಲ್‌ನಿಂದ ಸ್ವಯಂಚಾಲಿತವಾಗಿ ತುಂಬಿದ {count} ಕ್ಷೇತ್ರಗಳು!",
     "tile.smart_devices_sub": "IoT ಸೇವಾ ಎಚ್ಚರಿಕೆಗಳು",
     "login.otp_sent": "OTP ಕಳುಹಿಸಲಾಗಿದೆ",
     "nav.claim": "ಕ್ಲೈಮ್ AI",

@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "QuickScanZ JSON-LD Schema Templates",
+  "description": "Structured metadata templates for Product, WarrantyPromise, and ServiceChannel.",
+  "templates": {
+    "product": {
+      "@context": "https://schema.org",
+      "@type": "Product",
+      "name": "{{product_name}}",
+      "image": "{{product_image_url}}",
+      "description": "{{product_description}}",
+      "brand": {
+        "@type": "Brand",
+        "name": "{{brand_name}}"
+      },
+      "model": "{{model_number}}",
+      "serialNumber": "{{serial_number}}",
+      "offers": {
+        "@type": "Offer",
+        "price": "{{price}}",
+        "priceCurrency": "INR",
+        "itemCondition": "https://schema.org/NewCondition",
+        "availability": "https://schema.org/InStock",
+        "seller": {
+          "@type": "LocalBusiness",
+          "name": "{{store_name}}",
+          "telephone": "{{store_contact}}",
+          "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "{{store_location}}"
+          }
+        }
+      },
+      "award": "Tracked securely via QuickScanZ Premium",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "Warranty Duration",
+          "value": "{{warranty_months}} months"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "Warranty Expiry Date",
+          "value": "{{expiry_date}}"
+        }
+      ]
+    },
+    "warranty_promise": {
+      "@context": "https://schema.org",
+      "@type": "WarrantyPromise",
+      "durationOfWarranty": {
+        "@type": "QuantitativeValue",
+        "value": "{{warranty_months}}",
+        "unitCode": "MON"
+      },
+      "warrantyScope": "Covers manufacturer defects, hardware failures, and screen repairs as specified in original documentation."
+    },
+    "service_channel": {
+      "@context": "https://schema.org",
+      "@type": "ServiceChannel",
+      "name": "QuickScanZ AI Claims Assistant",
+      "serviceType": "Customer Support and Automated Claims Filing",
+      "providesService": {
+        "@type": "Service",
+        "name": "Digital Warranty Management",
+        "provider": {
+          "@type": "Organization",
+          "name": "Pranix AI Labs",
+          "url": "https://www.quickscanz.com"
+        }
+      }
+    }
+  }
+}

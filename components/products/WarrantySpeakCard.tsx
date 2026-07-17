@@ -3,7 +3,6 @@
 import { useRef, useState } from "react";
 import { Volume2 } from "lucide-react";
 import type { Product } from "@/lib/types";
-import { useI18n } from "@/lib/i18n/provider";
 
 // ── Aaria voice-control-plane entry point (spoken warranty status) ──────────
 // Distinct from components/ui/AariaAssistantButton.tsx (free-text "Ask Aaria"
@@ -19,7 +18,6 @@ interface Props {
 type State = "idle" | "loading" | "playing" | "error";
 
 export default function WarrantySpeakCard({ product }: Props) {
-  const { locale } = useI18n();
   const [state, setState] = useState<State>("idle");
   const [spokenText, setSpokenText] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -36,7 +34,7 @@ export default function WarrantySpeakCard({ product }: Props) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           text: `What's the warranty status for my ${product.brand} ${product.name}?`,
-          lang_hint: locale,
+          lang_hint: "en",
           product_id: product.id,
         }),
       });

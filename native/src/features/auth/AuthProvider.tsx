@@ -3,6 +3,8 @@ import type { ReactNode } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "../../lib/supabase";
 import { registerPush, setPushExternalId, clearPushExternalId } from "../../lib/push";
+import { saveSession, clearSavedSession } from "../../lib/biometric";
+
 
 type AuthContextValue = {
   session: Session | null;
@@ -31,7 +33,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!mounted) return;
       setSession(nextSession);
       setLoading(false);
+      if (nextSession) {
+        saveSession(nextSession).catch(() => {});
+      } else {
+        clearSavedSession().catch(() => {});
+      }
     });
+
 
     return () => {
       mounted = false;
