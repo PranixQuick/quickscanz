@@ -1,6 +1,6 @@
 "use client";
 
-import { useTransition } from "react";
+import { useTransition, useState } from "react";
 import { useT } from "@/lib/i18n/provider";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -25,8 +25,139 @@ export default function AccountClient({
   const t = useT();
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const [seeding, setSeeding] = useState(false);
   const isPro = planId !== "free";
   const username = email.split("@")[0];
+
+  async function handleSeedDemoProducts() {
+    setSeeding(true);
+    try {
+      const supabase = createClient();
+      const demoProducts = [
+        {
+          user_id: userId,
+          name: "Bravia XR 65-inch OLED TV",
+          brand: "Sony",
+          purchase_date: "2025-11-15",
+          warranty_months: 24,
+          expiry_date: "2027-11-15",
+          price: 249900,
+          category: "Television",
+          subcategory: "OLED TV",
+          model_number: "XR-65A80K",
+          serial_number: "SN-9821034A",
+          store_name: "Reliance Digital",
+          notes: "Premium OLED TV. Outstanding picture quality.",
+          is_demo: true
+        },
+        {
+          user_id: userId,
+          name: "MacBook Pro 16-inch M3 Max",
+          brand: "Apple",
+          purchase_date: "2026-01-10",
+          warranty_months: 12,
+          expiry_date: "2027-01-10",
+          price: 349900,
+          category: "Laptop",
+          subcategory: "Developer Laptop",
+          model_number: "A2991",
+          serial_number: "C02L91Z0Q05D",
+          store_name: "Apple Store Mumbai",
+          notes: "Workhorse machine for development and rendering.",
+          is_demo: true
+        },
+        {
+          user_id: userId,
+          name: "800L Bespoke French Door Refrigerator",
+          brand: "Samsung",
+          purchase_date: "2025-05-20",
+          warranty_months: 12,
+          expiry_date: "2026-05-20",
+          price: 189900,
+          category: "Home Appliance",
+          subcategory: "Refrigerator",
+          model_number: "RF23BB8600AP",
+          serial_number: "SAMSUNG-BESPOKE-921",
+          store_name: "Samsung Smart Plaza",
+          notes: "Smart fridge with customizable panel designs.",
+          is_demo: true
+        },
+        {
+          user_id: userId,
+          name: "V15 Detect Cordless Vacuum",
+          brand: "Dyson",
+          purchase_date: "2025-09-05",
+          warranty_months: 24,
+          expiry_date: "2027-09-05",
+          price: 65900,
+          category: "Home Appliance",
+          subcategory: "Vacuum Cleaner",
+          model_number: "V15-DETECT",
+          serial_number: "DYSON-V15-39210",
+          store_name: "Dyson Demo Clinic",
+          notes: "High-performance cordless vacuum with laser illumination.",
+          is_demo: true
+        },
+        {
+          user_id: userId,
+          name: "OnePlus 12 (16GB RAM, 512GB)",
+          brand: "OnePlus",
+          purchase_date: "2026-03-01",
+          warranty_months: 12,
+          expiry_date: "2027-03-01",
+          price: 69990,
+          category: "Smartphone",
+          subcategory: "Android Flagship",
+          model_number: "CPH2581",
+          serial_number: "OP12-99881023",
+          store_name: "OnePlus Experience Store",
+          notes: "Daily driver phone. Fast charging is incredible.",
+          is_demo: true
+        },
+        {
+          user_id: userId,
+          name: "8kg Front Load Washing Machine",
+          brand: "Bosch",
+          purchase_date: "2025-02-14",
+          warranty_months: 36,
+          expiry_date: "2028-02-14",
+          price: 48500,
+          category: "Washing Machine",
+          subcategory: "Front Load Washer",
+          model_number: "WAJ2846SIN",
+          serial_number: "BOSCH-WASHER-8KG",
+          store_name: "Croma",
+          notes: "Extremely silent and efficient. Uses EcoSilence Drive.",
+          is_demo: true
+        },
+        {
+          user_id: userId,
+          name: "1.5 Ton 5-Star Inverter AC",
+          brand: "Daikin",
+          purchase_date: "2025-04-10",
+          warranty_months: 12,
+          expiry_date: "2026-04-10",
+          price: 52000,
+          category: "Air Conditioner",
+          subcategory: "Split AC",
+          model_number: "FTKM50U",
+          serial_number: "DAIKIN-AC-15TON",
+          store_name: "Vijay Sales",
+          notes: "Living room AC. Great cooling efficiency.",
+          is_demo: true
+        }
+      ];
+
+      const { error } = await supabase.from("products").insert(demoProducts);
+      if (error) throw error;
+      toast.success("Seeded 7 premium demo products successfully!");
+      router.refresh();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to seed products");
+    } finally {
+      setSeeding(false);
+    }
+  }
 
   function handleSignOut() {
     startTransition(async () => {
@@ -157,6 +288,18 @@ export default function AccountClient({
           <span className="text-sm text-ink-700 flex-1">{isPro ? planName + " " + t("account.plan_manage") : t("account.upgrade_view_plans")}</span>
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="text-ink-200 group-hover:text-ink-400"><path d="M5 3l4 4-4 4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>
         </Link>
+      </div>
+
+      {/* Developer & Testing Tools */}
+      <div>
+        <p className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-3">Testing & Development</p>
+        <button
+          onClick={handleSeedDemoProducts}
+          disabled={seeding}
+          className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-cream-300 bg-white hover:bg-cream-100 transition-colors text-sm font-semibold text-ink-700 disabled:opacity-40"
+        >
+          {seeding ? "Seeding Products..." : "🌱 Seed Premium Demo Products"}
+        </button>
       </div>
 
       {/* Legal */}
