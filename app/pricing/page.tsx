@@ -10,7 +10,11 @@ export const metadata: Metadata = {
   description: "Choose a plan to unlock unlimited product tracking.",
 };
 
-export default async function PricingPage() {
+export default async function PricingPage({
+  searchParams,
+}: {
+  searchParams?: { embed?: string };
+}) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
@@ -20,8 +24,10 @@ export default async function PricingPage() {
     getUserSubscription(),
   ]);
 
+  const embed = searchParams?.embed === "true";
+
   return (
-    <AppLayout>
+    <AppLayout embed={embed}>
       <PricingClient
         plans={plans}
         currentPlanId={currentSub?.plan_id || "free"}
