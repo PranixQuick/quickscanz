@@ -8,12 +8,18 @@ import { useI18n } from "../../src/i18n";
 import { supabase } from "../../src/lib/supabase";
 import LanguageDropdown from "../../src/components/LanguageDropdown";
 import HeaderLogo from "../../src/components/HeaderLogo";
+import { useAariaSpeech } from "../../src/features/aaria/useAariaSpeech";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 
 export default function AccountScreen() {
   const { user, signOut } = useAuth();
   const router = useRouter();
   const { locale, t, fontFamily } = useI18n();
+
+  useEffect(() => {
+    console.log("[account.tsx] AccountScreen mounted! User ID:", user?.id);
+  }, [user]);
 
   const [profile, setProfile] = useState<{
     display_name: string | null;
@@ -22,6 +28,8 @@ export default function AccountScreen() {
   } | null>(null);
   const [subscription, setSubscription] = useState<string>("Free");
   const [loading, setLoading] = useState(true);
+  const [voiceEnabled, setVoiceEnabled] = useState(true);
+  const aaria = useAariaSpeech(locale);
   
   // Modals state
   const [langModalVisible, setLangModalVisible] = useState(false);
@@ -51,10 +59,33 @@ export default function AccountScreen() {
   const [emailError, setEmailError] = useState("");
 
 
+  const loadVoicePreference = useCallback(async () => {
+    try {
+      const val = await AsyncStorage.getItem("aaria_voice_enabled");
+      setVoiceEnabled(val === null ? true : val === "true");
+    } catch (err) {
+      console.error(err);
+    }
+  }, []);
+
+  const toggleVoice = async () => {
+    try {
+      const nextVal = !voiceEnabled;
+      setVoiceEnabled(nextVal);
+      await AsyncStorage.setItem("aaria_voice_enabled", String(nextVal));
+      if (!nextVal) {
+        aaria.stop();
+      }
+    } catch (err) {
+      console.error("[AccountScreen] toggleVoice error:", err);
+    }
+  };
+
   const loadData = useCallback(async () => {
     if (!user) return;
     setLoading(true);
     try {
+      await loadVoicePreference();
       // 1. Fetch Profile
       const { data: prof, error: profErr } = await supabase
         .from("profiles")
@@ -251,6 +282,149 @@ export default function AccountScreen() {
   }
 
 
+  const [seeding, setSeeding] = useState(false);
+
+  async function handleSeedDemoProducts() {
+    console.log("[account.tsx] handleSeedDemoProducts start! User:", user?.id);
+    if (!user) {
+      console.log("[account.tsx] handleSeedDemoProducts: No user logged in!");
+      return;
+    }
+    setSeeding(true);
+    try {
+      const demoProducts = [
+        {
+          user_id: user.id,
+          name: "Bravia XR 65-inch OLED TV",
+          brand: "Sony",
+          purchase_date: "2025-11-15",
+          warranty_months: 24,
+          expiry_date: "2027-11-15",
+          price: 249900,
+          category: "Television",
+          subcategory: "OLED TV",
+          model_number: "XR-65A80K",
+          serial_number: "SN-9821034A",
+          store_name: "Reliance Digital",
+          notes: "Premium OLED TV. Outstanding picture quality.",
+          is_demo: true
+        },
+        {
+          user_id: user.id,
+          name: "MacBook Pro 16-inch M3 Max",
+          brand: "Apple",
+          purchase_date: "2026-01-10",
+          warranty_months: 12,
+          expiry_date: "2027-01-10",
+          price: 349900,
+          category: "Laptop",
+          subcategory: "Developer Laptop",
+          model_number: "A2991",
+          serial_number: "C02L91Z0Q05D",
+          store_name: "Apple Store Mumbai",
+          notes: "Workhorse machine for development and rendering.",
+          is_demo: true
+        },
+        {
+          user_id: user.id,
+          name: "800L Bespoke French Door Refrigerator",
+          brand: "Samsung",
+          purchase_date: "2025-05-20",
+          warranty_months: 12,
+          expiry_date: "2026-05-20",
+          price: 189900,
+          category: "Home Appliance",
+          subcategory: "Refrigerator",
+          model_number: "RF23BB8600AP",
+          serial_number: "SAMSUNG-BESPOKE-921",
+          store_name: "Samsung Smart Plaza",
+          notes: "Smart fridge with customizable panel designs.",
+          is_demo: true
+        },
+        {
+          user_id: user.id,
+          name: "V15 Detect Cordless Vacuum",
+          brand: "Dyson",
+          purchase_date: "2025-09-05",
+          warranty_months: 24,
+          expiry_date: "2027-09-05",
+          price: 65900,
+          category: "Home Appliance",
+          subcategory: "Vacuum Cleaner",
+          model_number: "V15-DETECT",
+          serial_number: "DYSON-V15-39210",
+          store_name: "Dyson Demo Clinic",
+          notes: "High-performance cordless vacuum with laser illumination.",
+          is_demo: true
+        },
+        {
+          user_id: user.id,
+          name: "OnePlus 12 (16GB RAM, 512GB)",
+          brand: "OnePlus",
+          purchase_date: "2026-03-01",
+          warranty_months: 12,
+          expiry_date: "2027-03-01",
+          price: 69990,
+          category: "Smartphone",
+          subcategory: "Android Flagship",
+          model_number: "CPH2581",
+          serial_number: "OP12-99881023",
+          store_name: "OnePlus Experience Store",
+          notes: "Daily driver phone. Fast charging is incredible.",
+          is_demo: true
+        },
+        {
+          user_id: user.id,
+          name: "8kg Front Load Washing Machine",
+          brand: "Bosch",
+          purchase_date: "2025-02-14",
+          warranty_months: 36,
+          expiry_date: "2028-02-14",
+          price: 48500,
+          category: "Washing Machine",
+          subcategory: "Front Load Washer",
+          model_number: "WAJ2846SIN",
+          serial_number: "BOSCH-WASHER-8KG",
+          store_name: "Croma",
+          notes: "Extremely silent and efficient. Uses EcoSilence Drive.",
+          is_demo: true
+        },
+        {
+          user_id: user.id,
+          name: "1.5 Ton 5-Star Inverter AC",
+          brand: "Daikin",
+          purchase_date: "2025-04-10",
+          warranty_months: 12,
+          expiry_date: "2026-04-10",
+          price: 52000,
+          category: "Air Conditioner",
+          subcategory: "Split AC",
+          model_number: "FTKM50U",
+          serial_number: "DAIKIN-AC-15TON",
+          store_name: "Vijay Sales",
+          notes: "Living room AC. Great cooling efficiency.",
+          is_demo: true
+        }
+      ];
+
+      console.log("[account.tsx] Inserting demo products...");
+      const { error } = await supabase.from("products").insert(demoProducts);
+      if (error) {
+        console.log("[account.tsx] Insert error:", error);
+        throw error;
+      }
+      console.log("[account.tsx] Insert success!");
+      Alert.alert("Success", "Seeded 7 premium demo products successfully!");
+      await loadData();
+    } catch (err) {
+      console.log("[account.tsx] Seed error:", err);
+      Alert.alert("Error", err instanceof Error ? err.message : "Failed to seed products");
+    } finally {
+      console.log("[account.tsx] Seed finished.");
+      setSeeding(false);
+    }
+  }
+
   const isGoogleLinked = user?.app_metadata.providers?.includes("google");
   const isEmailLinked = !!user?.email;
   const isPhoneLinked = !!user?.phone;
@@ -311,7 +485,10 @@ export default function AccountScreen() {
             </View>
             {subscription === "Free" && (
               <Pressable
-                onPress={() => router.push("/pricing")}
+                onPress={() => {
+                  console.log("[AccountScreen] Upgrade to Pro button clicked!");
+                  router.push("/pricing");
+                }}
                 className="bg-brand-500 px-4 py-2 rounded-xl active:opacity-90"
               >
                 <Text className="text-xs font-semibold text-white">{t("account.upgrade") || "Upgrade"}</Text>
@@ -397,6 +574,55 @@ export default function AccountScreen() {
                 color={isGoogleLinked ? "#0B6E4F" : "#ef4444"}
               />
             </View>
+          </Pressable>
+        </View>
+
+
+        {/* Voice Settings */}
+        <Text style={{ fontFamily: fontFamily(true) }} className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-2 px-1">
+          {t("account.voice_settings") || "Voice Assistant"}
+        </Text>
+        <View className="bg-white border border-cream-200 rounded-3xl p-4 shadow-sm mb-6">
+          <Pressable
+            onPress={toggleVoice}
+            className="flex-row justify-between items-center py-1 active:opacity-60"
+          >
+            <View className="flex-row items-center gap-2">
+              <Ionicons name={voiceEnabled ? "volume-medium-outline" : "volume-mute-outline"} size={16} color="#4b5563" />
+              <Text style={{ fontFamily: fontFamily(false) }} className="text-sm text-ink-700">
+                {t("account.interactive_voice") || "Interactive Voice Guidance"}
+              </Text>
+            </View>
+            <View className="flex-row items-center gap-1.5">
+              <Text style={{ fontFamily: fontFamily(true) }} className={`text-[10px] font-bold uppercase ${voiceEnabled ? "text-brand-600" : "text-ink-400"}`}>
+                {voiceEnabled ? t("common.on") || "ON" : t("common.off") || "OFF"}
+              </Text>
+              <Ionicons
+                name={voiceEnabled ? "checkbox" : "square-outline"}
+                size={18}
+                color={voiceEnabled ? "#0B6E4F" : "#9ca3af"}
+              />
+            </View>
+          </Pressable>
+        </View>
+
+        {/* Developer & Testing Tools */}
+        <View className="mb-6">
+          <Text style={{ fontFamily: fontFamily(true) }} className="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-2 px-1">
+            Testing & Development
+          </Text>
+          <Pressable
+            onPress={handleSeedDemoProducts}
+            disabled={seeding}
+            className="w-full bg-white border border-cream-200 py-3.5 rounded-2xl items-center justify-center flex-row gap-2 active:bg-cream-50 disabled:opacity-50"
+          >
+            {seeding ? (
+              <ActivityIndicator color="#1a1612" size="small" />
+            ) : (
+              <Text style={{ fontFamily: fontFamily(true) }} className="text-sm font-semibold text-ink-700">
+                🌱 Seed Premium Demo Products
+              </Text>
+            )}
           </Pressable>
         </View>
 
@@ -684,4 +910,3 @@ export default function AccountScreen() {
     </View>
   );
 }
-
