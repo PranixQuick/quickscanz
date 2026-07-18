@@ -79,6 +79,18 @@ function GoogleSignInButton({ showSeparator = true }: { showSeparator?: boolean 
   );
 }
 
+// Country list matching native app
+const COUNTRIES = [
+  { code: "+91", flag: "🇮🇳", name: "India", length: 10 },
+  { code: "+1", flag: "🇺🇸", name: "United States", length: 10 },
+  { code: "+44", flag: "🇬🇧", name: "United Kingdom", length: 10 },
+  { code: "+971", flag: "🇦🇪", name: "UAE", length: 9 },
+  { code: "+61", flag: "🇦🇺", name: "Australia", length: 9 },
+  { code: "+65", flag: "🇸🇬", name: "Singapore", length: 8 },
+  { code: "+966", flag: "🇸🇦", name: "Saudi Arabia", length: 9 },
+  { code: "+49", flag: "🇩🇪", name: "Germany", length: 10 },
+];
+
 // ─── Phone OTP Flow (primary — works for illiterate users) ───────────────────
 function PhoneOTPForm() {
   const t = useT();
@@ -88,9 +100,9 @@ function PhoneOTPForm() {
   const [step, setStep] = useState<"phone" | "otp">("phone");
   const [isPending, setIsPending] = useState(false);
   const [error, setError] = useState("");
-  const [countryCode, setCountryCode] = useState("+91");
+  const [selectedCountry, setSelectedCountry] = useState(COUNTRIES[0]);
 
-  function formatPhone(raw: string) {
+  function formatPhone(raw: string, countryCode: string) {
     const digits = raw.replace(/\D/g, "");
     return `${countryCode}${digits}`;
   }
@@ -98,8 +110,11 @@ function PhoneOTPForm() {
   async function sendOTP(e: React.FormEvent) {
     e.preventDefault();
     setError("");
-    const formatted = formatPhone(phone);
-    if (formatted.length < 9) { setError(t("login.phone_invalid")); return; }
+    const formatted = formatPhone(phone, selectedCountry.code);
+    if (phone.length < selectedCountry.length - 2) {
+      setError(t("login.phone_invalid") || `Please enter a valid phone number for ${selectedCountry.name}.`);
+      return;
+    }
     setIsPending(true);
     try {
       const supabase = createClient();
@@ -120,7 +135,7 @@ function PhoneOTPForm() {
   async function verifyOTP(e: React.FormEvent) {
     e.preventDefault();
     setError("");
-    const formatted = formatPhone(phone);
+    const formatted = formatPhone(phone, selectedCountry.code);
     setIsPending(true);
     try {
       const supabase = createClient();
@@ -156,6 +171,7 @@ function PhoneOTPForm() {
   }
 
   if (step === "otp") {
+    const formatted = formatPhone(phone, selectedCountry.code);
     return (
       <form onSubmit={verifyOTP} className="card p-6 space-y-5">
         {/* Big friendly checkmark */}
@@ -167,7 +183,7 @@ function PhoneOTPForm() {
           </div>
           <p className="text-sm font-medium text-ink-800">{t("login.otp_sent")}</p>
           <p className="text-xs text-ink-400 text-center">
-            {t("login.otp_sent_to")} <span className="font-medium text-ink-700">{phone}</span>.{" "}
+            {t("login.otp_sent_to")} <span className="font-medium text-ink-700">{formatted}</span>.{" "}
             {t("login.otp_check_sms")}
           </p>
         </div>
@@ -221,30 +237,36 @@ function PhoneOTPForm() {
 
       <div>
         <div className="flex items-center gap-2">
-          {/* Country code selector */}
-          <select
-            value={countryCode}
-            onChange={(e) => setCountryCode(e.target.value)}
-            className="px-3 py-3.5 bg-cream-200 border border-cream-300 rounded-xl text-sm font-medium text-ink-700 flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-sand-200 transition-all cursor-pointer"
-          >
-            <option value="+91">🇮🇳 +91</option>
-            <option value="+1">🇺🇸 +1</option>
-            <option value="+44">🇬🇧 +44</option>
-            <option value="+971">🇦🇪 +971</option>
-            <option value="+49">🇩🇪 +49</option>
-            <option value="+33">🇫🇷 +33</option>
-            <option value="+61">🇦🇺 +61</option>
-            <option value="+65">🇸🇬 +65</option>
-          </select>
+          {/* Dynamic Country Selector */}
+          <div className="flex items-center bg-cream-200 border border-cream-200 rounded-xl px-2 py-3.5 flex-shrink-0">
+            <span className="mr-1 text-sm">{selectedCountry.flag}</span>
+            <select
+              value={selectedCountry.code}
+              onChange={(e) => {
+                const country = COUNTRIES.find((c) => c.code === e.target.value);
+                if (country) {
+                  setSelectedCountry(country);
+                  setPhone("");
+                }
+              }}
+              className="bg-transparent border-none text-xs font-semibold text-ink-900 focus:outline-none cursor-pointer"
+            >
+              {COUNTRIES.map((c) => (
+                <option key={c.code} value={c.code} className="bg-white text-ink-900">
+                  {c.code} ({c.name})
+                </option>
+              ))}
+            </select>
+          </div>
           <input
             type="tel"
             inputMode="numeric"
             pattern="[0-9]*"
             value={phone}
-            onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 12))}
-            placeholder={countryCode === "+91" ? "9876543210" : "1234567890"}
+            onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, selectedCountry.length))}
+            placeholder={"9".repeat(selectedCountry.length)}
             autoFocus
-            maxLength={12}
+            maxLength={selectedCountry.length}
             className="flex-1 px-4 py-3.5 bg-cream-100 border border-cream-200 rounded-xl text-lg font-medium tracking-wider text-ink-900 focus:outline-none focus:border-sand-400 focus:ring-2 focus:ring-sand-200 transition-all"
           />
         </div>
@@ -256,7 +278,7 @@ function PhoneOTPForm() {
         </div>
       )}
 
-      <button type="submit" disabled={isPending || phone.length < 7}
+      <button type="submit" disabled={isPending || phone.length < selectedCountry.length - 2}
         className="w-full btn-primary py-4 text-base font-semibold disabled:opacity-40 rounded-2xl">
         {isPending ? (
           <span className="flex items-center justify-center gap-2">
@@ -271,6 +293,8 @@ function PhoneOTPForm() {
     </form>
   );
 }
+
+
 
 // ─── Reviewer / Demo Sign-In (email + password) ────────────────────────────
 // Google Play reviewers can't receive an SMS OTP. This restores a narrow,
