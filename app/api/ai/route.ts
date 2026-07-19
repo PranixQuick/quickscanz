@@ -38,6 +38,7 @@ function getRuleBasedResponse(messages: Array<{ role: string; content: string }>
 import { createClient as createBasicClient } from "@supabase/supabase-js";
 
 export async function POST(req: NextRequest) {
+  const supabase = await createClient();
   let user: any = null;
   const authHeader = req.headers.get("Authorization");
   if (authHeader && authHeader.startsWith("Bearer ")) {
@@ -52,7 +53,6 @@ export async function POST(req: NextRequest) {
   }
 
   if (!user) {
-    const supabase = await createClient();
     const { data: { user: sessionUser } } = await supabase.auth.getUser();
     user = sessionUser;
   }
