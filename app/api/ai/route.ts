@@ -35,9 +35,28 @@ function getRuleBasedResponse(messages: Array<{ role: string; content: string }>
   return `I can help with your warranty claim for ${productCtx}.\n\n**General steps:**\n1. Verify the product is within warranty period\n2. Document the defect (photos/video)\n3. Gather documents: invoice, warranty card, ID\n4. Visit an authorized service centre (not local repair)\n5. Get a written job card when submitting\n\n**Your rights (India):**\n- Free repair for manufacturing defects within warranty period\n- Replacement if repair fails after 3 attempts\n- Refund if replacement not possible\n- National Consumer Helpline: 1800-11-4000\n\nDescribe the exact issue and I'll give you specific guidance.`;
 }
 
+import { createClient as createBasicClient } from "@supabase/supabase-js";
+
 export async function POST(req: NextRequest) {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  let user: any = null;
+  const authHeader = req.headers.get("Authorization");
+  if (authHeader && authHeader.startsWith("Bearer ")) {
+    const token = authHeader.substring(7);
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
+    if (supabaseUrl && supabaseAnonKey) {
+      const client = createBasicClient(supabaseUrl, supabaseAnonKey);
+      const { data } = await client.auth.getUser(token);
+      user = data.user;
+    }
+  }
+
+  if (!user) {
+    const { data: { user: sessionUser } } = await supabase.auth.getUser();
+    user = sessionUser;
+  }
+
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   let body: any;
@@ -95,7 +114,7 @@ export async function POST(req: NextRequest) {
     };
   }
 
-  // ── Try Anthropic (if key present) ───────────────────────────────────────
+  // ── Try Gemini (if key present) ─────────────────────────────────────────
   const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
   // gemini-1.5-flash is retired (404). Use gemini-2.0-flash, which works once
   // billing is enabled on the key's Google Cloud project. Overridable via GEMINI_MODEL.

@@ -18,7 +18,7 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.quickscanz.premium",
+      "bundleIdentifier": "com.quickscanz.warranty",
       "infoPlist": {
         "NSCameraUsageDescription": "QuickScanZ uses your camera to scan bills and warranty cards.",
         "NSFaceIDUsageDescription": "QuickScanZ uses Face ID to unlock your account quickly and securely."

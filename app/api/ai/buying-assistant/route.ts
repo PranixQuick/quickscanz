@@ -1,9 +1,27 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { createClient as createBasicClient } from "@supabase/supabase-js";
 
 export async function POST(req: NextRequest) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  let user: any = null;
+  const authHeader = req.headers.get("Authorization");
+  if (authHeader && authHeader.startsWith("Bearer ")) {
+    const token = authHeader.substring(7);
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
+    if (supabaseUrl && supabaseAnonKey) {
+      const client = createBasicClient(supabaseUrl, supabaseAnonKey);
+      const { data } = await client.auth.getUser(token);
+      user = data.user;
+    }
+  }
+
+  if (!user) {
+    const supabase = await createClient();
+    const { data: { user: sessionUser } } = await supabase.auth.getUser();
+    user = sessionUser;
+  }
+
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   let body: any;

@@ -115,11 +115,35 @@ export async function aariaSpeak(
   text: string,
   opts: { lang?: string; qualityTier?: string; product?: string } = {}
 ): Promise<AariaSpeakResponse> {
-  return aariaFetch<AariaSpeakResponse>("/api/voice/speak", {
+  const res = await aariaFetch<any>("/api/voice/speak", {
     text,
     lang: toAariaLang(opts.lang),
     product: opts.product || AARIA_PRODUCT,
     quality_tier: opts.qualityTier || "standard",
+  });
+  return {
+    audio_base64: res.audio_base64 || res.audio_ref,
+    lang: res.lang || toAariaLang(opts.lang),
+    engine_used: res.engine_used,
+    visual_companion: res.visual_companion ?? null,
+  };
+}
+
+export interface AariaListenResponse {
+  text: string;
+  confidence: number;
+  engine_used: string;
+  language: string;
+}
+
+export async function aariaListen(
+  audioBase64: string,
+  opts: { langHint?: string; product?: string } = {}
+): Promise<AariaListenResponse> {
+  return aariaFetch<AariaListenResponse>("/api/voice/listen", {
+    audio_base64: audioBase64,
+    product: opts.product || AARIA_PRODUCT,
+    lang_hint: toAariaLang(opts.langHint),
   });
 }
 

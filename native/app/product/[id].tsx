@@ -1,12 +1,16 @@
 import { useCallback, useEffect, useState } from "react";
-import { View, Text, ScrollView, ActivityIndicator, Pressable, TextInput } from "react-native";
+import { View, Text, ScrollView, ActivityIndicator, Pressable, TextInput, Alert } from "react-native";
 import { useFocusEffect, useLocalSearchParams, useRouter, Stack } from "expo-router";
 import { supabase } from "../../src/lib/supabase";
-import { getStatusConfig, getWarrantyStatus, formatWarrantyCountdown } from "../../src/lib/calculations";
+import { getStatusConfig, getWarrantyStatus, formatWarrantyCountdown, getLocalizedWarrantySpokenSummary } from "../../src/lib/calculations";
 import type { Product } from "../../src/lib/types";
 import { getLocale, type Locale } from "../../src/lib/locale";
 import { useAariaSpeech } from "../../src/features/aaria/useAariaSpeech";
 import { useI18n } from "../../src/i18n";
+import { Audio } from "expo-av";
+import * as FileSystem from "expo-file-system";
+import { aariaListen } from "../../src/features/aaria/aariaClient";
+import { Ionicons } from "@expo/vector-icons";
 
 function Row({ label, value }: { label: string; value: string | number | null | undefined }) {
   if (value === null || value === undefined || value === "") return null;
@@ -16,12 +20,6 @@ function Row({ label, value }: { label: string; value: string | number | null | 
       <Text className="mt-0.5 text-base text-ink-700">{String(value)}</Text>
     </View>
   );
-}
-
-function statusPhrase(status: ReturnType<typeof getWarrantyStatus>): string {
-  if (status === "expired") return "has expired";
-  if (status === "expiring_soon") return "is expiring soon";
-  return "is active";
 }
 
 export default function ProductDetailScreen() {
@@ -35,6 +33,10 @@ export default function ProductDetailScreen() {
   const [asking, setAsking] = useState(false);
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState<string | null>(null);
+
+  const [recording, setRecording] = useState<Audio.Recording | null>(null);
+  const [isRecording, setIsRecording] = useState(false);
+  const [transcribing, setTranscribing] = useState(false);
 
   const aaria = useAariaSpeech(locale);
 
@@ -84,16 +86,58 @@ export default function ProductDetailScreen() {
       : status === "expiring_soon"
       ? t("dashboard.stats_expiring")
       : t("dashboard.stats_expired");
-  // Same phrasing app/api/aaria-query/route.ts builds server-side for
-  // `get_warranty_status` — kept in sync so the spoken answer sounds the
-  // same whether it came from the web's closed-loop flow or here.
-  const spokenSummary = `Your ${product.brand} ${product.name} warranty ${statusPhrase(status)}. ${formatWarrantyCountdown(
-    product.expiry_date,
-    t
-  )}.`;
+
+  const spokenSummary = getLocalizedWarrantySpokenSummary(product.brand, product.name, product.expiry_date, locale, t);
 
   async function handleReadAloud() {
     await aaria.speak(spokenSummary);
+  }
+
+  async function startRecording() {
+    try {
+      const permission = await Audio.requestPermissionsAsync();
+      if (permission.status !== "granted") {
+        Alert.alert("Permission Denied", "Microphone access is required to use speech-to-text.");
+        return;
+      }
+
+      await Audio.setAudioModeAsync({
+        allowsRecordingIOS: true,
+        playsInSilentModeIOS: true,
+      });
+
+      const { recording: newRecording } = await Audio.Recording.createAsync(
+        Audio.RecordingOptionsPresets.HIGH_QUALITY
+      );
+      setRecording(newRecording);
+      setIsRecording(true);
+    } catch (err) {
+      console.error("Failed to start recording", err);
+    }
+  }
+
+  async function stopRecording() {
+    setIsRecording(false);
+    if (!recording) return;
+    setTranscribing(true);
+    try {
+      await recording.stopAndUnloadAsync();
+      const uri = recording.getURI();
+      setRecording(null);
+      if (uri) {
+        const base64Audio = await FileSystem.readAsStringAsync(uri, {
+          encoding: FileSystem.EncodingType.Base64,
+        });
+        const response = await aariaListen(base64Audio, { langHint: locale });
+        if (response && response.text) {
+          setQuestion(response.text);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to stop recording", err);
+    } finally {
+      setTranscribing(false);
+    }
   }
 
   async function handleAsk() {
@@ -148,17 +192,34 @@ export default function ProductDetailScreen() {
       </View>
 
       {asking && (
-        <View className="mt-3 gap-2 rounded-2xl border border-cream-300 bg-white p-3">
-          <TextInput
-            value={question}
-            onChangeText={setQuestion}
-            placeholder={t("product.ask_placeholder") || "e.g. Is my warranty still active?"}
-            placeholderTextColor="#9ca3af"
-            className="rounded-xl border border-cream-200 px-3 py-2 text-ink-700"
-          />
+        <View className="mt-3 gap-3 rounded-2xl border border-cream-300 bg-white p-3">
+          <View className="flex-row items-center gap-2">
+            <TextInput
+              value={question}
+              onChangeText={setQuestion}
+              placeholder={t("product.ask_placeholder") || "e.g. Is my warranty still active?"}
+              placeholderTextColor="#9ca3af"
+              className="flex-1 rounded-xl border border-cream-200 px-3 py-2 text-ink-700"
+            />
+            <Pressable
+              onPress={isRecording ? stopRecording : startRecording}
+              className={`p-2.5 rounded-xl border ${
+                isRecording ? "bg-red-50 border-red-200" : "bg-cream-50 border-cream-200"
+              }`}
+            >
+              <Ionicons
+                name={isRecording ? "stop-circle" : "mic"}
+                size={20}
+                color={isRecording ? "#ef4444" : "#1a1612"}
+              />
+            </Pressable>
+          </View>
+          {transcribing && (
+            <Text className="text-[10px] text-ink-400 text-center animate-pulse">Transcribing audio...</Text>
+          )}
           <Pressable
             onPress={handleAsk}
-            disabled={!question.trim() || aaria.speaking}
+            disabled={!question.trim() || aaria.speaking || isRecording}
             className="items-center rounded-xl bg-ink-700 py-2.5 active:opacity-90 disabled:opacity-40"
           >
             <Text className="font-semibold text-white">{aaria.speaking ? (t("product.asking") || "Asking…") : (t("product.ask_btn") || "Ask")}</Text>
