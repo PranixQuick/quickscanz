@@ -79,6 +79,18 @@ function GoogleSignInButton({ showSeparator = true }: { showSeparator?: boolean 
   );
 }
 
+// Country list matching native app
+const COUNTRIES = [
+  { code: "+91", flag: "🇮🇳", name: "India", length: 10 },
+  { code: "+1", flag: "🇺🇸", name: "United States", length: 10 },
+  { code: "+44", flag: "🇬🇧", name: "United Kingdom", length: 10 },
+  { code: "+971", flag: "🇦🇪", name: "UAE", length: 9 },
+  { code: "+61", flag: "🇦🇺", name: "Australia", length: 9 },
+  { code: "+65", flag: "🇸🇬", name: "Singapore", length: 8 },
+  { code: "+966", flag: "🇸🇦", name: "Saudi Arabia", length: 9 },
+  { code: "+49", flag: "🇩🇪", name: "Germany", length: 10 },
+];
+
 // ─── Phone OTP Flow (primary — works for illiterate users) ───────────────────
 function PhoneOTPForm() {
   const t = useT();
@@ -88,20 +100,21 @@ function PhoneOTPForm() {
   const [step, setStep] = useState<"phone" | "otp">("phone");
   const [isPending, setIsPending] = useState(false);
   const [error, setError] = useState("");
+  const [selectedCountry, setSelectedCountry] = useState(COUNTRIES[0]);
 
-  function formatPhone(raw: string) {
-    // Strip non-digits, prepend +91 if no country code
+  function formatPhone(raw: string, countryCode: string) {
     const digits = raw.replace(/\D/g, "");
-    if (digits.startsWith("91") && digits.length >= 12) return `+${digits}`;
-    if (digits.length === 10) return `+91${digits}`;
-    return `+${digits}`;
+    return `${countryCode}${digits}`;
   }
 
   async function sendOTP(e: React.FormEvent) {
     e.preventDefault();
     setError("");
-    const formatted = formatPhone(phone);
-    if (formatted.length < 13) { setError(t("login.phone_invalid")); return; }
+    const formatted = formatPhone(phone, selectedCountry.code);
+    if (phone.length < selectedCountry.length - 2) {
+      setError(t("login.phone_invalid") || `Please enter a valid phone number for ${selectedCountry.name}.`);
+      return;
+    }
     setIsPending(true);
     try {
       const supabase = createClient();
@@ -122,7 +135,7 @@ function PhoneOTPForm() {
   async function verifyOTP(e: React.FormEvent) {
     e.preventDefault();
     setError("");
-    const formatted = formatPhone(phone);
+    const formatted = formatPhone(phone, selectedCountry.code);
     setIsPending(true);
     try {
       const supabase = createClient();
@@ -158,6 +171,7 @@ function PhoneOTPForm() {
   }
 
   if (step === "otp") {
+    const formatted = formatPhone(phone, selectedCountry.code);
     return (
       <form onSubmit={verifyOTP} className="card p-6 space-y-5">
         {/* Big friendly checkmark */}
@@ -169,7 +183,7 @@ function PhoneOTPForm() {
           </div>
           <p className="text-sm font-medium text-ink-800">{t("login.otp_sent")}</p>
           <p className="text-xs text-ink-400 text-center">
-            {t("login.otp_sent_to")} <span className="font-medium text-ink-700">{phone}</span>.{" "}
+            {t("login.otp_sent_to")} <span className="font-medium text-ink-700">{formatted}</span>.{" "}
             {t("login.otp_check_sms")}
           </p>
         </div>
@@ -223,19 +237,36 @@ function PhoneOTPForm() {
 
       <div>
         <div className="flex items-center gap-2">
-          {/* Country code badge */}
-          <div className="flex items-center gap-1.5 px-3 py-3.5 bg-cream-200 border border-cream-200 rounded-xl text-sm font-medium text-ink-700 flex-shrink-0">
-            🇮🇳 +91
+          {/* Dynamic Country Selector */}
+          <div className="flex items-center bg-cream-200 border border-cream-200 rounded-xl px-2 py-3.5 flex-shrink-0">
+            <span className="mr-1 text-sm">{selectedCountry.flag}</span>
+            <select
+              value={selectedCountry.code}
+              onChange={(e) => {
+                const country = COUNTRIES.find((c) => c.code === e.target.value);
+                if (country) {
+                  setSelectedCountry(country);
+                  setPhone("");
+                }
+              }}
+              className="bg-transparent border-none text-xs font-semibold text-ink-900 focus:outline-none cursor-pointer"
+            >
+              {COUNTRIES.map((c) => (
+                <option key={c.code} value={c.code} className="bg-white text-ink-900">
+                  {c.code} ({c.name})
+                </option>
+              ))}
+            </select>
           </div>
           <input
             type="tel"
             inputMode="numeric"
             pattern="[0-9]*"
             value={phone}
-            onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
-            placeholder="9876543210"
+            onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, selectedCountry.length))}
+            placeholder={"9".repeat(selectedCountry.length)}
             autoFocus
-            maxLength={10}
+            maxLength={selectedCountry.length}
             className="flex-1 px-4 py-3.5 bg-cream-100 border border-cream-200 rounded-xl text-lg font-medium tracking-wider text-ink-900 focus:outline-none focus:border-sand-400 focus:ring-2 focus:ring-sand-200 transition-all"
           />
         </div>
@@ -247,7 +278,7 @@ function PhoneOTPForm() {
         </div>
       )}
 
-      <button type="submit" disabled={isPending || phone.length < 10}
+      <button type="submit" disabled={isPending || phone.length < selectedCountry.length - 2}
         className="w-full btn-primary py-4 text-base font-semibold disabled:opacity-40 rounded-2xl">
         {isPending ? (
           <span className="flex items-center justify-center gap-2">

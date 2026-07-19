@@ -21,14 +21,14 @@ import { supabase } from "../../src/lib/supabase";
 WebBrowser.maybeCompleteAuthSession();
 
 const COUNTRIES = [
-  { code: "+91", flag: "🇮🇳", name: "India" },
-  { code: "+1", flag: "🇺🇸", name: "United States" },
-  { code: "+44", flag: "🇬🇧", name: "United Kingdom" },
-  { code: "+971", flag: "🇦🇪", name: "United Arab Emirates" },
-  { code: "+49", flag: "🇩🇪", name: "Germany" },
-  { code: "+33", flag: "🇫🇷", name: "France" },
-  { code: "+61", flag: "🇦🇺", name: "Australia" },
-  { code: "+65", flag: "🇸🇬", name: "Singapore" }
+  { code: "+91", flag: "🇮🇳", name: "India", length: 10 },
+  { code: "+1", flag: "🇺🇸", name: "United States", length: 10 },
+  { code: "+44", flag: "🇬🇧", name: "United Kingdom", length: 10 },
+  { code: "+971", flag: "🇦🇪", name: "United Arab Emirates", length: 9 },
+  { code: "+49", flag: "🇩🇪", name: "Germany", length: 10 },
+  { code: "+33", flag: "🇫🇷", name: "France", length: 10 },
+  { code: "+61", flag: "🇦🇺", name: "Australia", length: 9 },
+  { code: "+65", flag: "🇸🇬", name: "Singapore", length: 8 }
 ];
 
 export default function LoginScreen() {
@@ -145,8 +145,8 @@ export default function LoginScreen() {
     setSuccessMessage("");
     
     const formatted = formatPhone(phone);
-    if (phone.length < 7) {
-      setError("Please enter a valid phone number.");
+    if (phone.length < selectedCountry.length - 2) {
+      setError(`Please enter a valid phone number for ${selectedCountry.name}.`);
       return;
     }
 
@@ -350,10 +350,11 @@ export default function LoginScreen() {
                   </Pressable>
                   <TextInput
                     value={phone}
-                    onChangeText={(val) => setPhone(val.replace(/\D/g, "").slice(0, 15))}
-                    placeholder="Phone number"
+                    onChangeText={(val) => setPhone(val.replace(/\D/g, "").slice(0, selectedCountry.length))}
+                    placeholder={`${selectedCountry.length}-digit number`}
                     keyboardType="phone-pad"
                     editable={!otpSent && !busy}
+                    maxLength={selectedCountry.length}
                     className="flex-1 py-3.5 text-ink-700 text-sm tracking-wider"
                   />
                 </View>
@@ -396,7 +397,7 @@ export default function LoginScreen() {
 
                 <Pressable
                   onPress={otpSent ? handleVerifyOtp : handleSendOtp}
-                  disabled={busy || (otpSent && otp.length < 6) || (!otpSent && phone.length < 10)}
+                  disabled={busy || (otpSent && otp.length < 6) || (!otpSent && phone.length < selectedCountry.length - 2)}
                   className="items-center rounded-2xl bg-brand-500 py-4 active:opacity-90 disabled:opacity-50 shadow-sm mt-2"
                 >
                   {busy ? (

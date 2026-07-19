@@ -180,8 +180,8 @@ export default function PricingScreen() {
                       : (currency === "INR" 
                         ? `₹${plan.price_inr.toLocaleString("en-IN")}` 
                         : currency === "USD"
-                          ? `$${plan.interval === "yearly" ? "11.99" : "1.99"}`
-                          : `€${plan.interval === "yearly" ? "10.99" : "1.89"}`
+                          ? `$${(plan.price_usd ?? (plan.interval === "yearly" ? 11.99 : 1.99)).toLocaleString("en-US")}`
+                          : `€${(plan.price_eur ?? (plan.interval === "yearly" ? 10.99 : 1.89)).toLocaleString("de-DE")}`
                       )}
                   </Text>
                   {!isFree && (

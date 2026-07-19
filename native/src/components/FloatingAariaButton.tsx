@@ -7,6 +7,8 @@ import { useI18n } from "../i18n";
 import { useAariaSpeech } from "../features/aaria/useAariaSpeech";
 import { supabase } from "../lib/supabase";
 
+let globalLastGreetedLocale = "";
+
 export default function FloatingAariaButton() {
   const { user } = useAuth();
   const router = useRouter();
@@ -15,7 +17,6 @@ export default function FloatingAariaButton() {
   const [query, setQuery] = useState("");
   const [response, setResponse] = useState("");
   const [loading, setLoading] = useState(false);
-  const [greeted, setGreeted] = useState(false);
   const [displayName, setDisplayName] = useState("");
 
   const aaria = useAariaSpeech(locale);
@@ -23,7 +24,7 @@ export default function FloatingAariaButton() {
   // Fetch profile name to greet user
   useEffect(() => {
     if (!user) {
-      setGreeted(false);
+      globalLastGreetedLocale = "";
       setDisplayName("");
       return;
     }
@@ -41,10 +42,21 @@ export default function FloatingAariaButton() {
           const name = data.display_name.replace(/^(Mr|Mrs|Ms)\.\s+/i, "");
           setDisplayName(name);
 
-          // Greet user on first load
-          if (!greeted) {
-            setGreeted(true);
-            const welcomeText = locale === "ml" ? `സ്വാഗതം, ${name}` : `Welcome back, ${name}`;
+          // Greet user on first load or language change
+          if (globalLastGreetedLocale !== locale) {
+            globalLastGreetedLocale = locale;
+            let welcomeText = `Welcome back, ${name}`;
+            if (locale === "ml") {
+              welcomeText = `സ്വാഗതം, ${name}`;
+            } else if (locale === "hi") {
+              welcomeText = `स्वागत है, ${name}`;
+            } else if (locale === "te") {
+              welcomeText = `స్వాగతం, ${name}`;
+            } else if (locale === "ta") {
+              welcomeText = `வரவேற்கிறோம், ${name}`;
+            } else if (locale === "kn") {
+              welcomeText = `ಸ್ವಾಗತ, ${name}`;
+            }
             await aaria.speak(welcomeText);
           }
         }

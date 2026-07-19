@@ -53,6 +53,23 @@ export default function PricingClient({ plans, currentPlanId, userEmail }: Props
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [currency, setCurrency] = useState<"INR" | "USD" | "EUR">("INR");
 
+  const monthlyPriceInr = plans.find((p) => p.id === "pro")?.price_inr ?? 149;
+  const monthlyPriceUsd = plans.find((p) => p.id === "pro")?.price_usd ?? 1.99;
+  const monthlyPriceEur = plans.find((p) => p.id === "pro")?.price_eur ?? 1.89;
+
+  const yearlyPriceInr = plans.find((p) => p.id === "yearly")?.price_inr ?? 999;
+  const yearlyPriceUsd = plans.find((p) => p.id === "yearly")?.price_usd ?? 11.99;
+  const yearlyPriceEur = plans.find((p) => p.id === "yearly")?.price_eur ?? 10.99;
+
+  const monthlyDisplay = currency === "INR" ? `₹${monthlyPriceInr}` : currency === "USD" ? `$${monthlyPriceUsd}` : `€${monthlyPriceEur}`;
+  const yearlyDisplay = currency === "INR" ? `₹${yearlyPriceInr}` : currency === "USD" ? `$${yearlyPriceUsd}` : `€${yearlyPriceEur}`;
+
+  const savingsInr = (monthlyPriceInr * 12) - yearlyPriceInr;
+  const savingsUsd = Number(((monthlyPriceUsd * 12) - yearlyPriceUsd).toFixed(2));
+  const savingsEur = Number(((monthlyPriceEur * 12) - yearlyPriceEur).toFixed(2));
+
+  const savingsDisplay = currency === "INR" ? `₹${savingsInr}` : currency === "USD" ? `$${savingsUsd}` : `€${savingsEur}`;
+
   useEffect(() => {
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
@@ -132,7 +149,7 @@ export default function PricingClient({ plans, currentPlanId, userEmail }: Props
             }`}>
             Monthly
             <p className="text-[10px] font-normal mt-0.5 opacity-70">
-              {currency === "INR" ? "₹149" : currency === "USD" ? "$1.99" : "€1.89"} / month
+              {monthlyDisplay} / month
             </p>
           </button>
           <button onClick={() => setInterval("yearly")}
@@ -140,11 +157,11 @@ export default function PricingClient({ plans, currentPlanId, userEmail }: Props
               interval === "yearly" ? "bg-ink-900 text-cream-100 shadow-sm" : "bg-sage-50 text-sage-700 border border-sage-200 hover:bg-sage-100"
             }`}>
             <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 text-[9px] bg-sage-500 text-white px-2 py-0.5 rounded-full font-bold uppercase tracking-wide whitespace-nowrap">
-              Save {currency === "INR" ? "₹789" : currency === "USD" ? "$11.89" : "€11.79"}
+              Save {savingsDisplay}
             </span>
             Yearly
             <p className="text-[10px] font-normal mt-0.5 opacity-80">
-              {currency === "INR" ? "₹999" : currency === "USD" ? "$11.99" : "€10.99"} / year
+              {yearlyDisplay} / year
             </p>
           </button>
         </div>
@@ -181,8 +198,8 @@ export default function PricingClient({ plans, currentPlanId, userEmail }: Props
                           {currency === "INR" 
                             ? `₹${plan.price_inr.toLocaleString("en-IN")}` 
                             : currency === "USD"
-                              ? `$${plan.interval === "yearly" ? "11.99" : "1.99"}`
-                              : `€${plan.interval === "yearly" ? "10.99" : "1.89"}`
+                              ? `$${(plan.price_usd ?? (plan.interval === "yearly" ? 11.99 : 1.99)).toLocaleString("en-US")}`
+                              : `€${(plan.price_eur ?? (plan.interval === "yearly" ? 10.99 : 1.89)).toLocaleString("de-DE")}`
                           }
                         </p>
                         <p className="text-[10px] text-ink-400">per {plan.interval === "yearly" ? "year" : "month"} +GST</p>

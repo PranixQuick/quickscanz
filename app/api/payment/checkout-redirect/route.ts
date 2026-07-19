@@ -61,10 +61,10 @@ export async function GET(req: NextRequest) {
 
   let amount = plan.price_inr * 100;
   if (currency !== "INR") {
-    const priceVal = plan.interval === "yearly"
-      ? (currency === "USD" ? 11.99 : 10.99)
-      : (currency === "USD" ? 1.99 : 1.89);
-    amount = Math.round(priceVal * 100);
+    const priceVal = currency === "USD"
+      ? (plan.price_usd ?? (plan.interval === "yearly" ? 11.99 : 1.99))
+      : (plan.price_eur ?? (plan.interval === "yearly" ? 10.99 : 1.89));
+    amount = Math.round(Number(priceVal) * 100);
   }
   const host = req.headers.get("x-forwarded-host") ?? req.headers.get("host");
   const proto = req.headers.get("x-forwarded-proto") ?? "https";

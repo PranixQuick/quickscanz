@@ -97,6 +97,8 @@ export interface SubscriptionPlan {
   product_limit: number;
   features: string[];
   razorpay_plan_id?: string | null;
+  price_usd?: number;
+  price_eur?: number;
 }
 
 export interface UserSubscription {
