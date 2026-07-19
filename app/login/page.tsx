@@ -101,17 +101,18 @@ function PhoneOTPForm() {
   const [isPending, setIsPending] = useState(false);
   const [error, setError] = useState("");
   const [selectedCountry, setSelectedCountry] = useState(COUNTRIES[0]);
+  const [countryCode, setCountryCode] = useState("+91");
 
-  function formatPhone(raw: string, countryCode: string) {
+  function formatPhone(raw: string, codeToUse: string = selectedCountry.code) {
     const digits = raw.replace(/\D/g, "");
-    return `${countryCode}${digits}`;
+    return `${codeToUse}${digits}`;
   }
 
   async function sendOTP(e: React.FormEvent) {
     e.preventDefault();
     setError("");
     const formatted = formatPhone(phone, selectedCountry.code);
-    if (phone.length < selectedCountry.length - 2) {
+    if (formatted.length < 9 || phone.length < selectedCountry.length - 2) {
       setError(t("login.phone_invalid") || `Please enter a valid phone number for ${selectedCountry.name}.`);
       return;
     }
@@ -246,6 +247,7 @@ function PhoneOTPForm() {
                 const country = COUNTRIES.find((c) => c.code === e.target.value);
                 if (country) {
                   setSelectedCountry(country);
+                  setCountryCode(country.code);
                   setPhone("");
                 }
               }}
@@ -264,7 +266,7 @@ function PhoneOTPForm() {
             pattern="[0-9]*"
             value={phone}
             onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, selectedCountry.length))}
-            placeholder={"9".repeat(selectedCountry.length)}
+            placeholder={countryCode === "+91" ? "9876543210" : "9".repeat(selectedCountry.length)}
             autoFocus
             maxLength={selectedCountry.length}
             className="flex-1 px-4 py-3.5 bg-cream-100 border border-cream-200 rounded-xl text-lg font-medium tracking-wider text-ink-900 focus:outline-none focus:border-sand-400 focus:ring-2 focus:ring-sand-200 transition-all"

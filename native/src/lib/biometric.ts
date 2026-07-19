@@ -59,3 +59,22 @@ export async function hasSavedSession(): Promise<boolean> {
   return !!stored;
 }
 
+let appUnlocked = false;
+let redirectPathAfterUnlock: string | null = null;
+
+export function isAppUnlocked(): boolean {
+  return appUnlocked;
+}
+
+export function setAppUnlocked(val: boolean): void {
+  appUnlocked = val;
+}
+
+export function getRedirectPathAfterUnlock(): string | null {
+  return redirectPathAfterUnlock;
+}
+
+export function setRedirectPathAfterUnlock(val: string | null): void {
+  redirectPathAfterUnlock = val;
+}
+
