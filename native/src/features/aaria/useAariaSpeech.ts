@@ -180,7 +180,7 @@ export function useAariaSpeech(locale: Locale) {
         setState({ speaking: false, error: message });
       }
     },
-    [locale, stop]
+    [locale]
   );
 
   /**

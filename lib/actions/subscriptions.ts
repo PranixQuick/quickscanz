@@ -14,6 +14,8 @@ export interface SubscriptionPlan {
   product_limit: number;
   features: string[];
   razorpay_plan_id: string | null;
+  price_usd?: number;
+  price_eur?: number;
 }
 
 export interface UserSubscription {
@@ -78,10 +80,10 @@ export async function createRazorpayOrder(
 
   let amount = plan.price_inr * 100;
   if (currency !== "INR") {
-    const priceVal = plan.interval === "yearly"
-      ? (currency === "USD" ? 11.99 : 10.99)
-      : (currency === "USD" ? 1.99 : 1.89);
-    amount = Math.round(priceVal * 100);
+    const priceVal = currency === "USD"
+      ? (plan.price_usd ?? (plan.interval === "yearly" ? 11.99 : 1.99))
+      : (plan.price_eur ?? (plan.interval === "yearly" ? 10.99 : 1.89));
+    amount = Math.round(Number(priceVal) * 100);
   }
   const credentials = Buffer.from(`${RAZORPAY_KEY_ID}:${RAZORPAY_KEY_SECRET}`).toString("base64");
 
@@ -214,10 +216,10 @@ export async function createRazorpayRedirectUrl(
 
   let amount = plan.price_inr * 100;
   if (currency !== "INR") {
-    const priceVal = plan.interval === "yearly"
-      ? (currency === "USD" ? 11.99 : 10.99)
-      : (currency === "USD" ? 1.99 : 1.89);
-    amount = Math.round(priceVal * 100);
+    const priceVal = currency === "USD"
+      ? (plan.price_usd ?? (plan.interval === "yearly" ? 11.99 : 1.99))
+      : (plan.price_eur ?? (plan.interval === "yearly" ? 10.99 : 1.89));
+    amount = Math.round(Number(priceVal) * 100);
   }
   // Return the user to the exact host they're on (e.g. www.quickscanz.com), so the
   // post-payment redirect + session/entitlement stay on the same origin. Avoids the
