@@ -11,11 +11,13 @@ export async function POST(req: NextRequest) {
   }
 
   const prompt = `Compare the user's existing product "${walletName}" (Brand: ${walletBrand || "Unknown"}, Category: ${walletCategory || "Unknown"}) with the potential purchase candidate "${candidateQuery}". 
-Fetch real-time specifications, current market price (INR/USD/EUR), global/Amazon user ratings (e.g., 4.5/5 stars), and detailed spec comparisons for both. 
+First, identify the top 3 comparable modern products (including "${candidateQuery}" as one of them) that serve as excellent upgrade/replacement options.
+For each of these 3 comparable products, fetch real-time specifications, live market prices from at least 2 major Indian e-commerce platforms (Amazon and Flipkart), and global/user ratings (e.g. 4.4/5 stars with review count) from both platforms.
+Then, generate a specs-matched list comparing them to the user's existing product, and write a simple, clear "better buy" verdict comparing the options.
 Format your response strictly as JSON with the following structure (do NOT include markdown formatting or backticks, return a raw JSON object):
 {
   "candidate": {
-    "name": "Candidate Product Name (e.g. OnePlus 12R)",
+    "name": "Primary Candidate Product Name (e.g. OnePlus 12R)",
     "brand": "Brand (e.g. OnePlus)",
     "price": "Rs. 39,999 / $480",
     "rating": "4.4/5 (1,250 reviews)",
@@ -36,7 +38,49 @@ Format your response strictly as JSON with the following structure (do NOT inclu
     "buyLinks": [
       "https://www.amazon.in/s?k=${encodeURIComponent(candidateQuery)}",
       "https://www.flipkart.com/search?q=${encodeURIComponent(candidateQuery)}"
-    ]
+    ],
+    "comparables": [
+      {
+        "name": "Comparable Product 1 Name (e.g. iQOO Neo 9 Pro)",
+        "brand": "Brand",
+        "prices": {
+          "amazon": "Price/availability on Amazon (e.g. ₹34,999)",
+          "flipkart": "Price/availability on Flipkart (e.g. ₹35,999)"
+        },
+        "ratings": {
+          "amazon": "Rating on Amazon (e.g. 4.5/5 (820 reviews))",
+          "flipkart": "Rating on Flipkart (e.g. 4.4/5 (1,100 reviews))"
+        },
+        "verdict": "Brief explanation comparing this option to the user's existing product and candidate."
+      },
+      {
+        "name": "Comparable Product 2 Name",
+        "brand": "Brand",
+        "prices": {
+          "amazon": "Price/availability on Amazon",
+          "flipkart": "Price/availability on Flipkart"
+        },
+        "ratings": {
+          "amazon": "Rating on Amazon",
+          "flipkart": "Rating on Flipkart"
+        },
+        "verdict": "Brief explanation comparing this option to the user's existing product and candidate."
+      },
+      {
+        "name": "Comparable Product 3 Name",
+        "brand": "Brand",
+        "prices": {
+          "amazon": "Price/availability on Amazon",
+          "flipkart": "Price/availability on Flipkart"
+        },
+        "ratings": {
+          "amazon": "Rating on Amazon",
+          "flipkart": "Rating on Flipkart"
+        },
+        "verdict": "Brief explanation comparing this option to the user's existing product and candidate."
+      }
+    ],
+    "betterBuyVerdict": "Pranix AI Better Buy Recommendation: [Clearly state the overall best buy and the reason]"
   }
 }`;
 
@@ -125,7 +169,23 @@ Format your response strictly as JSON with the following structure (do NOT inclu
       buyLinks: [
         `https://www.amazon.in/s?k=${encodeURIComponent(candidateQuery)}`,
         `https://www.flipkart.com/search?q=${encodeURIComponent(candidateQuery)}`
-      ]
+      ],
+      comparables: [
+        {
+          name: candidateQuery,
+          brand: walletBrand || "Alternative Brand",
+          prices: {
+            amazon: "₹35,000",
+            flipkart: "₹35,999"
+          },
+          ratings: {
+            amazon: "4.2/5 (150 reviews)",
+            flipkart: "4.1/5 (200 reviews)"
+          },
+          verdict: "Standard alternative matching the query."
+        }
+      ],
+      betterBuyVerdict: `AI recommends evaluating detailed reviews and features of ${candidateQuery} before purchase.`
     }
   };
 

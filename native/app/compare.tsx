@@ -529,6 +529,70 @@ export default function CompareScreen() {
                 </View>
               </View>
 
+              {/* Comparable Alternative Options */}
+              {compResult.comparison.comparables && compResult.comparison.comparables.length > 0 && (
+                <View className="gap-4">
+                  <Text style={{ fontFamily: fontFamily(true) }} className="text-xs font-bold text-ink-500 uppercase">
+                    ⚖️ Comparable Alternative Options
+                  </Text>
+                  {compResult.comparison.comparables.map((item: any, idx: number) => (
+                    <View key={idx} className="bg-white border border-cream-200 rounded-3xl p-5 shadow-sm">
+                      <View className="flex-row justify-between items-start mb-2">
+                        <View>
+                          <Text style={{ fontFamily: fontFamily(true) }} className="text-sm font-bold text-ink-900">
+                            {item.name}
+                          </Text>
+                          <Text style={{ fontFamily: fontFamily(false) }} className="text-[10px] text-ink-400">
+                            {item.brand}
+                          </Text>
+                        </View>
+                      </View>
+                      
+                      <View className="flex-row gap-4 my-3">
+                        <View className="flex-1 bg-cream-50 rounded-2xl p-3 border border-cream-200">
+                          <Text style={{ fontFamily: fontFamily(true) }} className="text-[10px] font-bold text-ink-500 mb-1">
+                            🛒 Amazon Price & Rating
+                          </Text>
+                          <Text style={{ fontFamily: fontFamily(true) }} className="text-xs font-bold text-brand-600">
+                            {item.prices?.amazon || "N/A"}
+                          </Text>
+                          <Text style={{ fontFamily: fontFamily(false) }} className="text-[9px] text-ink-400 mt-0.5">
+                            ⭐ {item.ratings?.amazon || "N/A"}
+                          </Text>
+                        </View>
+                        <View className="flex-1 bg-cream-50 rounded-2xl p-3 border border-cream-200">
+                          <Text style={{ fontFamily: fontFamily(true) }} className="text-[10px] font-bold text-ink-500 mb-1">
+                            🛒 Flipkart Price & Rating
+                          </Text>
+                          <Text style={{ fontFamily: fontFamily(true) }} className="text-xs font-bold text-brand-600">
+                            {item.prices?.flipkart || "N/A"}
+                          </Text>
+                          <Text style={{ fontFamily: fontFamily(false) }} className="text-[9px] text-ink-400 mt-0.5">
+                            ⭐ {item.ratings?.flipkart || "N/A"}
+                          </Text>
+                        </View>
+                      </View>
+                      
+                      <Text style={{ fontFamily: fontFamily(false) }} className="text-xs text-ink-600 italic leading-5">
+                        {item.verdict}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
+              )}
+
+              {/* Better Buy Verdict */}
+              {compResult.comparison.betterBuyVerdict && (
+                <View className="bg-emerald-50 border border-emerald-500/20 rounded-3xl p-5">
+                  <Text style={{ fontFamily: fontFamily(true) }} className="text-xs font-bold text-emerald-700 mb-3">
+                    🏆 Pranix AI Better Buy Recommendation
+                  </Text>
+                  <Text style={{ fontFamily: fontFamily(false) }} className="text-xs text-ink-800 leading-5">
+                    {compResult.comparison.betterBuyVerdict}
+                  </Text>
+                </View>
+              )}
+
               {/* Comparison Verdict */}
               <View className="bg-brand-50 border border-brand-500/20 rounded-3xl p-5">
                 <Text style={{ fontFamily: fontFamily(true) }} className="text-xs font-bold text-brand-600 mb-3">
