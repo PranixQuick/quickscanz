@@ -5,6 +5,7 @@ import { getPriceHistory, getMaintenanceTasks } from "@/lib/actions/phase2";
 import AppLayout from "@/components/layout/AppLayout";
 import ProductDetailClient from "@/components/products/ProductDetailClient";
 import WarrantySpeakCard from "@/components/products/WarrantySpeakCard";
+import AariaAssistantButton from "@/components/ui/AariaAssistantButton";
 
 interface Props {
   params: { id: string };
