@@ -39,6 +39,9 @@ export default async function ProductDetailPage({ params }: Props) {
       <div className="mt-5">
         <WarrantySpeakCard product={product} />
       </div>
+      <div className="mt-3">
+        <AariaAssistantButton />
+      </div>
     </AppLayout>
   );
 }
