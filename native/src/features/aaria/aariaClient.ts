@@ -66,11 +66,9 @@ async function aariaFetch<T>(path: string, body: Record<string, unknown>): Promi
   let res: Response;
   try {
     const controller = new AbortController();
-    // Aaria is a free-tier Render service and can cold-start; give it room
-    // (same 15s budget as lib/aaria-client.ts). AbortSignal.timeout isn't
-    // used directly since its availability on Hermes/older RN runtimes is
-    // less certain than AbortController + setTimeout.
-    const timeout = setTimeout(() => controller.abort(), 15_000);
+    // 5-second max budget for Aaria requests so cold-starts or network hangs
+    // fail fast and never lock up the native UI.
+    const timeout = setTimeout(() => controller.abort(), 5_000);
     try {
       res = await fetch(`${AARIA_BASE_URL}${path}`, {
         method: "POST",
@@ -81,7 +79,10 @@ async function aariaFetch<T>(path: string, body: Record<string, unknown>): Promi
     } finally {
       clearTimeout(timeout);
     }
-  } catch (e) {
+  } catch (e: any) {
+    if (e?.name === "AbortError") {
+      throw new AariaClientError("Aaria server took too long to respond (timeout).");
+    }
     throw new AariaClientError(
       e instanceof Error ? `Failed to reach Aaria: ${e.message}` : "Failed to reach Aaria"
     );
