@@ -34,7 +34,26 @@ export async function POST(req: NextRequest) {
         if (!resolvedWalletCategory) resolvedWalletCategory = product.category || "";
       }
     } catch (err) {
-      console.error("[compare/search] Supabase product lookup error:", err);
+      try {
+        const { createClient: createDirectClient } = await import("@supabase/supabase-js");
+        const directClient = createDirectClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+        );
+        const { data: product } = await directClient
+          .from("products")
+          .select("name, brand, category")
+          .eq("id", walletProductId)
+          .maybeSingle();
+
+        if (product) {
+          if (!resolvedWalletName) resolvedWalletName = product.name || "";
+          if (!resolvedWalletBrand) resolvedWalletBrand = product.brand || "";
+          if (!resolvedWalletCategory) resolvedWalletCategory = product.category || "";
+        }
+      } catch (e) {
+        console.error("[compare/search] Supabase product lookup error:", e);
+      }
     }
   }
 
