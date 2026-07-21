@@ -7,7 +7,7 @@ import { useI18n } from "../i18n";
 import { useAariaSpeech } from "../features/aaria/useAariaSpeech";
 import { supabase } from "../lib/supabase";
 
-let globalLastGreetedLocale = "";
+let globalHasGreetedSession = false;
 
 export default function FloatingAariaButton() {
   const { user } = useAuth();
@@ -21,10 +21,10 @@ export default function FloatingAariaButton() {
 
   const aaria = useAariaSpeech(locale);
 
-  // Fetch profile name to greet user
+  // Fetch profile name to greet user on first app load only
   useEffect(() => {
     if (!user) {
-      globalLastGreetedLocale = "";
+      globalHasGreetedSession = false;
       setDisplayName("");
       return;
     }
@@ -42,9 +42,9 @@ export default function FloatingAariaButton() {
           const name = data.display_name.replace(/^(Mr|Mrs|Ms)\.\s+/i, "");
           setDisplayName(name);
 
-          // Greet user on first load or language change
-          if (globalLastGreetedLocale !== locale) {
-            globalLastGreetedLocale = locale;
+          // Greet user on first load per app session only
+          if (!globalHasGreetedSession) {
+            globalHasGreetedSession = true;
             let welcomeText = `Welcome back, ${name}`;
             if (locale === "ml") {
               welcomeText = `സ്വാഗതം, ${name}`;
@@ -65,7 +65,7 @@ export default function FloatingAariaButton() {
       }
     }
     fetchProfile();
-  }, [user, locale]);
+  }, [user]);
 
 
   if (!user) return null;
