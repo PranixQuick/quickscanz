@@ -1,22 +1,55 @@
 import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@/lib/supabase/server";
 
 export async function POST(req: NextRequest) {
   let body: any;
-  try { body = await req.json(); }
-  catch { return NextResponse.json({ error: "Invalid JSON" }, { status: 400 }); }
-
-  const { walletName, walletBrand, walletCategory, candidateQuery } = body;
-  if (!walletName || !candidateQuery) {
-    return NextResponse.json({ error: "walletName and candidateQuery are required" }, { status: 400 });
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  const prompt = `Compare the user's existing product "${walletName}" (Brand: ${walletBrand || "Unknown"}, Category: ${walletCategory || "Unknown"}) with the potential purchase candidate "${candidateQuery}". 
-Fetch real-time specifications, current market price (INR/USD/EUR), global/Amazon user ratings (e.g., 4.5/5 stars), and detailed spec comparisons for both. 
+  const { walletProductId, walletName, walletBrand, walletCategory, candidateQuery } = body || {};
+
+  if (!candidateQuery) {
+    return NextResponse.json({ error: "candidateQuery is required" }, { status: 400 });
+  }
+
+  let resolvedWalletName = walletName || "";
+  let resolvedWalletBrand = walletBrand || "";
+  let resolvedWalletCategory = walletCategory || "";
+
+  if (walletProductId) {
+    try {
+      const supabase = await createClient();
+      const { data: product } = await supabase
+        .from("products")
+        .select("name, brand, category")
+        .eq("id", walletProductId)
+        .maybeSingle();
+
+      if (product) {
+        if (!resolvedWalletName) resolvedWalletName = product.name || "";
+        if (!resolvedWalletBrand) resolvedWalletBrand = product.brand || "";
+        if (!resolvedWalletCategory) resolvedWalletCategory = product.category || "";
+      }
+    } catch (err) {
+      console.error("[compare/search] Supabase product lookup error:", err);
+    }
+  }
+
+  if (!resolvedWalletName) {
+    resolvedWalletName = "Wallet Product";
+  }
+
+  const prompt = `Compare the user's existing product "${resolvedWalletName}" (Brand: ${resolvedWalletBrand || "Unknown"}, Category: ${resolvedWalletCategory || "Unknown"}) with the potential purchase candidate "${candidateQuery}". 
+Fetch real-time specifications, current market prices (INR/USD/EUR), user ratings (e.g., 4.5/5 stars), and detailed spec comparisons for both across Amazon and Flipkart.
+Also find top 3 comparable alternative products in the same category with live prices and ratings from Amazon and Flipkart.
 Format your response strictly as JSON with the following structure (do NOT include markdown formatting or backticks, return a raw JSON object):
 {
   "candidate": {
-    "name": "Candidate Product Name (e.g. OnePlus 12R)",
-    "brand": "Brand (e.g. OnePlus)",
+    "name": "Candidate Product Name (e.g. ${candidateQuery})",
+    "brand": "Brand",
     "price": "Rs. 39,999 / $480",
     "rating": "4.4/5 (1,250 reviews)",
     "specs": {
@@ -33,6 +66,23 @@ Format your response strictly as JSON with the following structure (do NOT inclu
       "Warranty": "Standard manufacturer warranty"
     },
     "verdict": "The candidate offers significant display and battery upgrades. Upgrade is recommended if those features are your priority.",
+    "betterBuyVerdict": "Pranix AI Better Buy Recommendation: ${candidateQuery} offers modern display and strong battery life for price value.",
+    "comparables": [
+      {
+        "name": "Comparable Option 1",
+        "brand": "Alternative Brand",
+        "prices": { "amazon": "Rs. 38,999", "flipkart": "Rs. 37,999" },
+        "ratings": { "amazon": "4.4/5", "flipkart": "4.3/5" },
+        "verdict": "Great alternative with fast charging."
+      },
+      {
+        "name": "Comparable Option 2",
+        "brand": "Alternative Brand 2",
+        "prices": { "amazon": "Rs. 41,999", "flipkart": "Rs. 40,999" },
+        "ratings": { "amazon": "4.5/5", "flipkart": "4.4/5" },
+        "verdict": "Premium display performance."
+      }
+    ],
     "buyLinks": [
       "https://www.amazon.in/s?k=${encodeURIComponent(candidateQuery)}",
       "https://www.flipkart.com/search?q=${encodeURIComponent(candidateQuery)}"
@@ -107,7 +157,7 @@ Format your response strictly as JSON with the following structure (do NOT inclu
   const fallbackData = {
     candidate: {
       name: candidateQuery,
-      brand: walletBrand || "Alternative Brand",
+      brand: resolvedWalletBrand || "Alternative Brand",
       price: "₹35,000 / $420",
       rating: "4.2/5 (150 reviews)",
       specs: {
@@ -118,10 +168,27 @@ Format your response strictly as JSON with the following structure (do NOT inclu
     },
     comparison: {
       specsMatched: {
-        "Price": `Candidate listed at ₹35,000 compared to ${walletName}.`,
+        "Price": `Candidate listed at ₹35,000 compared to ${resolvedWalletName}.`,
         "Warranty": "Standard 1 year coverage."
       },
       verdict: `Showing comparison links for ${candidateQuery}. Upgrade value depends on specific model specs.`,
+      betterBuyVerdict: `Pranix AI Better Buy Recommendation: ${candidateQuery} offers solid performance compared to ${resolvedWalletName}.`,
+      comparables: [
+        {
+          name: `${candidateQuery} Lite`,
+          brand: resolvedWalletBrand || "Alternative Brand",
+          prices: { amazon: "₹32,999", flipkart: "₹31,999" },
+          ratings: { amazon: "4.3/5", flipkart: "4.2/5" },
+          verdict: "Budget-friendly alternative model."
+        },
+        {
+          name: `${candidateQuery} Pro`,
+          brand: resolvedWalletBrand || "Alternative Brand",
+          prices: { amazon: "₹42,999", flipkart: "₹41,999" },
+          ratings: { amazon: "4.6/5", flipkart: "4.5/5" },
+          verdict: "Higher-tier spec alternative."
+        }
+      ],
       buyLinks: [
         `https://www.amazon.in/s?k=${encodeURIComponent(candidateQuery)}`,
         `https://www.flipkart.com/search?q=${encodeURIComponent(candidateQuery)}`
