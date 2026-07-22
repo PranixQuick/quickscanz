@@ -3,6 +3,7 @@ Allow: /
 Allow: /about
 Allow: /how-it-works
 Allow: /privacy-policy
+Allow: /pricing
 Allow: /products/
 Disallow: /products/add
 Disallow: /products/lifecycle
@@ -16,7 +17,6 @@ Disallow: /energy
 Disallow: /iot-hub
 Disallow: /smart-devices
 Disallow: /buying-assistant
-Disallow: /pricing
 Disallow: /payment
 
 Sitemap: https://quickscanz.com/sitemap.xml

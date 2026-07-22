@@ -7,6 +7,7 @@ export const dynamic = "force-dynamic";
 export async function GET(req: NextRequest) {
   const token = req.nextUrl.searchParams.get("token");
   const planId = req.nextUrl.searchParams.get("plan_id");
+  const currency = req.nextUrl.searchParams.get("currency") || "INR";
 
   if (!token || !planId) {
     return new NextResponse("Missing token or plan_id parameters", { status: 400 });
@@ -58,7 +59,13 @@ export async function GET(req: NextRequest) {
     return new NextResponse("Payment gateway not configured on server", { status: 500 });
   }
 
-  const amountPaise = plan.price_inr * 100;
+  let amount = plan.price_inr * 100;
+  if (currency !== "INR") {
+    const priceVal = currency === "USD"
+      ? (plan.price_usd ?? (plan.interval === "yearly" ? 11.99 : 1.99))
+      : (plan.price_eur ?? (plan.interval === "yearly" ? 10.99 : 1.89));
+    amount = Math.round(Number(priceVal) * 100);
+  }
   const host = req.headers.get("x-forwarded-host") ?? req.headers.get("host");
   const proto = req.headers.get("x-forwarded-proto") ?? "https";
   const appUrl = host ? `${proto}://${host}` : (process.env.NEXT_PUBLIC_APP_URL || "https://www.quickscanz.com");
@@ -71,7 +78,7 @@ export async function GET(req: NextRequest) {
       method: "POST",
       headers: { Authorization: `Basic ${credentials}`, "Content-Type": "application/json" },
       body: JSON.stringify({
-        amount: amountPaise, currency: "INR",
+        amount: amount, currency: currency,
         receipt: `qs_${user.id.slice(0, 8)}_${Date.now()}`,
         notes: { user_id: user.id, plan_id: planId },
       }),
@@ -101,8 +108,8 @@ export async function GET(req: NextRequest) {
   const params = {
     key_id: RAZORPAY_KEY_ID,
     order_id: order.id,
-    amount: String(amountPaise),
-    currency: "INR",
+    amount: String(amount),
+    currency: currency,
     name: "QuickScanZ",
     description: `${plan.name} — ${plan.interval} plan`,
     prefill_email: user.email || "",

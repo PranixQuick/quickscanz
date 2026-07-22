@@ -1,13 +1,13 @@
 import "../global.css";
 import React, { Component, useEffect, useRef, useState, type ErrorInfo, type ReactNode } from "react";
-import { View, ActivityIndicator, ScrollView, Pressable, Text, AppState } from "react-native";
-import { Stack, useRouter, useSegments, usePathname } from "expo-router";
+import { View, ActivityIndicator, ScrollView, Pressable, Text } from "react-native";
+import { Stack, useRouter, useSegments } from "expo-router";
 import { AuthProvider, useAuth } from "../src/features/auth/AuthProvider";
 import { I18nProvider, useI18n } from "../src/i18n";
 import { useFonts } from "expo-font";
 import HeaderLogo from "../src/components/HeaderLogo";
 import FloatingAariaButton from "../src/components/FloatingAariaButton";
-import { hasSavedSession, isAppUnlocked, setAppUnlocked, setRedirectPathAfterUnlock } from "../src/lib/biometric";
+import { hasSavedSession } from "../src/lib/biometric";
 
 
 // ─── Custom Error Boundary for Release Build Debugging ────────────────────────
@@ -92,12 +92,6 @@ function RootNavigation() {
   const router = useRouter();
   const lastSessionIdRef = useRef<string | null | undefined>(undefined);
   const { t } = useI18n();
-  const pathname = usePathname();
-  const pathnameRef = useRef(pathname);
-
-  useEffect(() => {
-    pathnameRef.current = pathname;
-  }, [pathname]);
 
   const [fontsLoaded] = useFonts({
     NotoSansDevanagari_Regular: require("../assets/fonts/NotoSansDevanagari_400Regular.ttf"),
@@ -113,7 +107,6 @@ function RootNavigation() {
   });
 
   const [hasSavedBiometric, setHasSavedBiometric] = useState<boolean | null>(null);
-  const [unlockedState, setUnlockedState] = useState(isAppUnlocked());
 
   useEffect(() => {
     hasSavedSession()
@@ -125,72 +118,30 @@ function RootNavigation() {
       });
   }, []);
 
-  // Listen to AppState for App Resume locking
-  useEffect(() => {
-    const subscription = AppState.addEventListener("change", (nextAppState) => {
-      if (nextAppState === "active") {
-        hasSavedSession().then((saved) => {
-          if (saved) {
-            setAppUnlocked(false);
-            setUnlockedState(false);
-            const currentPath = pathnameRef.current;
-            if (currentPath && currentPath !== "/unlock" && currentPath !== "/login") {
-              setRedirectPathAfterUnlock(currentPath);
-            }
-            router.replace("/unlock");
-          }
-        });
-      }
-    });
-
-    return () => {
-      subscription.remove();
-    };
-  }, [router]);
-
-  // Keep unlockedState updated when session changes or unlocks
-  useEffect(() => {
-    if (session) {
-      hasSavedSession().then((saved) => {
-        if (!saved) {
-          setAppUnlocked(true);
-          setUnlockedState(true);
-        }
-      });
-    } else {
-      hasSavedSession().then((saved) => {
-        if (!saved) {
-          setAppUnlocked(false);
-          setUnlockedState(false);
-        }
-      });
-    }
-  }, [session]);
-
   useEffect(() => {
     if (loading || !fontsLoaded || hasSavedBiometric === null) return;
 
     const inAuthGroup = segments[0] === "(auth)";
     const onUnlockPage = segments[1] === "unlock";
-    const onLoginPage = segments[1] === "login";
+    const sessionId = session?.user?.id ?? null;
 
-    const isUnlocked = isAppUnlocked() || unlockedState;
-
-    if (hasSavedBiometric && !isUnlocked) {
-      if (!onUnlockPage) {
-        router.replace("/unlock");
-      }
+    if (lastSessionIdRef.current === sessionId) {
       return;
     }
 
     if (!session) {
-      if (!hasSavedBiometric && !onLoginPage && !inAuthGroup) {
+      if (hasSavedBiometric && !onUnlockPage) {
+        lastSessionIdRef.current = null;
+        router.replace("/unlock");
+      } else if (!hasSavedBiometric && segments[1] !== "login") {
+        lastSessionIdRef.current = null;
         router.replace("/login");
       }
-    } else if (session && (onUnlockPage || onLoginPage)) {
+    } else if (session && inAuthGroup) {
+      lastSessionIdRef.current = sessionId;
       router.replace("/");
     }
-  }, [loading, session, segments[0], segments[1], fontsLoaded, hasSavedBiometric, unlockedState, router]);
+  }, [loading, session, segments[0], segments[1], fontsLoaded, hasSavedBiometric, router]);
 
 
   if (loading || !fontsLoaded || hasSavedBiometric === null) {
@@ -201,8 +152,6 @@ function RootNavigation() {
       </View>
     );
   }
-
-  const showAaria = !!session && segments[0] !== "(auth)" && segments[1] !== "unlock" && segments[1] !== "login";
 
   return (
     <View style={{ flex: 1 }}>
@@ -229,7 +178,7 @@ function RootNavigation() {
         <Stack.Screen name="family" options={{ title: t("explore.family_vault") }} />
         <Stack.Screen name="webview" options={{ title: "QuickScanZ" }} />
       </Stack>
-      {showAaria && <FloatingAariaButton />}
+      <FloatingAariaButton />
     </View>
   );
 }

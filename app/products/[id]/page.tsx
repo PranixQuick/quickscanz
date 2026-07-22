@@ -5,6 +5,7 @@ import { getPriceHistory, getMaintenanceTasks } from "@/lib/actions/phase2";
 import AppLayout from "@/components/layout/AppLayout";
 import ProductDetailClient from "@/components/products/ProductDetailClient";
 import WarrantySpeakCard from "@/components/products/WarrantySpeakCard";
+import AariaAssistantButton from "@/components/ui/AariaAssistantButton";
 
 interface Props {
   params: { id: string };
@@ -37,6 +38,9 @@ export default async function ProductDetailPage({ params }: Props) {
       />
       <div className="mt-5">
         <WarrantySpeakCard product={product} />
+      </div>
+      <div className="mt-3">
+        <AariaAssistantButton />
       </div>
     </AppLayout>
   );

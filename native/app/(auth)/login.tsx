@@ -9,7 +9,6 @@ import {
   Platform,
   ScrollView,
   Image,
-  Modal,
 } from "react-native";
 import { useRouter } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
@@ -25,11 +24,11 @@ const COUNTRIES = [
   { code: "+91", flag: "🇮🇳", name: "India", length: 10 },
   { code: "+1", flag: "🇺🇸", name: "United States", length: 10 },
   { code: "+44", flag: "🇬🇧", name: "United Kingdom", length: 10 },
-  { code: "+971", flag: "🇦🇪", name: "UAE", length: 9 },
-  { code: "+61", flag: "🇦🇺", name: "Australia", length: 9 },
-  { code: "+65", flag: "🇸🇬", name: "Singapore", length: 8 },
-  { code: "+966", flag: "🇸🇦", name: "Saudi Arabia", length: 9 },
+  { code: "+971", flag: "🇦🇪", name: "United Arab Emirates", length: 9 },
   { code: "+49", flag: "🇩🇪", name: "Germany", length: 10 },
+  { code: "+33", flag: "🇫🇷", name: "France", length: 10 },
+  { code: "+61", flag: "🇦🇺", name: "Australia", length: 9 },
+  { code: "+65", flag: "🇸🇬", name: "Singapore", length: 8 }
 ];
 
 export default function LoginScreen() {
@@ -48,16 +47,16 @@ export default function LoginScreen() {
   const [otp, setOtp] = useState("");
   const [otpSent, setOtpSent] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState(COUNTRIES[0]);
-  const [showCountryModal, setShowCountryModal] = useState(false);
+  const [showCountryPicker, setShowCountryPicker] = useState(false);
 
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
-  // Helper to format phone numbers to E.164
-  function formatPhone(raw: string, countryCode: string) {
+  // Helper to format phone numbers to E.164 (using selected country code)
+  function formatPhone(raw: string) {
     const digits = raw.replace(/\D/g, "");
-    return `${countryCode}${digits}`;
+    return `${selectedCountry.code}${digits}`;
   }
 
   async function handleEmailAuth() {
@@ -145,7 +144,7 @@ export default function LoginScreen() {
     setError("");
     setSuccessMessage("");
     
-    const formatted = formatPhone(phone, selectedCountry.code);
+    const formatted = formatPhone(phone);
     if (phone.length < selectedCountry.length - 2) {
       setError(`Please enter a valid phone number for ${selectedCountry.name}.`);
       return;
@@ -178,7 +177,7 @@ export default function LoginScreen() {
       return;
     }
 
-    const formatted = formatPhone(phone, selectedCountry.code);
+    const formatted = formatPhone(phone);
     setBusy(true);
     try {
       const { error } = await supabase.auth.verifyOtp({ 
@@ -338,16 +337,16 @@ export default function LoginScreen() {
             {/* Phone OTP Form */}
             {activeTab === "phone" && (
               <View className="gap-4">
-                <View className="flex-row items-center rounded-2xl border border-cream-300 bg-cream-100/50 px-4 py-1">
+                <View className="flex-row items-center rounded-2xl border border-cream-300 bg-cream-100/50 px-4 py-1 relative">
                   <Ionicons name="call-outline" size={20} color="#9ca3af" style={{ marginRight: 10 }} />
-                  <Pressable 
-                    onPress={() => setShowCountryModal(true)}
-                    disabled={otpSent || busy}
-                    className="flex-row items-center mr-2 bg-cream-200/50 px-2.5 py-1.5 rounded-xl border border-cream-300"
+                  <Pressable
+                    onPress={() => setShowCountryPicker(!showCountryPicker)}
+                    className="flex-row items-center bg-cream-200/50 px-2 py-1 rounded-xl"
+                    style={{ marginRight: 8 }}
                   >
                     <Text className="text-sm mr-1">{selectedCountry.flag}</Text>
-                    <Text className="text-ink-700 font-semibold text-xs mr-1">{selectedCountry.code}</Text>
-                    <Ionicons name="chevron-down" size={12} color="#4b5563" />
+                    <Text className="text-ink-700 font-bold text-xs">{selectedCountry.code}</Text>
+                    <Ionicons name="chevron-down" size={10} color="#4b5563" style={{ marginLeft: 2 }} />
                   </Pressable>
                   <TextInput
                     value={phone}
@@ -355,47 +354,32 @@ export default function LoginScreen() {
                     placeholder={`${selectedCountry.length}-digit number`}
                     keyboardType="phone-pad"
                     editable={!otpSent && !busy}
+                    maxLength={selectedCountry.length}
                     className="flex-1 py-3.5 text-ink-700 text-sm tracking-wider"
                   />
                 </View>
 
-                {/* Country Selection Modal */}
-                <Modal
-                  visible={showCountryModal}
-                  transparent
-                  animationType="fade"
-                  onRequestClose={() => setShowCountryModal(false)}
-                >
-                  <Pressable 
-                    onPress={() => setShowCountryModal(false)}
-                    className="flex-1 bg-black/40 items-center justify-center p-6"
-                  >
-                    <Pressable className="w-full max-w-[320px] bg-white rounded-3xl border border-cream-200 overflow-hidden shadow-xl p-6">
-                      <Text className="text-lg font-bold text-ink-700 mb-4">Select Country</Text>
-                      <ScrollView className="max-h-[300px]">
-                        <View className="gap-2">
-                          {COUNTRIES.map((c) => (
-                            <Pressable
-                              key={c.code}
-                              onPress={() => {
-                                setSelectedCountry(c);
-                                setPhone("");
-                                setShowCountryModal(false);
-                              }}
-                              className="flex-row items-center justify-between p-3 rounded-xl hover:bg-cream-100/50 active:bg-cream-200"
-                            >
-                              <View className="flex-row items-center gap-3">
-                                <Text className="text-lg">{c.flag}</Text>
-                                <Text className="text-ink-700 font-semibold text-sm">{c.name}</Text>
-                              </View>
-                              <Text className="text-brand-500 font-bold text-sm">{c.code}</Text>
-                            </Pressable>
-                          ))}
-                        </View>
-                      </ScrollView>
-                    </Pressable>
-                  </Pressable>
-                </Modal>
+                {showCountryPicker && (
+                  <View className="absolute top-16 left-4 right-4 bg-white border border-cream-300 rounded-2xl p-2 z-50 shadow-lg max-h-48">
+                    <ScrollView nestedScrollEnabled={true}>
+                      {COUNTRIES.map((c) => (
+                        <Pressable
+                          key={c.code}
+                          onPress={() => {
+                            setSelectedCountry(c);
+                            setShowCountryPicker(false);
+                            setError("");
+                          }}
+                          className="flex-row items-center py-3 px-4 active:bg-cream-100 rounded-xl"
+                        >
+                          <Text className="text-lg mr-3">{c.flag}</Text>
+                          <Text className="text-sm font-semibold text-ink-700 flex-1">{c.name}</Text>
+                          <Text className="text-xs font-bold text-ink-400">{c.code}</Text>
+                        </Pressable>
+                      ))}
+                    </ScrollView>
+                  </View>
+                )}
 
                 {otpSent && (
                   <View className="flex-row items-center rounded-2xl border border-cream-300 bg-cream-100/50 px-4 py-1">
@@ -413,7 +397,7 @@ export default function LoginScreen() {
 
                 <Pressable
                   onPress={otpSent ? handleVerifyOtp : handleSendOtp}
-                  disabled={busy || (otpSent && otp.length < 6) || (!otpSent && phone.length < 5)}
+                  disabled={busy || (otpSent && otp.length < 6) || (!otpSent && phone.length < selectedCountry.length - 2)}
                   className="items-center rounded-2xl bg-brand-500 py-4 active:opacity-90 disabled:opacity-50 shadow-sm mt-2"
                 >
                   {busy ? (

@@ -61,6 +61,11 @@ export function useAariaSpeech(locale: Locale) {
     setState((s) => ({ ...s, speaking: false }));
   }, []);
 
+  // Cancel/stop any in-flight or playing TTS speech immediately whenever the locale changes
+  useEffect(() => {
+    stop();
+  }, [locale, stop]);
+
   const speak = useCallback(
     async (text: string) => {
       console.log("[useAariaSpeech] speak called with text:", text);
@@ -180,7 +185,7 @@ export function useAariaSpeech(locale: Locale) {
         setState({ speaking: false, error: message });
       }
     },
-    [locale, stop]
+    [locale]
   );
 
   /**

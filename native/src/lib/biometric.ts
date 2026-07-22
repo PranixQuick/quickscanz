@@ -78,4 +78,3 @@ export function setRedirectPathAfterUnlock(val: string | null): void {
   redirectPathAfterUnlock = val;
 }
 
-

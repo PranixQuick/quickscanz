@@ -38,6 +38,7 @@ function getRuleBasedResponse(messages: Array<{ role: string; content: string }>
 import { createClient as createBasicClient } from "@supabase/supabase-js";
 
 export async function POST(req: NextRequest) {
+  const supabase = await createClient();
   let user: any = null;
   const authHeader = req.headers.get("Authorization");
   if (authHeader && authHeader.startsWith("Bearer ")) {
@@ -52,7 +53,6 @@ export async function POST(req: NextRequest) {
   }
 
   if (!user) {
-    const supabase = await createClient();
     const { data: { user: sessionUser } } = await supabase.auth.getUser();
     user = sessionUser;
   }
@@ -115,7 +115,7 @@ export async function POST(req: NextRequest) {
   }
 
   // ── Try Gemini (if key present) ─────────────────────────────────────────
-  const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "AIzaSyD2vcXLwG0dD9hIcsa5p_j6dhc6F74VtJQ";
+  const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
   // gemini-1.5-flash is retired (404). Use gemini-2.0-flash, which works once
   // billing is enabled on the key's Google Cloud project. Overridable via GEMINI_MODEL.
   const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.0-flash";

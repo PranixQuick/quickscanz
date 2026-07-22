@@ -14,6 +14,8 @@ export interface SubscriptionPlan {
   product_limit: number;
   features: string[];
   razorpay_plan_id: string | null;
+  price_usd?: number;
+  price_eur?: number;
 }
 
 export interface UserSubscription {
@@ -53,7 +55,8 @@ export async function getUserSubscription(): Promise<UserSubscription | null> {
 }
 
 export async function createRazorpayOrder(
-  planId: string
+  planId: string,
+  currency: string = "INR"
 ): Promise<{ orderId: string; amount: number; currency: string; key: string } | { error: string }> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -75,7 +78,13 @@ export async function createRazorpayOrder(
     return { error: "Payment configuration error — please contact support" };
   }
 
-  const amountPaise = plan.price_inr * 100;
+  let amount = plan.price_inr * 100;
+  if (currency !== "INR") {
+    const priceVal = currency === "USD"
+      ? (plan.price_usd ?? (plan.interval === "yearly" ? 11.99 : 1.99))
+      : (plan.price_eur ?? (plan.interval === "yearly" ? 10.99 : 1.89));
+    amount = Math.round(Number(priceVal) * 100);
+  }
   const credentials = Buffer.from(`${RAZORPAY_KEY_ID}:${RAZORPAY_KEY_SECRET}`).toString("base64");
 
   let orderRes: Response;
@@ -84,7 +93,7 @@ export async function createRazorpayOrder(
       method: "POST",
       headers: { Authorization: `Basic ${credentials}`, "Content-Type": "application/json" },
       body: JSON.stringify({
-        amount: amountPaise, currency: "INR",
+        amount: amount, currency: currency,
         receipt: `qs_${user.id.slice(0, 8)}_${Date.now()}`,
         notes: { user_id: user.id, plan_id: planId },
       }),
@@ -101,7 +110,7 @@ export async function createRazorpayOrder(
       const parsed = JSON.parse(errBody);
       const code = parsed?.error?.code || "";
       const description = parsed?.error?.description || "";
-      console.error("[Razorpay] Order creation failed:", { httpStatus: orderRes.status, errorCode: code, description, keyPrefix: RAZORPAY_KEY_ID.slice(0, 12) + "...", planId, amountPaise });
+      console.error("[Razorpay] Order creation failed:", { httpStatus: orderRes.status, errorCode: code, description, keyPrefix: RAZORPAY_KEY_ID.slice(0, 12) + "...", planId, amount });
       if (orderRes.status === 401) friendlyError = "Payment credentials are invalid — please contact support";
       else if (code === "BAD_REQUEST_ERROR" && description.toLowerCase().includes("amount")) friendlyError = "Invalid payment amount — please contact support";
       else if (code === "GATEWAY_ERROR") friendlyError = "Payment gateway error — please try again in a moment";
@@ -137,7 +146,7 @@ export async function createRazorpayOrder(
     console.error("[Razorpay] Failed to record pending subscription:", pendingErr.message);
     return { error: "Could not start checkout — please try again" };
   }
-  return { orderId: order.id, amount: amountPaise, currency: "INR", key: RAZORPAY_KEY_ID };
+  return { orderId: order.id, amount: amount, currency: currency, key: RAZORPAY_KEY_ID };
 }
 
 export async function verifyRazorpayPayment(params: {
@@ -189,7 +198,8 @@ export async function verifyRazorpayPayment(params: {
 // Works in Android TWA, iOS PWA standalone, and all browsers.
 // No window.open(), no JS modal — full-page redirect to Razorpay hosted checkout.
 export async function createRazorpayRedirectUrl(
-  planId: string
+  planId: string,
+  currency: string = "INR"
 ): Promise<{ redirectUrl: string } | { error: string }> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -204,7 +214,13 @@ export async function createRazorpayRedirectUrl(
   if (!RAZORPAY_KEY_ID || !RAZORPAY_KEY_SECRET)
     return { error: "Payment not configured — please contact support" };
 
-  const amountPaise = plan.price_inr * 100;
+  let amount = plan.price_inr * 100;
+  if (currency !== "INR") {
+    const priceVal = currency === "USD"
+      ? (plan.price_usd ?? (plan.interval === "yearly" ? 11.99 : 1.99))
+      : (plan.price_eur ?? (plan.interval === "yearly" ? 10.99 : 1.89));
+    amount = Math.round(Number(priceVal) * 100);
+  }
   // Return the user to the exact host they're on (e.g. www.quickscanz.com), so the
   // post-payment redirect + session/entitlement stay on the same origin. Avoids the
   // old NEXT_PUBLIC_APP_URL (which pointed at the vercel.app domain).
@@ -222,7 +238,7 @@ export async function createRazorpayRedirectUrl(
       method: "POST",
       headers: { Authorization: `Basic ${credentials}`, "Content-Type": "application/json" },
       body: JSON.stringify({
-        amount: amountPaise, currency: "INR",
+        amount: amount, currency: currency,
         receipt: `qs_${user.id.slice(0, 8)}_${Date.now()}`,
         notes: { user_id: user.id, plan_id: planId },
       }),
@@ -266,11 +282,11 @@ export async function createRazorpayRedirectUrl(
 
   const searchParams = new URLSearchParams({
     key_id: RAZORPAY_KEY_ID, order_id: order.id,
-    amount: String(amountPaise), currency: "INR",
+    amount: String(amount), currency: currency,
     name: "QuickScanZ", description: `${plan.name} — ${plan.interval} plan`,
     prefill_email: user.email || "",
     callback_url: callbackUrl,
-    cancel_url: `${appUrl}/pricing?cancelled=1`,
+    cancel_url: `${appUrl}/pricing?cancelled=1&currency=${currency}`,
   });
 
   return { redirectUrl: `https://api.razorpay.com/v1/checkout/embedded?${searchParams.toString()}` };

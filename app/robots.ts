@@ -18,7 +18,6 @@ export default function robots(): MetadataRoute.Robots {
         "/iot-hub",
         "/smart-devices",
         "/buying-assistant",
-        "/pricing",
         "/payment",
       ],
     },

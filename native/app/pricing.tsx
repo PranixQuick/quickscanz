@@ -1,22 +1,39 @@
 import { useCallback, useState } from "react";
-import { View, Text, Pressable, ActivityIndicator, ScrollView, Dimensions, NativeSyntheticEvent, NativeScrollEvent } from "react-native";
-import { useFocusEffect } from "expo-router";
+import { View, Text, Pressable, ActivityIndicator, ScrollView } from "react-native";
+import { useFocusEffect, Stack } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
 import { supabase } from "../src/lib/supabase";
 import { useAuth } from "../src/features/auth/AuthProvider";
 import { API_BASE_URL } from "../src/lib/api";
 import type { SubscriptionPlan, UserSubscription } from "../src/lib/types";
 import { useI18n } from "../src/i18n";
-import { Ionicons } from "@expo/vector-icons";
 
-const { width: SCREEN_WIDTH } = Dimensions.get("window");
-const CARD_WIDTH = SCREEN_WIDTH - 48; // Centered visual width with space for snapping cues
-
-const CURRENCIES = {
-  inr: { symbol: "₹", locale: "en-IN", rates: { free: 0, pro: 149, yearly: 999 }, name: "INR (₹)" },
-  usd: { symbol: "$", locale: "en-US", rates: { free: 0, pro: 1.99, yearly: 11.99 }, name: "USD ($)" },
-  eur: { symbol: "€", locale: "de-DE", rates: { free: 0, pro: 1.89, yearly: 10.99 }, name: "EUR (€)" },
-};
+/**
+ * Mirrors app/pricing/page.tsx + components/subscription/PricingClient.tsx
+ * (web): same `subscription_plans` / `user_subscriptions` tables, same plan
+ * ids (free / pro_monthly / pro_yearly). `subscription_plans` has no RLS
+ * enabled in the bootstrap migration (public read by design); `user_
+ * subscriptions` is locked to a SELECT-only "own row" policy as of
+ * supabase/migrations/20260704_lockdown_user_subscriptions_rls.sql, so this
+ * screen only ever reads — it never attempts to write a subscription row
+ * itself (that would be rejected by RLS from an authenticated client key
+ * anyway; only the service role can write it).
+ *
+ * KNOWN FOLLOW-UP: real in-app purchase is NOT implemented here. Razorpay
+ * checkout (lib/actions/subscriptions.ts's `createRazorpayRedirectUrl`) is a
+ * Next.js server action that (a) needs the cookie-authenticated web session
+ * to run and (b) returns a `https://api.razorpay.com/v1/checkout/embedded`
+ * URL meant to be opened full-page in that same browser context. Rather than
+ * re-implement Razorpay order creation + signature verification natively (a
+ * real, separate effort — likely `react-native-razorpay` plus a Bearer-auth
+ * variant of the order/verify routes), M3 opens the existing web `/pricing`
+ * page in an in-app browser instead. This means the user checks out through
+ * the web flow in that browser's own session (NOT the native app's Supabase
+ * session — they may need to sign in there separately), and the upgrade
+ * becomes visible here once `user_subscriptions` is updated server-side and
+ * this screen is refocused/refreshed. True native checkout is a follow-up
+ * milestone.
+ */
 
 export default function PricingScreen() {
   const { user } = useAuth();
@@ -25,9 +42,7 @@ export default function PricingScreen() {
   const [currentSub, setCurrentSub] = useState<UserSubscription | null>(null);
   const [loading, setLoading] = useState(true);
   const [opening, setOpening] = useState(false);
-  const [selectedCurrency, setSelectedCurrency] = useState<keyof typeof CURRENCIES>("inr");
-  const [activeIndex, setActiveIndex] = useState(0);
-  const [showFlash, setShowFlash] = useState(false);
+  const [currency, setCurrency] = useState<"INR" | "USD" | "EUR">("INR");
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -56,49 +71,23 @@ export default function PricingScreen() {
   );
 
   const currentPlanId = currentSub?.plan_id ?? "free";
-  const currInfo = CURRENCIES[selectedCurrency];
 
-  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-    const scrollOffset = event.nativeEvent.contentOffset.x;
-    const index = Math.round(scrollOffset / (CARD_WIDTH + 12));
-    if (index >= 0 && index < plans.length && index !== activeIndex) {
-      setActiveIndex(index);
-    }
-  };
-
-  async function handleSelectTier(plan: SubscriptionPlan) {
-    console.log("[PricingScreen] handleSelectTier called! Plan ID:", plan.id, "currentPlanId:", currentPlanId);
-    if (plan.id === currentPlanId) return;
-    if (plan.price_inr === 0) return;
-
-    // Trigger high-fidelity white flash overlay transition
-    setShowFlash(true);
-    setTimeout(() => {
-      setShowFlash(false);
-      console.log("[PricingScreen] calling openWebCheckout...");
-      openWebCheckout(plan);
-    }, 150);
-  }
-
-  async function openWebCheckout(plan: SubscriptionPlan) {
+  async function openWebCheckout(planId: string) {
     setOpening(true);
     try {
-      const { data } = await supabase.auth.getSession();
-      const accessToken = data.session?.access_token;
-      if (!accessToken) {
-        console.error("[PricingScreen] No Supabase access token found");
-        return;
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      if (token) {
+        const checkoutUrl = `${API_BASE_URL}/api/payment/checkout-redirect?token=${encodeURIComponent(token)}&plan_id=${planId}&currency=${currency}`;
+        await WebBrowser.openBrowserAsync(checkoutUrl);
+      } else {
+        await WebBrowser.openBrowserAsync(`${API_BASE_URL}/pricing?currency=${currency}`);
       }
-      const checkoutUrl = `${API_BASE_URL}/api/payment/checkout-redirect?plan_id=${plan.id}&token=${accessToken}`;
-      console.log("[PricingScreen] openWebCheckout start! URL:", checkoutUrl);
-      const res = await WebBrowser.openBrowserAsync(checkoutUrl);
-      console.log("[PricingScreen] WebBrowser.openBrowserAsync finished, result:", res);
     } catch (err) {
-      console.error("[PricingScreen] WebBrowser.openBrowserAsync error:", err);
+      console.error(err);
     } finally {
       setOpening(false);
-      console.log("[PricingScreen] openWebCheckout finally block");
-      load();
+      load(); // refresh in case the subscription changed while the browser was open
     }
   }
 
@@ -111,189 +100,155 @@ export default function PricingScreen() {
   }
 
   return (
-    <View className="flex-1 bg-cream-50">
-      {showFlash && (
-        <View className="absolute inset-0 bg-white opacity-85 z-50 pointer-events-none" />
-      )}
-      
-      <ScrollView
-        className="flex-1"
-        contentContainerStyle={{ paddingTop: 16, paddingBottom: 48 }}
-      >
-        <View className="px-6">
-          <Text style={{ fontFamily: fontFamily(true) }} className="text-2xl font-bold text-ink-900">
-            {t("pricing.title") || "Upgrade Your Plan"}
-          </Text>
-          <Text style={{ fontFamily: fontFamily(false) }} className="mt-2 text-xs text-ink-400 leading-5">
-            {t("pricing.subtitle") || "One app for every product you own. Never lose a warranty again."}
-          </Text>
+    <ScrollView
+      className="flex-1 bg-cream-50"
+      contentContainerStyle={{ padding: 24, paddingTop: 16, paddingBottom: 48 }}
+    >
+      <Text style={{ fontFamily: fontFamily(true) }} className="text-2xl font-bold text-ink-900">
+        {t("pricing.title") || "Upgrade Your Plan"}
+      </Text>
+      <Text style={{ fontFamily: fontFamily(false) }} className="mt-2 text-xs text-ink-400 leading-5">
+        {t("pricing.subtitle") || "One app for every product you own. Never lose a warranty again."}
+      </Text>
 
-          {/* Currency Switcher */}
-          <View className="flex-row bg-cream-100 border border-cream-200 p-1 rounded-2xl mt-4 self-start">
-            {(Object.keys(CURRENCIES) as Array<keyof typeof CURRENCIES>).map((currKey) => {
-              const isSelected = currKey === selectedCurrency;
-              return (
-                <Pressable
-                  key={currKey}
-                  onPress={() => setSelectedCurrency(currKey)}
-                  className={`px-4 py-2 rounded-xl ${isSelected ? "bg-ink-900 shadow-sm" : ""}`}
-                >
-                  <Text
-                    style={{ fontFamily: fontFamily(isSelected) }}
-                    className={`text-xs font-semibold ${isSelected ? "text-cream-50 font-bold" : "text-ink-500"}`}
-                  >
-                    {CURRENCIES[currKey].name}
-                  </Text>
-                </Pressable>
-              );
-            })}
-          </View>
-        </View>
-
-        {/* Horizontal Stack Slider */}
-        <ScrollView
-          horizontal
-          pagingEnabled={false}
-          snapToInterval={CARD_WIDTH + 12}
-          snapToAlignment="center"
-          decelerationRate="fast"
-          showsHorizontalScrollIndicator={false}
-          onScroll={handleScroll}
-          scrollEventThrottle={16}
-          contentContainerStyle={{ paddingHorizontal: 24, gap: 12, paddingVertical: 16 }}
-          className="mt-6"
-        >
-          {plans.map((plan, index) => {
-            const isCurrent = plan.id === currentPlanId;
-            const isFree = plan.price_inr === 0;
-            const isActive = index === activeIndex;
-
-            return (
-              <View
-                key={plan.id}
-                style={{
-                  width: CARD_WIDTH,
-                  transform: [{ scale: isActive ? 1.02 : 0.96 }],
-                }}
-                className={`rounded-3xl border p-6 bg-white shadow-sm ${
-                  isCurrent 
-                    ? "border-emerald-500 border-2" 
-                    : isFree 
-                      ? "border-cream-200" 
-                      : "border-ink-900 border-2"
-                }`}
-              >
-                {isCurrent && (
-                  <View className="absolute -top-3 right-6 bg-emerald-500 rounded-full px-3 py-0.5">
-                    <Text style={{ fontFamily: fontFamily(true) }} className="text-[9px] font-bold text-white uppercase tracking-wider">
-                      {t("pricing.current") || "Active Plan"}
-                    </Text>
-                  </View>
-                )}
-                
-                {!isFree && !isCurrent && (
-                  <View className="absolute -top-3 right-6 bg-ink-900 rounded-full px-3 py-0.5">
-                    <Text style={{ fontFamily: fontFamily(true) }} className="text-[9px] font-bold text-cream-50 uppercase tracking-wider">
-                      ★ Premium
-                    </Text>
-                  </View>
-                )}
-
-                <View className="flex-row items-start justify-between mb-4">
-                  <View className="flex-1 pr-2">
-                    <Text style={{ fontFamily: fontFamily(true) }} className="text-lg font-bold text-ink-900">
-                      {plan.name}
-                    </Text>
-                    <Text style={{ fontFamily: fontFamily(false) }} className="mt-1 text-xs text-ink-400 leading-4">
-                      {plan.description}
-                    </Text>
-                  </View>
-                  <View className="items-end">
-                    <Text style={{ fontFamily: fontFamily(true) }} className="text-2xl font-bold text-ink-900">
-                      {currInfo.symbol}
-                      {currInfo.rates[plan.id as keyof typeof currInfo.rates] !== undefined
-                        ? currInfo.rates[plan.id as keyof typeof currInfo.rates].toLocaleString(currInfo.locale)
-                        : plan.price_inr.toLocaleString("en-IN")}
-                    </Text>
-                    {!isFree && (
-                      <Text style={{ fontFamily: fontFamily(false) }} className="text-[9px] text-ink-400 mt-0.5">
-                        {plan.interval === "yearly" 
-                          ? (t("pricing.per_year") || "per year +taxes") 
-                          : (t("pricing.per_month") || "per month +taxes")}
-                      </Text>
-                    )}
-                  </View>
-                </View>
-
-                <View className="border-t border-cream-100 my-4" />
-
-                <View className="gap-2.5 mb-2 flex-1">
-                  {(plan.features || []).map((f) => (
-                    <View key={f} className="flex-row items-center gap-2">
-                      <Text className="text-[10px] text-brand-600">✦</Text>
-                      <Text style={{ fontFamily: fontFamily(false) }} className="text-xs text-ink-600">
-                        {f}
-                      </Text>
-                    </View>
-                  ))}
-                </View>
-
-                {isCurrent ? (
-                  <View className="mt-6 items-center rounded-2xl bg-emerald-50 border border-emerald-100 py-3.5">
-                    <Text style={{ fontFamily: fontFamily(true) }} className="text-xs font-bold text-emerald-700 uppercase tracking-wider">
-                      {t("pricing.current_plan") || "Your Current Active Plan"}
-                    </Text>
-                  </View>
-                ) : isFree ? (
-                  <View className="mt-6 items-center rounded-2xl bg-cream-50 py-3.5">
-                    <Text style={{ fontFamily: fontFamily(false) }} className="text-xs text-ink-400 font-medium">
-                      {t("pricing.free_forever") || "Free forever · No credit card needed"}
-                    </Text>
-                  </View>
-                ) : (
-                  <Pressable
-                    onPress={() => handleSelectTier(plan)}
-                    disabled={opening}
-                    className="mt-6 items-center rounded-2xl bg-ink-900 py-4 active:scale-[0.98] active:opacity-95 disabled:opacity-50 shadow-sm"
-                  >
-                    {opening ? (
-                      <ActivityIndicator color="#fdfcf8" />
-                    ) : (
-                      <Text style={{ fontFamily: fontFamily(true) }} className="font-bold text-cream-50 text-sm">
-                        {t("pricing.upgrade_btn", { name: plan.name }) || `Upgrade to ${plan.name} →`}
-                      </Text>
-                    )}
-                  </Pressable>
-                )}
-              </View>
-            );
-          })}
-        </ScrollView>
-
-        {/* Dynamic Horizontal Indicators */}
-        <View className="flex-row justify-center items-center gap-1.5 mt-2 mb-4">
-          {plans.map((_, index) => (
-            <View
-              key={index}
-              className={`h-1.5 rounded-full transition-all duration-300 ${
-                activeIndex === index ? "w-4 bg-ink-900" : "w-1.5 bg-cream-300"
+      {/* Currency Switcher */}
+      <View className="mt-6 flex-row bg-cream-100 p-1 rounded-2xl border border-cream-200">
+        {(["INR", "USD", "EUR"] as const).map((curr) => (
+          <Pressable
+            key={curr}
+            onPress={() => setCurrency(curr)}
+            className={`flex-1 py-2.5 rounded-xl items-center justify-center ${
+              currency === curr ? "bg-white shadow-sm border border-cream-200" : ""
+            }`}
+          >
+            <Text
+              style={{ fontFamily: fontFamily(currency === curr) }}
+              className={`text-xs font-semibold ${
+                currency === curr ? "text-brand-500 font-bold" : "text-ink-500"
               }`}
-            />
-          ))}
-        </View>
-
-        <View className="px-6">
-          <View className="mt-4 rounded-2xl bg-cream-100 border border-cream-200 p-4">
-            <Text style={{ fontFamily: fontFamily(false) }} className="text-[11px] leading-relaxed text-ink-500">
-              ℹ {t("pricing.checkout_note") || `Upgrades open secure web checkout (${selectedCurrency === "inr" ? "Razorpay" : "Stripe"}) in your browser. Complete checkout there and return once done.`}
+            >
+              {curr === "INR" ? "INR (₹)" : curr === "USD" ? "USD ($)" : "EUR (€)"}
             </Text>
-          </View>
+          </Pressable>
+        ))}
+      </View>
 
-          <Text style={{ fontFamily: fontFamily(false) }} className="mt-6 text-center text-[10px] text-ink-400 leading-4">
-            🔒 {t("pricing.payments_secure") || `Payments processed securely via ${selectedCurrency === "inr" ? "Razorpay" : "Stripe"} · Cancel anytime`}
-          </Text>
-        </View>
-      </ScrollView>
-    </View>
+      <View className="mt-8 gap-6">
+        {plans.map((plan) => {
+          const isCurrent = plan.id === currentPlanId;
+          const isFree = plan.price_inr === 0;
+          return (
+            <View
+              key={plan.id}
+              className={`rounded-3xl border p-6 bg-white shadow-sm ${
+                isCurrent 
+                  ? "border-emerald-500 border-2" 
+                  : isFree 
+                    ? "border-cream-200" 
+                    : "border-ink-900 border-2"
+              }`}
+            >
+              {isCurrent && (
+                <View className="absolute -top-3 right-6 bg-emerald-500 rounded-full px-3 py-0.5">
+                  <Text style={{ fontFamily: fontFamily(true) }} className="text-[9px] font-bold text-white uppercase tracking-wider">
+                    {t("pricing.current") || "Active Plan"}
+                  </Text>
+                </View>
+              )}
+              
+              {!isFree && !isCurrent && (
+                <View className="absolute -top-3 right-6 bg-ink-900 rounded-full px-3 py-0.5">
+                  <Text style={{ fontFamily: fontFamily(true) }} className="text-[9px] font-bold text-cream-50 uppercase tracking-wider">
+                    ★ Premium
+                  </Text>
+                </View>
+              )}
+
+              <View className="flex-row items-start justify-between mb-4">
+                <View className="flex-1 pr-2">
+                  <Text style={{ fontFamily: fontFamily(true) }} className="text-lg font-bold text-ink-900">
+                    {plan.name}
+                  </Text>
+                  <Text style={{ fontFamily: fontFamily(false) }} className="mt-1 text-xs text-ink-400 leading-4">
+                    {plan.description}
+                  </Text>
+                </View>
+                <View className="items-end">
+                  <Text style={{ fontFamily: fontFamily(true) }} className="text-2xl font-bold text-ink-900">
+                    {plan.price_inr === 0 
+                      ? (currency === "INR" ? "₹0" : currency === "USD" ? "$0" : "€0")
+                      : (currency === "INR" 
+                        ? `₹${plan.price_inr.toLocaleString("en-IN")}` 
+                        : currency === "USD"
+                          ? `$${(plan.price_usd ?? (plan.interval === "yearly" ? 11.99 : 1.99)).toLocaleString("en-US")}`
+                          : `€${(plan.price_eur ?? (plan.interval === "yearly" ? 10.99 : 1.89)).toLocaleString("de-DE")}`
+                      )}
+                  </Text>
+                  {!isFree && (
+                    <Text style={{ fontFamily: fontFamily(false) }} className="text-[9px] text-ink-400 mt-0.5">
+                      {plan.interval === "yearly" 
+                        ? (t("pricing.per_year") || "per year +GST") 
+                        : (t("pricing.per_month") || "per month +GST")}
+                    </Text>
+                  )}
+                </View>
+              </View>
+
+              <View className="border-t border-cream-100 my-4" />
+
+              <View className="gap-2.5 mb-2">
+                {(plan.features || []).map((f) => (
+                  <View key={f} className="flex-row items-center gap-2">
+                    <Text className="text-[10px] text-brand-600">✦</Text>
+                    <Text style={{ fontFamily: fontFamily(false) }} className="text-xs text-ink-600">
+                      {f}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+
+              {isCurrent ? (
+                <View className="mt-6 items-center rounded-2xl bg-emerald-50 border border-emerald-100 py-3.5">
+                  <Text style={{ fontFamily: fontFamily(true) }} className="text-xs font-bold text-emerald-700 uppercase tracking-wider">
+                    {t("pricing.current_plan") || "Your Current Active Plan"}
+                  </Text>
+                </View>
+              ) : isFree ? (
+                <View className="mt-6 items-center rounded-2xl bg-cream-50 py-3.5">
+                  <Text style={{ fontFamily: fontFamily(false) }} className="text-xs text-ink-400 font-medium">
+                    {t("pricing.free_forever") || "Free forever · No credit card needed"}
+                  </Text>
+                </View>
+              ) : (
+                <Pressable
+                  onPress={() => openWebCheckout(plan.id)}
+                  disabled={opening}
+                  className="mt-6 items-center rounded-2xl bg-ink-900 py-4 active:scale-[0.98] active:opacity-95 disabled:opacity-50 shadow-sm"
+                >
+                  {opening ? (
+                    <ActivityIndicator color="#fdfcf8" />
+                  ) : (
+                    <Text style={{ fontFamily: fontFamily(true) }} className="font-bold text-cream-50 text-sm">
+                      {t("pricing.upgrade_btn", { name: plan.name }) || `Upgrade to ${plan.name} →`}
+                    </Text>
+                  )}
+                </Pressable>
+              )}
+            </View>
+          );
+        })}
+      </View>
+
+      <View className="mt-8 rounded-2xl bg-cream-100 border border-cream-200 p-4">
+        <Text style={{ fontFamily: fontFamily(false) }} className="text-[11px] leading-relaxed text-ink-500">
+          ℹ {t("pricing.checkout_note") || "Upgrades open secure web checkout (Razorpay) in your browser. Complete checkout there and return once done."}
+        </Text>
+      </View>
+
+      <Text style={{ fontFamily: fontFamily(false) }} className="mt-6 text-center text-[10px] text-ink-400 leading-4">
+        🔒 {t("pricing.payments_secure") || "Payments processed securely via Razorpay · Cancel anytime · 18% GST applicable"}
+      </Text>
+    </ScrollView>
   );
 }
+
