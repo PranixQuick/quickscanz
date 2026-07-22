@@ -101,9 +101,10 @@ export function useAariaSpeech(locale: Locale) {
       try {
         const res = await aariaSpeak(text, { lang: locale, qualityTier: "premium" });
         
-        // If a newer speech request has started, abort this stale one
+        // If a newer speech request has started, abort this stale one and reset state
         if (requestId !== requestCountRef.current) {
           console.log("[useAariaSpeech] Aborted stale speech request:", requestId);
+          setState((s) => ({ ...s, speaking: false }));
           return;
         }
 
@@ -155,6 +156,7 @@ export function useAariaSpeech(locale: Locale) {
         // Check again after filesystem write
         if (requestId !== requestCountRef.current) {
           console.log("[useAariaSpeech] Aborted stale speech request before playback:", requestId);
+          setState((s) => ({ ...s, speaking: false }));
           return;
         }
 
@@ -164,6 +166,7 @@ export function useAariaSpeech(locale: Locale) {
         // If a newer speech request has started while loading the sound, unload it immediately!
         if (requestId !== requestCountRef.current) {
           await sound.unloadAsync().catch(() => {});
+          setState((s) => ({ ...s, speaking: false }));
           return;
         }
 
@@ -171,7 +174,7 @@ export function useAariaSpeech(locale: Locale) {
         globalActiveSound = sound;
         
         sound.setOnPlaybackStatusUpdate((status) => {
-          if (status.isLoaded && status.didJustFinish) {
+          if (!status.isLoaded || status.didJustFinish || (status.isLoaded && !status.isPlaying && !status.isBuffering)) {
             if (globalActiveSound === sound) {
               globalActiveSound = null;
             }

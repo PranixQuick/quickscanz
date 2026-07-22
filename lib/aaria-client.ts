@@ -56,10 +56,13 @@ async function aariaFetch<T>(path: string, body: Record<string, unknown>): Promi
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
-      // Aaria is a free-tier Render service and can cold-start; give it room.
-      signal: AbortSignal.timeout(15_000),
+      // 5-second budget for Aaria requests so slow server responses fail fast.
+      signal: AbortSignal.timeout(5_000),
     });
-  } catch (e) {
+  } catch (e: any) {
+    if (e?.name === "TimeoutError" || e?.name === "AbortError") {
+      throw new AariaClientError("Aaria server took too long to respond (timeout).");
+    }
     throw new AariaClientError(
       e instanceof Error ? `Failed to reach Aaria: ${e.message}` : "Failed to reach Aaria"
     );

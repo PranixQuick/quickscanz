@@ -42,31 +42,30 @@ export default function FloatingAariaButton() {
           const name = data.display_name.replace(/^(Mr|Mrs|Ms)\.\s+/i, "");
           setDisplayName(name);
 
-          // Greet user on first load per app session only
-          if (!globalHasGreetedSession) {
-            globalHasGreetedSession = true;
-            let welcomeText = `Welcome back, ${name}`;
-            if (locale === "ml") {
-              welcomeText = `സ്വാഗതം, ${name}`;
-            } else if (locale === "hi") {
-              welcomeText = `स्वागत है, ${name}`;
-            } else if (locale === "te") {
-              welcomeText = `స్వాగతం, ${name}`;
-            } else if (locale === "ta") {
-              welcomeText = `வரவேற்கிறோம், ${name}`;
-            } else if (locale === "kn") {
-              welcomeText = `ಸ್ವಾಗತ, ${name}`;
+            // Greet user on first load per app session only (non-blocking)
+            if (!globalHasGreetedSession) {
+              globalHasGreetedSession = true;
+              let welcomeText = `Welcome back, ${name}`;
+              if (locale === "ml") {
+                welcomeText = `സ്വാഗതം, ${name}`;
+              } else if (locale === "hi") {
+                welcomeText = `स्वागत है, ${name}`;
+              } else if (locale === "te") {
+                welcomeText = `స్వాగతం, ${name}`;
+              } else if (locale === "ta") {
+                welcomeText = `வரவேற்கிறோம், ${name}`;
+              } else if (locale === "kn") {
+                welcomeText = `ಸ್ವಾಗತ, ${name}`;
+              }
+              aaria.speak(welcomeText).catch(() => {});
             }
-            await aaria.speak(welcomeText);
           }
+        } catch (err) {
+          console.error(err);
         }
-      } catch (err) {
-        console.error(err);
       }
-    }
-    fetchProfile();
-  }, [user]);
-
+      fetchProfile();
+    }, [user]);
 
   if (!user) return null;
 
@@ -112,7 +111,7 @@ export default function FloatingAariaButton() {
 
     if (targetRoute) {
       setResponse(speechConfirm);
-      await aaria.speak(speechConfirm);
+      aaria.speak(speechConfirm).catch(() => {});
       setTimeout(() => {
         setVisible(false);
         router.push(targetRoute);
@@ -142,7 +141,6 @@ export default function FloatingAariaButton() {
     }
   }
 
-
   return (
     <>
       {/* Floating Action Button */}
@@ -167,7 +165,7 @@ export default function FloatingAariaButton() {
             behavior={Platform.OS === "ios" ? "padding" : "height"}
             className="bg-cream-50 rounded-t-3xl border-t border-cream-200 overflow-hidden"
           >
-            <Pressable>
+            <Pressable onPress={(e) => e.stopPropagation()}>
               {/* Header */}
               <View className="bg-white border-b border-cream-100 px-6 py-4 flex-row justify-between items-center">
                 <View className="flex-row items-center gap-2">
@@ -189,6 +187,14 @@ export default function FloatingAariaButton() {
 
               {/* Body */}
               <View className="p-6 min-h-[220px]">
+                {aaria.error ? (
+                  <View className="bg-blush-50 border border-blush-200 rounded-xl p-3 mb-3">
+                    <Text style={{ fontFamily: fontFamily(false) }} className="text-xs text-blush-700 text-center font-medium">
+                      ⚠️ {aaria.error}
+                    </Text>
+                  </View>
+                ) : null}
+
                 {/* Listening/Speaking State */}
                 {loading ? (
                   <View className="items-center justify-center py-6">
